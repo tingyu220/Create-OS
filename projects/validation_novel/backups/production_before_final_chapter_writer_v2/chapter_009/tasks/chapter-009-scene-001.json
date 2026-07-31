@@ -1,0 +1,44 @@
+{
+  "id": "chapter-009-scene-001",
+  "title": "第9章 Scene 1：旧灯巷清查",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让旧灯巷危机升级并迫使阿岚转移线索",
+  "tags": [
+    "scene",
+    "巡灯员",
+    "旧灯巷",
+    "第九章",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-009-scene-001",
+    "title": "第9章 Scene 1：旧灯巷清查",
+    "pov": "阿岚",
+    "time": "傍晚",
+    "location": "旧灯巷",
+    "characters": [
+      "阿岚",
+      "巡灯员"
+    ],
+    "goal": "让旧灯巷危机升级并迫使阿岚转移线索",
+    "conflict": "灯务署清查黑市光源，阿岚必须保护地下入口",
+    "outcome": "阿岚转移核心光源，但暗道入口风险暴露",
+    "new_facts": [
+      "旧灯巷被灯务署清查",
+      "阿岚掌握多个地下入口",
+      "黑市光源与回声室调查关联加深"
+    ],
+    "target_words": 850,
+    "chapter_label": "第九章"
+  }
+}

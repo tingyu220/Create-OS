@@ -1,0 +1,43 @@
+{
+  "id": "chapter-014-scene-001",
+  "title": "第14章 Scene 1：旧事故开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让白姨讲出白塔事故部分真相",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第14章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-014-scene-001",
+    "title": "第14章 Scene 1：旧事故开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "白塔旧址",
+    "characters": [
+      "林澈",
+      "白姨"
+    ],
+    "goal": "让白姨讲出白塔事故部分真相",
+    "conflict": "真相会动摇林澈自我认知",
+    "outcome": "局面推进到：林澈承认自己可能是共犯",
+    "new_facts": [
+      "白塔事故与冷光塔有关",
+      "林澈曾签署维护协议"
+    ],
+    "target_words": 850,
+    "chapter_label": "第14章"
+  }
+}

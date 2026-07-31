@@ -1,0 +1,44 @@
+{
+  "id": "chapter-007-scene-001",
+  "title": "第7章 Scene 1：旧图纸碎片",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "确认冷光塔前身是白塔系统",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第七章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-007-scene-001",
+    "title": "第7章 Scene 1：旧图纸碎片",
+    "pov": "林澈",
+    "time": "清晨",
+    "location": "白塔旧址",
+    "characters": [
+      "林澈",
+      "白姨"
+    ],
+    "goal": "确认冷光塔前身是白塔系统",
+    "conflict": "图纸残缺，关键模块名称被人为刮去",
+    "outcome": "林澈获得白塔到冷光塔的线路碎片",
+    "new_facts": [
+      "冷光塔前身是白塔系统",
+      "线路图被人为损毁",
+      "回声室连接在旧检修网下方"
+    ],
+    "target_words": 850,
+    "chapter_label": "第七章"
+  }
+}

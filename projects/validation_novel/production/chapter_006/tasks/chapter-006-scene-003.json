@@ -1,0 +1,44 @@
+{
+  "id": "chapter-006-scene-003",
+  "title": "第6章 Scene 3：白塔残基残影",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "触发林澈关于安装模块的第一段记忆残影",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔残基",
+    "白姨",
+    "第六章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-006-scene-003",
+    "title": "第6章 Scene 3：白塔残基残影",
+    "pov": "林澈",
+    "time": "深夜",
+    "location": "白塔残基",
+    "characters": [
+      "林澈",
+      "白姨"
+    ],
+    "goal": "触发林澈关于安装模块的第一段记忆残影",
+    "conflict": "残影可能证明林澈曾参与系统建设",
+    "outcome": "林澈看见自己安装过与回声室相连的模块",
+    "new_facts": [
+      "林澈曾安装回声室相关模块",
+      "冷光塔前身与白塔有关",
+      "林澈记忆被剪除不是偶然"
+    ],
+    "target_words": 900,
+    "chapter_label": "第六章"
+  }
+}

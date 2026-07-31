@@ -1,0 +1,46 @@
+{
+  "id": "chapter-023-scene-003",
+  "title": "第23章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：白姨交出事故记录",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第23章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-023-scene-003",
+    "title": "第23章 Scene 3：章节转折",
+    "pov": "白姨",
+    "time": "本章后段",
+    "location": "白塔旧址",
+    "characters": [
+      "白姨",
+      "林澈",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：白姨交出事故记录",
+    "conflict": "记录会暴露林澈旧身份",
+    "outcome": "记录证明周闻白隐瞒系统用途",
+    "new_facts": [
+      "白姨决定作证",
+      "事故记录出现",
+      "周闻白隐瞒冷光塔用途"
+    ],
+    "target_words": 900,
+    "chapter_label": "第23章"
+  }
+}

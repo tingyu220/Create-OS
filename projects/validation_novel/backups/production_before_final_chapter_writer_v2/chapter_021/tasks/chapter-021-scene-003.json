@@ -1,0 +1,44 @@
+{
+  "id": "chapter-021-scene-003",
+  "title": "第21章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：展示林遥在回声室保留证据",
+  "tags": [
+    "scene",
+    "周闻白",
+    "地下回声室",
+    "林遥",
+    "第21章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-021-scene-003",
+    "title": "第21章 Scene 3：章节转折",
+    "pov": "林遥",
+    "time": "本章后段",
+    "location": "地下回声室",
+    "characters": [
+      "林遥",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：展示林遥在回声室保留证据",
+    "conflict": "她的记忆被持续抽取",
+    "outcome": "林遥藏下校验片段，等待林澈找到",
+    "new_facts": [
+      "林遥成为系统校验关键",
+      "她藏下校验片段",
+      "记忆抽取正在持续"
+    ],
+    "target_words": 900,
+    "chapter_label": "第21章"
+  }
+}

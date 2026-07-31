@@ -1,0 +1,16 @@
+{
+  "result": "pass",
+  "chapter_count": 36,
+  "scene_count": 108,
+  "reviews": {
+    "structure": "reviews\\m7_structure_review.md",
+    "character": "reviews\\m7_character_review.md",
+    "world": "reviews\\m7_world_review.md",
+    "timeline": "reviews\\m7_timeline_review.md",
+    "text": "reviews\\m7_text_review.md"
+  },
+  "issue_report": "reports\\m7_issue_report.md",
+  "repair_tasks": "tasks\\m7_repair_tasks.json",
+  "regression_review": "reviews\\m7_regression_review.md",
+  "final_compile": "drafts\\final_compile.md"
+}

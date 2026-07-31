@@ -1,0 +1,46 @@
+{
+  "id": "chapter-031-scene-003",
+  "title": "第31章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：林澈恢复完整过去",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "林遥",
+    "第31章",
+    "记忆核心",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-031-scene-003",
+    "title": "第31章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "记忆核心",
+    "characters": [
+      "林澈",
+      "林遥",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：林澈恢复完整过去",
+    "conflict": "他必须承认自己参与系统维护",
+    "outcome": "林澈选择公开全部记忆",
+    "new_facts": [
+      "林澈恢复完整记忆",
+      "他参与过系统维护",
+      "他选择公开责任"
+    ],
+    "target_words": 900,
+    "chapter_label": "第31章"
+  }
+}

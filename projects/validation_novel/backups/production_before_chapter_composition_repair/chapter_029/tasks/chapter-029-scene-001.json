@@ -1,0 +1,47 @@
+{
+  "id": "chapter-029-scene-001",
+  "title": "第29章 Scene 1：证据与人开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "决定先救人还是先公开证据",
+  "tags": [
+    "scene",
+    "地下回声室",
+    "林澈",
+    "林遥",
+    "第29章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-029-scene-001",
+    "title": "第29章 Scene 1：证据与人开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "地下回声室",
+    "characters": [
+      "林澈",
+      "林遥",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "决定先救人还是先公开证据",
+    "conflict": "主角目标与城市真相冲突",
+    "outcome": "局面推进到：林遥要求林澈公开真相",
+    "new_facts": [
+      "林遥主动要求公开真相",
+      "林澈目标从救人扩大到救城"
+    ],
+    "target_words": 850,
+    "chapter_label": "第29章"
+  }
+}

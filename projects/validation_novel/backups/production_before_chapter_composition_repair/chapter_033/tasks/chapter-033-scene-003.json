@@ -1,0 +1,46 @@
+{
+  "id": "chapter-033-scene-003",
+  "title": "第33章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：周闻白试图重启强制清除",
+  "tags": [
+    "scene",
+    "冷光塔核心",
+    "周闻白",
+    "林澈",
+    "林遥",
+    "第33章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-033-scene-003",
+    "title": "第33章 Scene 3：章节转折",
+    "pov": "周闻白",
+    "time": "本章后段",
+    "location": "冷光塔核心",
+    "characters": [
+      "周闻白",
+      "林遥",
+      "林澈"
+    ],
+    "goal": "完成章节目标并接入下一章：周闻白试图重启强制清除",
+    "conflict": "系统需要林遥权限",
+    "outcome": "林遥夺回校验权",
+    "new_facts": [
+      "周闻白试图强制清除",
+      "林遥夺回校验权",
+      "周闻白失去系统控制"
+    ],
+    "target_words": 900,
+    "chapter_label": "第33章"
+  }
+}

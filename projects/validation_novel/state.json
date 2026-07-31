@@ -1,0 +1,9 @@
+{
+  "current_phase": "Archived",
+  "current_task_id": "final-chapter-writer-v2-complete",
+  "current_goal": "读者版最终章节 V2 已生成，消除明显 AI 味和 Scene 拼接痕迹",
+  "active_domain": "novel",
+  "risks": [
+    "后续可接入真人写法知识库进一步增强风格"
+  ]
+}

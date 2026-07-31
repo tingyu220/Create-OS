@@ -1,0 +1,44 @@
+{
+  "id": "chapter-008-scene-001",
+  "title": "第8章 Scene 1：记录室缺页",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让许砚独立查到缺页涉及多人失踪",
+  "tags": [
+    "scene",
+    "同僚",
+    "灯务署记录室",
+    "第八章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-008-scene-001",
+    "title": "第8章 Scene 1：记录室缺页",
+    "pov": "许砚",
+    "time": "上午",
+    "location": "灯务署记录室",
+    "characters": [
+      "许砚",
+      "同僚"
+    ],
+    "goal": "让许砚独立查到缺页涉及多人失踪",
+    "conflict": "同僚提醒她不要越权追查回声室",
+    "outcome": "许砚复制异常索引，确认缺页不只林遥一例",
+    "new_facts": [
+      "缺页涉及多人失踪",
+      "回声室不是单一案件",
+      "许砚开始保留私人证据"
+    ],
+    "target_words": 850,
+    "chapter_label": "第八章"
+  }
+}

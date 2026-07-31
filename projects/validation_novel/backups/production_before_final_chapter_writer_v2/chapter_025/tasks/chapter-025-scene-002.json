@@ -1,0 +1,46 @@
+{
+  "id": "chapter-025-scene-002",
+  "title": "第25章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：权限、巡逻和雾潮同时压迫",
+  "tags": [
+    "scene",
+    "冷光塔入口",
+    "林澈",
+    "第25章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-025-scene-002",
+    "title": "第25章 Scene 2：压力升级",
+    "pov": "阿岚",
+    "time": "本章中段",
+    "location": "冷光塔入口",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "加深冲突：权限、巡逻和雾潮同时压迫",
+    "conflict": "人物必须在权限、巡逻和雾潮同时压迫中做选择",
+    "outcome": "关键证据被确认：雾潮压迫升级",
+    "new_facts": [
+      "团队进入冷光塔",
+      "林澈维护员身份被系统确认",
+      "雾潮压迫升级"
+    ],
+    "target_words": 850,
+    "chapter_label": "第25章"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "result": "pass",
+  "chapter_count": 36,
+  "final_chapters": "final_chapters",
+  "final_draft": "drafts\\final_draft_polished.md",
+  "review": "reviews\\chapter_composition_review.md",
+  "fixes": [
+    "removed_internal_scene_headings",
+    "removed_system_terms_from_reader_text",
+    "fixed_chinese_count_old-lamp-alley",
+    "inserted_soft_transitions_between_scene_blocks"
+  ]
+}

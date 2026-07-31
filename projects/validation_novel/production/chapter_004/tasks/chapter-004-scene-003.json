@@ -1,0 +1,46 @@
+{
+  "id": "chapter-004-scene-003",
+  "title": "第4章 Scene 3：许砚截停",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让许砚追上林澈并看到回声室编号",
+  "tags": [
+    "scene",
+    "废弃档案库外",
+    "林澈",
+    "第四章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-004-scene-003",
+    "title": "第4章 Scene 3：许砚截停",
+    "pov": "许砚",
+    "time": "清晨",
+    "location": "废弃档案库外",
+    "characters": [
+      "许砚",
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "让许砚追上林澈并看到回声室编号",
+    "conflict": "林澈不愿交出证据，许砚不能公开承认监控缺帧",
+    "outcome": "林澈逃脱但编号暴露，许砚开始私下追查回声室",
+    "new_facts": [
+      "许砚知道回声室编号",
+      "许砚没有立即上报全部证据",
+      "林澈和阿岚继续逃亡"
+    ],
+    "target_words": 900,
+    "chapter_label": "第四章"
+  }
+}

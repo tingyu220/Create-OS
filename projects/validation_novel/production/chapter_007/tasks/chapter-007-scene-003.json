@@ -1,0 +1,44 @@
+{
+  "id": "chapter-007-scene-003",
+  "title": "第7章 Scene 3：维护员识别",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让冷光塔系统主动识别林澈",
+  "tags": [
+    "scene",
+    "冷光塔影区",
+    "巡灯员",
+    "林澈",
+    "第七章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-007-scene-003",
+    "title": "第7章 Scene 3：维护员识别",
+    "pov": "林澈",
+    "time": "中午",
+    "location": "冷光塔影区",
+    "characters": [
+      "林澈",
+      "巡灯员"
+    ],
+    "goal": "让冷光塔系统主动识别林澈",
+    "conflict": "旧编号触发警报，巡灯员开始靠近",
+    "outcome": "系统称林澈为维护员，林澈确认自己的权限仍在",
+    "new_facts": [
+      "系统仍承认林澈权限",
+      "冷光塔会响应旧维护员编号",
+      "巡灯员开始注意林澈异常"
+    ],
+    "target_words": 850,
+    "chapter_label": "第七章"
+  }
+}

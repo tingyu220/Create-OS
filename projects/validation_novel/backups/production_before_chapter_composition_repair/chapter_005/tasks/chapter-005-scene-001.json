@@ -1,0 +1,44 @@
+{
+  "id": "chapter-005-scene-001",
+  "title": "第5章 Scene 1：审查室问答",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "通过审问揭示林澈熟悉灯务署流程",
+  "tags": [
+    "scene",
+    "林澈",
+    "灯务署审查室",
+    "第五章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-005-scene-001",
+    "title": "第5章 Scene 1：审查室问答",
+    "pov": "许砚",
+    "time": "上午",
+    "location": "灯务署审查室",
+    "characters": [
+      "许砚",
+      "林澈"
+    ],
+    "goal": "通过审问揭示林澈熟悉灯务署流程",
+    "conflict": "林澈被短暂扣留，只愿交出不完整线索",
+    "outcome": "许砚确认林澈不是普通维修员，也不是单纯违规者",
+    "new_facts": [
+      "林澈熟悉审查室结构",
+      "许砚怀疑林澈旧身份",
+      "林澈刻意隐藏冷光管核心信息"
+    ],
+    "target_words": 900,
+    "chapter_label": "第五章"
+  }
+}

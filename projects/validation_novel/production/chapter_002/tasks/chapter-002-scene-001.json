@@ -1,0 +1,44 @@
+{
+  "id": "chapter-002-scene-001",
+  "title": "第2章 Scene 1：旧灯巷入口",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让林澈找到冷光管来源，并引出阿岚",
+  "tags": [
+    "scene",
+    "旧灯巷入口",
+    "林澈",
+    "第二章",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-002-scene-001",
+    "title": "第2章 Scene 1：旧灯巷入口",
+    "pov": "林澈",
+    "time": "清晨",
+    "location": "旧灯巷入口",
+    "characters": [
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "让林澈找到冷光管来源，并引出阿岚",
+    "conflict": "阿岚不信任外来维修员，只愿用交易换线索",
+    "outcome": "阿岚确认冷光管来自旧灯巷暗铺，要求林澈帮查失踪者名单",
+    "new_facts": [
+      "阿岚经营黑市低亮光源",
+      "旧灯巷仍能流通未登记冷光管",
+      "阿岚也在查失踪者"
+    ],
+    "target_words": 850,
+    "chapter_label": "第二章"
+  }
+}

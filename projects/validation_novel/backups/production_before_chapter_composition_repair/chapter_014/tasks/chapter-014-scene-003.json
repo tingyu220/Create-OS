@@ -1,0 +1,44 @@
+{
+  "id": "chapter-014-scene-003",
+  "title": "第14章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：让白姨讲出白塔事故部分真相",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第14章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-014-scene-003",
+    "title": "第14章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "白塔旧址",
+    "characters": [
+      "林澈",
+      "白姨"
+    ],
+    "goal": "完成章节目标并接入下一章：让白姨讲出白塔事故部分真相",
+    "conflict": "真相会动摇林澈自我认知",
+    "outcome": "林澈承认自己可能是共犯",
+    "new_facts": [
+      "白塔事故与冷光塔有关",
+      "林澈曾签署维护协议",
+      "周闻白隐瞒系统用途"
+    ],
+    "target_words": 900,
+    "chapter_label": "第14章"
+  }
+}

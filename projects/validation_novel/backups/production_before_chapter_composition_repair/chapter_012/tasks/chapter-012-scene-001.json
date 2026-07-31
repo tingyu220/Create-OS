@@ -1,0 +1,45 @@
+{
+  "id": "chapter-012-scene-001",
+  "title": "第12章 Scene 1：空房间开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "寻找林遥并确认她被转移",
+  "tags": [
+    "scene",
+    "回声室空房间",
+    "林澈",
+    "林遥",
+    "第12章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-012-scene-001",
+    "title": "第12章 Scene 1：空房间开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "回声室空房间",
+    "characters": [
+      "林澈",
+      "许砚",
+      "林遥"
+    ],
+    "goal": "寻找林遥并确认她被转移",
+    "conflict": "回声室核心房间已空，证据可能被清理",
+    "outcome": "局面推进到：林遥留下第二段信息，指向雾潮计划",
+    "new_facts": [
+      "林遥曾被关押在回声室",
+      "她留下第二段信息"
+    ],
+    "target_words": 850,
+    "chapter_label": "第12章"
+  }
+}

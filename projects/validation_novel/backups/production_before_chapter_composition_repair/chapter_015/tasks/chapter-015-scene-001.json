@@ -1,0 +1,45 @@
+{
+  "id": "chapter-015-scene-001",
+  "title": "第15章 Scene 1：失踪名单开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "整理失踪者名单并扩大案件规模",
+  "tags": [
+    "scene",
+    "废档案库",
+    "林澈",
+    "第15章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-015-scene-001",
+    "title": "第15章 Scene 1：失踪名单开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "废档案库",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "整理失踪者名单并扩大案件规模",
+    "conflict": "名单人数远超公开记录，阿岚情绪失控",
+    "outcome": "局面推进到：阿岚找到哥哥岚舟名字，案件从林遥扩展到失踪者群体",
+    "new_facts": [
+      "失踪名单远超公开记录",
+      "岚舟在名单中"
+    ],
+    "target_words": 850,
+    "chapter_label": "第15章"
+  }
+}

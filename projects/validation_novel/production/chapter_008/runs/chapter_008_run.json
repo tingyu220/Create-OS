@@ -1,0 +1,73 @@
+{
+  "chapter_id": "chapter-008",
+  "scene_records": [
+    {
+      "task_id": "chapter-008-scene-001",
+      "context_sources": [
+        "kb-chapter-008-plan",
+        "kb-character-xu-yan",
+        "draft-chapter-002-scene-002",
+        "draft-chapter-002-scene-003",
+        "draft-chapter-003-scene-001",
+        "draft-chapter-003-scene-002",
+        "draft-chapter-004-scene-003",
+        "draft-chapter-005-scene-001"
+      ],
+      "draft_path": "drafts\\chapter-008-scene-001.md",
+      "review_path": "reviews\\chapter-008-scene-001_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-008-scene-001",
+        "timeline-chapter-008-scene-001",
+        "facts-chapter-008-scene-001",
+        "draft-chapter-008-scene-001"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-008-scene-002",
+      "context_sources": [
+        "kb-chapter-008-plan",
+        "kb-character-xu-yan",
+        "kb-character-zhou-wenbai",
+        "draft-chapter-002-scene-002",
+        "draft-chapter-005-scene-003",
+        "draft-chapter-008-scene-001",
+        "facts-chapter-002-scene-002",
+        "facts-chapter-005-scene-003"
+      ],
+      "draft_path": "drafts\\chapter-008-scene-002.md",
+      "review_path": "reviews\\chapter-008-scene-002_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-008-scene-002",
+        "timeline-chapter-008-scene-002",
+        "facts-chapter-008-scene-002",
+        "draft-chapter-008-scene-002"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-008-scene-003",
+      "context_sources": [
+        "kb-chapter-008-plan",
+        "kb-character-lin-yao",
+        "kb-character-xu-yan",
+        "draft-chapter-005-scene-002",
+        "draft-chapter-008-scene-001",
+        "draft-chapter-008-scene-002",
+        "facts-chapter-005-scene-002",
+        "facts-chapter-008-scene-001"
+      ],
+      "draft_path": "drafts\\chapter-008-scene-003.md",
+      "review_path": "reviews\\chapter-008-scene-003_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-008-scene-003",
+        "timeline-chapter-008-scene-003",
+        "facts-chapter-008-scene-003",
+        "draft-chapter-008-scene-003"
+      ],
+      "status": "pass"
+    }
+  ],
+  "status": "done",
+  "chapter_path": "drafts\\chapter_008.md"
+}

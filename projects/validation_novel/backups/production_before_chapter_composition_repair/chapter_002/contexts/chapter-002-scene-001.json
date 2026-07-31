@@ -1,0 +1,145 @@
+{
+  "scene_id": "chapter-002-scene-001",
+  "context_sources": [
+    "kb-chapter-002-plan",
+    "kb-character-a-lan",
+    "kb-chapter-001-plan",
+    "kb-chapter-003-plan",
+    "kb-chapter-004-plan",
+    "kb-chapter-009-plan",
+    "kb-chapter-010-plan",
+    "kb-project-brief"
+  ],
+  "knowledge": [
+    {
+      "id": "kb-chapter-002-plan",
+      "kind": "chapter_plan",
+      "title": "第2章：旧灯巷",
+      "tags": [
+        "chapter",
+        "novel",
+        "旧灯巷",
+        "林澈",
+        "第二章",
+        "许砚",
+        "阿岚"
+      ],
+      "body": "目标：林澈寻找冷光管来源。结尾：许砚发现林澈违规入城。"
+    },
+    {
+      "id": "kb-character-a-lan",
+      "kind": "character",
+      "title": "阿岚",
+      "tags": [
+        "character",
+        "novel",
+        "回声室外层",
+        "地下汇合点",
+        "地下通道",
+        "废弃档案库",
+        "废弃档案库外",
+        "废弃检修口",
+        "旧灯巷",
+        "旧灯巷入口",
+        "旧灯巷暗铺",
+        "暗道",
+        "档案库机房",
+        "第三章",
+        "第九章",
+        "第二章",
+        "第十章",
+        "第四章",
+        "阿岚"
+      ],
+      "body": "旧灯巷黑市光源贩子。用交易掩饰关心，正在追查哥哥失踪原因。"
+    },
+    {
+      "id": "kb-chapter-001-plan",
+      "kind": "chapter_plan",
+      "title": "第1章：回城",
+      "tags": [
+        "chapter",
+        "novel",
+        "林澈",
+        "林遥",
+        "第一章",
+        "雾城"
+      ],
+      "body": "目标：林澈回到雾城并确认林遥失踪。结尾：旧灯亮起，出现林遥残影。"
+    },
+    {
+      "id": "kb-chapter-003-plan",
+      "kind": "chapter_plan",
+      "title": "第3章：追捕",
+      "tags": [
+        "chapter",
+        "novel",
+        "暗道",
+        "林澈",
+        "第三章",
+        "许砚",
+        "阿岚"
+      ],
+      "body": "目标：林澈躲避灯务署追查。结尾：阿岚指出废档案库。"
+    },
+    {
+      "id": "kb-chapter-004-plan",
+      "kind": "chapter_plan",
+      "title": "第4章：废档案",
+      "tags": [
+        "chapter",
+        "novel",
+        "废弃档案库",
+        "林澈",
+        "第四章",
+        "许砚",
+        "阿岚"
+      ],
+      "body": "目标：进入档案库查林遥记录。结尾：隐藏记录出现回声室编号。"
+    },
+    {
+      "id": "kb-chapter-009-plan",
+      "kind": "chapter_plan",
+      "title": "第9章：地下通道",
+      "tags": [
+        "chapter",
+        "novel",
+        "地下通道",
+        "林澈",
+        "第九章",
+        "许砚",
+        "阿岚"
+      ],
+      "body": "目标：阿岚带林澈进入旧灯巷地下。结尾：三人第一次共享线索。"
+    },
+    {
+      "id": "kb-chapter-010-plan",
+      "kind": "chapter_plan",
+      "title": "第10章：第一次合作",
+      "tags": [
+        "chapter",
+        "novel",
+        "回声室外层",
+        "林澈",
+        "第十章",
+        "许砚",
+        "阿岚"
+      ],
+      "body": "目标：林澈与许砚形成有限合作。结尾：回声室入口被定位。"
+    },
+    {
+      "id": "kb-project-brief",
+      "kind": "project_brief",
+      "title": "雾城回声 Project Brief",
+      "tags": [
+        "novel",
+        "project",
+        "林澈",
+        "林遥",
+        "第一章",
+        "雾城"
+      ],
+      "body": "悬疑科幻中短篇。林澈进入禁止点灯的雾城，寻找妹妹林遥并揭开禁灯真相。"
+    }
+  ]
+}

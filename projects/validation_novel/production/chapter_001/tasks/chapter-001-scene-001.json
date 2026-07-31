@@ -1,0 +1,44 @@
+{
+  "id": "chapter-001-scene-001",
+  "title": "第1章 Scene 1：雾城南站回城",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让林澈回到雾城，并建立禁灯令压力",
+  "tags": [
+    "scene",
+    "巡灯员",
+    "林澈",
+    "第一章",
+    "雾城",
+    "雾城南站"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-001-scene-001",
+    "title": "第1章 Scene 1：雾城南站回城",
+    "pov": "林澈",
+    "time": "傍晚",
+    "location": "雾城南站",
+    "characters": [
+      "林澈",
+      "巡灯员"
+    ],
+    "goal": "让林澈回到雾城，并建立禁灯令压力",
+    "conflict": "林澈没有有效通行记录，巡灯员要求他在入夜前离开",
+    "outcome": "林澈用旧维修证入城，但被系统记录为异常回城人员",
+    "new_facts": [
+      "雾城禁灯令仍在执行",
+      "林澈保留旧维修证",
+      "灯务署监控会记录异常回城"
+    ],
+    "target_words": 900,
+    "chapter_label": "第一章"
+  }
+}

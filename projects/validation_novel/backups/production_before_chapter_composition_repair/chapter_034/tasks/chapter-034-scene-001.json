@@ -1,0 +1,45 @@
+{
+  "id": "chapter-034-scene-001",
+  "title": "第34章 Scene 1：塔下黎明开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "关闭冷光塔",
+  "tags": [
+    "scene",
+    "冷光塔核心",
+    "林澈",
+    "林遥",
+    "第34章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-034-scene-001",
+    "title": "第34章 Scene 1：塔下黎明开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "冷光塔核心",
+    "characters": [
+      "林澈",
+      "林遥",
+      "许砚"
+    ],
+    "goal": "关闭冷光塔",
+    "conflict": "关闭会使部分记忆永远无法恢复",
+    "outcome": "局面推进到：林澈按下关闭指令",
+    "new_facts": [
+      "冷光塔关闭",
+      "部分记忆无法恢复"
+    ],
+    "target_words": 850,
+    "chapter_label": "第34章"
+  }
+}

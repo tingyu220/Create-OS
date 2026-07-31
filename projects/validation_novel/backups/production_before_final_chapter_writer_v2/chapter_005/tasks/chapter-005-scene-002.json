@@ -1,0 +1,46 @@
+{
+  "id": "chapter-005-scene-002",
+  "title": "第5章 Scene 2：冷光管显影",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让许砚首次看到记忆残影",
+  "tags": [
+    "scene",
+    "审查室",
+    "林澈",
+    "林遥",
+    "第五章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-005-scene-002",
+    "title": "第5章 Scene 2：冷光管显影",
+    "pov": "林澈",
+    "time": "中午",
+    "location": "审查室",
+    "characters": [
+      "林澈",
+      "许砚",
+      "林遥"
+    ],
+    "goal": "让许砚首次看到记忆残影",
+    "conflict": "林澈无法用口供证明林遥被带走，只能冒险触发冷光管",
+    "outcome": "冷光管短暂显影林遥被押走片段，许砚动摇",
+    "new_facts": [
+      "许砚看见林遥残影",
+      "低亮冷光可在审查室环境显影",
+      "林澈愿意冒险证明林遥未离城"
+    ],
+    "target_words": 900,
+    "chapter_label": "第五章"
+  }
+}

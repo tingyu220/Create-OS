@@ -1,0 +1,22 @@
+{
+  "name": "雾城回声",
+  "logline": "一名失忆修灯师进入禁止点灯的雾城，必须找回妹妹失踪真相，同时证明光并非灾难源头。",
+  "genre": "悬疑科幻中短篇",
+  "target_readers": "喜欢强设定、悬疑推进和人物成长的青年读者",
+  "expected_words": "8万-12万字",
+  "chapter_count": "36章",
+  "core_hooks": [
+    "禁灯之城",
+    "失踪妹妹",
+    "光源真相",
+    "记忆被人为改写"
+  ],
+  "constraints": [
+    "单主线推进",
+    "不使用复杂时间循环",
+    "主要人物控制在 3-8 人",
+    "每章由 Scene Task 驱动"
+  ],
+  "current_stage": "V1 Production Validation / M1",
+  "status": "active"
+}

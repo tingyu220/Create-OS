@@ -1,0 +1,73 @@
+{
+  "chapter_id": "chapter-004",
+  "scene_records": [
+    {
+      "task_id": "chapter-004-scene-001",
+      "context_sources": [
+        "kb-chapter-004-plan",
+        "kb-character-a-lan",
+        "kb-character-lin-che",
+        "draft-chapter-002-scene-001",
+        "draft-chapter-002-scene-003",
+        "draft-chapter-003-scene-001",
+        "draft-chapter-003-scene-003",
+        "facts-chapter-002-scene-001"
+      ],
+      "draft_path": "drafts\\chapter-004-scene-001.md",
+      "review_path": "reviews\\chapter-004-scene-001_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-004-scene-001",
+        "timeline-chapter-004-scene-001",
+        "facts-chapter-004-scene-001",
+        "draft-chapter-004-scene-001"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-004-scene-002",
+      "context_sources": [
+        "draft-chapter-004-scene-001",
+        "facts-chapter-004-scene-001",
+        "kb-chapter-001-plan",
+        "kb-chapter-004-plan",
+        "kb-character-a-lan",
+        "kb-character-lin-che",
+        "kb-character-lin-yao",
+        "kb-project-brief"
+      ],
+      "draft_path": "drafts\\chapter-004-scene-002.md",
+      "review_path": "reviews\\chapter-004-scene-002_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-004-scene-002",
+        "timeline-chapter-004-scene-002",
+        "facts-chapter-004-scene-002",
+        "draft-chapter-004-scene-002"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-004-scene-003",
+      "context_sources": [
+        "kb-chapter-004-plan",
+        "draft-chapter-002-scene-003",
+        "draft-chapter-003-scene-001",
+        "draft-chapter-004-scene-001",
+        "draft-chapter-004-scene-002",
+        "facts-chapter-002-scene-003",
+        "facts-chapter-003-scene-001",
+        "facts-chapter-004-scene-001"
+      ],
+      "draft_path": "drafts\\chapter-004-scene-003.md",
+      "review_path": "reviews\\chapter-004-scene-003_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-004-scene-003",
+        "timeline-chapter-004-scene-003",
+        "facts-chapter-004-scene-003",
+        "draft-chapter-004-scene-003"
+      ],
+      "status": "pass"
+    }
+  ],
+  "status": "done",
+  "chapter_path": "drafts\\chapter_004.md"
+}

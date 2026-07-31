@@ -1,0 +1,46 @@
+{
+  "id": "chapter-003-scene-002",
+  "title": "第3章 Scene 2：缺帧记录",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让许砚发现灯务署记录异常",
+  "tags": [
+    "scene",
+    "封锁线",
+    "巡灯员",
+    "林澈",
+    "第三章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-003-scene-002",
+    "title": "第3章 Scene 2：缺帧记录",
+    "pov": "许砚",
+    "time": "夜",
+    "location": "封锁线",
+    "characters": [
+      "许砚",
+      "巡灯员",
+      "林澈"
+    ],
+    "goal": "让许砚发现灯务署记录异常",
+    "conflict": "巡灯员要求按违规点灯处理，许砚发现监控缺帧",
+    "outcome": "许砚没有上报全部细节，开始怀疑内部篡改",
+    "new_facts": [
+      "灯务署监控存在缺帧",
+      "许砚具备独立判断",
+      "违规点灯案被人为简化"
+    ],
+    "target_words": 800,
+    "chapter_label": "第三章"
+  }
+}

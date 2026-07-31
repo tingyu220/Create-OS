@@ -1,0 +1,46 @@
+{
+  "id": "chapter-035-scene-003",
+  "title": "第35章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：处理关闭后的城市后果",
+  "tags": [
+    "scene",
+    "林澈",
+    "灯务署外广场",
+    "第35章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-035-scene-003",
+    "title": "第35章 Scene 3：章节转折",
+    "pov": "许砚",
+    "time": "本章后段",
+    "location": "灯务署外广场",
+    "characters": [
+      "许砚",
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "完成章节目标并接入下一章：处理关闭后的城市后果",
+    "conflict": "居民要求解释和追责",
+    "outcome": "许砚提交公开报告",
+    "new_facts": [
+      "许砚提交公开报告",
+      "居民开始追责",
+      "雾城进入重建"
+    ],
+    "target_words": 900,
+    "chapter_label": "第35章"
+  }
+}

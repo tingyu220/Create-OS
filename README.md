@@ -7,7 +7,22 @@ Creative OS V1 是一个知识驱动的长期创作系统底座。
 核心流水线：
 
 ```text
-Task -> Retriever -> Context -> Capability -> Result -> Compiler -> Knowledge
+                 Knowledge
+                     ▲
+                     │
+              Compiler Update
+                     ▲
+                     │
+Capability ◀──── Context ──── Retriever
+     ▲               ▲              ▲
+     │               │              │
+     │         Project State         │
+     │               ▲              │
+     │               │              │
+     └────── Task ◀── Workflow ◀── Domain
+                     ▲
+                     │
+                    User
 ```
 
 V1 不追求完整产品 UI，而是验证：
@@ -36,3 +51,13 @@ tests/         V1 验收测试
 ```bash
 python -m pytest -q
 ```
+
+## 新开一本小说
+
+使用书名作为项目总文件夹：
+
+```powershell
+python scripts\create_novel_project.py --title 雾城回声 --author 田雨 --genre 悬疑
+```
+
+生成路径：`projects\雾城回声\`

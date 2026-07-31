@@ -1,0 +1,44 @@
+{
+  "id": "chapter-009-scene-002",
+  "title": "第9章 Scene 2：地下通道雾化",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让林澈和阿岚前往回声室线索点",
+  "tags": [
+    "scene",
+    "地下通道",
+    "林澈",
+    "第九章",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-009-scene-002",
+    "title": "第9章 Scene 2：地下通道雾化",
+    "pov": "林澈",
+    "time": "夜",
+    "location": "地下通道",
+    "characters": [
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "让林澈和阿岚前往回声室线索点",
+    "conflict": "暗道开始雾化，低亮光源会暴露位置也能指路",
+    "outcome": "二人用低亮光源穿过雾化暗道，发现雾对记忆残影有反应",
+    "new_facts": [
+      "雾对记忆残影有反应",
+      "地下通道接近回声室外层",
+      "低亮光源可短暂稳定路径"
+    ],
+    "target_words": 900,
+    "chapter_label": "第九章"
+  }
+}

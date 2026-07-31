@@ -1,0 +1,45 @@
+{
+  "id": "chapter-031-scene-001",
+  "title": "第31章 Scene 1：完整记忆开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "林澈恢复完整过去",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "林遥",
+    "第31章",
+    "记忆核心",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-031-scene-001",
+    "title": "第31章 Scene 1：完整记忆开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "记忆核心",
+    "characters": [
+      "林澈",
+      "林遥",
+      "周闻白"
+    ],
+    "goal": "林澈恢复完整过去",
+    "conflict": "他必须承认自己参与系统维护",
+    "outcome": "局面推进到：林澈选择公开全部记忆",
+    "new_facts": [
+      "林澈恢复完整记忆",
+      "他参与过系统维护"
+    ],
+    "target_words": 850,
+    "chapter_label": "第31章"
+  }
+}

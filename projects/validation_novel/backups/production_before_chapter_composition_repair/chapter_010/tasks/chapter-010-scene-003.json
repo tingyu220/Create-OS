@@ -1,0 +1,48 @@
+{
+  "id": "chapter-010-scene-003",
+  "title": "第10章 Scene 3：外层门报警",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "打开回声室外层并把周闻白推到正面",
+  "tags": [
+    "scene",
+    "周闻白",
+    "回声室外层",
+    "林澈",
+    "第十章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-010-scene-003",
+    "title": "第10章 Scene 3：外层门报警",
+    "pov": "林澈",
+    "time": "中午",
+    "location": "回声室外层",
+    "characters": [
+      "林澈",
+      "许砚",
+      "阿岚",
+      "周闻白"
+    ],
+    "goal": "打开回声室外层并把周闻白推到正面",
+    "conflict": "系统报警，周闻白远程封锁入口",
+    "outcome": "入口被定位但触发封锁，周闻白确认他们已经接近真相",
+    "new_facts": [
+      "周闻白知道三人接近回声室",
+      "回声室外层已被定位",
+      "第11章可以从回声室外继续"
+    ],
+    "target_words": 900,
+    "chapter_label": "第十章"
+  }
+}

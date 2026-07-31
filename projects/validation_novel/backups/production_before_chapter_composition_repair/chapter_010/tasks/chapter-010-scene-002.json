@@ -1,0 +1,44 @@
+{
+  "id": "chapter-010-scene-002",
+  "title": "第10章 Scene 2：最低信任",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "建立林澈和许砚最低合作信任",
+  "tags": [
+    "scene",
+    "林澈",
+    "检修口内部",
+    "第十章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-010-scene-002",
+    "title": "第10章 Scene 2：最低信任",
+    "pov": "林澈",
+    "time": "上午",
+    "location": "检修口内部",
+    "characters": [
+      "林澈",
+      "许砚"
+    ],
+    "goal": "建立林澈和许砚最低合作信任",
+    "conflict": "林澈隐瞒安装模块残影，许砚仍可能上报他",
+    "outcome": "许砚交出林遥未离城证据，林澈承认自己有旧维护权限",
+    "new_facts": [
+      "林澈承认旧维护权限",
+      "许砚交出关键证据",
+      "二人建立有限信任"
+    ],
+    "target_words": 900,
+    "chapter_label": "第十章"
+  }
+}

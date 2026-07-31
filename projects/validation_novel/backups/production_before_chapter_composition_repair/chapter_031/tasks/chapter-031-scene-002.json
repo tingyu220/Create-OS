@@ -1,0 +1,46 @@
+{
+  "id": "chapter-031-scene-002",
+  "title": "第31章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：他必须承认自己参与系统维护",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "林遥",
+    "第31章",
+    "记忆核心",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-031-scene-002",
+    "title": "第31章 Scene 2：压力升级",
+    "pov": "林遥",
+    "time": "本章中段",
+    "location": "记忆核心",
+    "characters": [
+      "林澈",
+      "林遥",
+      "周闻白"
+    ],
+    "goal": "加深冲突：他必须承认自己参与系统维护",
+    "conflict": "人物必须在他必须承认自己参与系统维护中做选择",
+    "outcome": "关键证据被确认：他选择公开责任",
+    "new_facts": [
+      "林澈恢复完整记忆",
+      "他参与过系统维护",
+      "他选择公开责任"
+    ],
+    "target_words": 850,
+    "chapter_label": "第31章"
+  }
+}

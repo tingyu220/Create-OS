@@ -1,0 +1,15 @@
+{
+  "result": "pass",
+  "version": "V1.1 Production Ready",
+  "chapter_count": 36,
+  "scene_count": 108,
+  "production_log_count": 9,
+  "reports": {
+    "production_report": "reports\\production_report.md",
+    "benchmark_report": "reports\\benchmark_report.md",
+    "v1_gap_list": "reports\\v1_gap_list.md",
+    "v2_backlog": "reports\\v2_backlog.md",
+    "v11_acceptance_report": "reports\\v11_acceptance_report.md",
+    "project_summary": "reports\\project_summary.md"
+  }
+}
