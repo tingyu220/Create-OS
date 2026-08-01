@@ -1,0 +1,12 @@
+{
+  "project_id": "novel-validation-001",
+  "planned_volumes": 2,
+  "planned_chapters": 36,
+  "words_per_chapter": "2200-3200",
+  "main_character_count": "5-7",
+  "major_scene_count": "12-16",
+  "main_plot_lines": 1,
+  "secondary_plot_lines": "2",
+  "title": "雾城回声",
+  "chapter_count": 36
+}

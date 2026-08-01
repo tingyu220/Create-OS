@@ -61,3 +61,22 @@ python scripts\create_novel_project.py --title 雾城回声 --author 田雨 --ge
 ```
 
 生成路径：`projects\雾城回声\`
+
+## 导出正式发布版
+
+研发目录会保留完整过程产物；正式发布版使用单独导出目录，方便直接找正文：
+
+```powershell
+python scripts\export_novel_release.py --project-root projects\validation_novel --output-root releases
+```
+
+生成路径：
+
+```text
+releases\雾城回声\
+├─ README.md
+├─ book.md
+├─ chapters\
+├─ metadata.json
+└─ reports\
+```
