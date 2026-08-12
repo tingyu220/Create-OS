@@ -60,3 +60,20 @@ def test_export_novel_release_creates_clean_reader_facing_layout(tmp_path):
     assert not (release_path / "runs").exists()
     assert not (release_path / "backups").exists()
     assert not (release_path / "llm_writer_pilot").exists()
+
+
+def test_export_accepts_book_title_project_root(tmp_path):
+    project_root = tmp_path / "projects" / "雾城回声"
+    production = project_root / "production"
+    (production / "drafts").mkdir(parents=True)
+    (production / "final_chapters").mkdir(parents=True)
+    (project_root / "project.json").write_text('{"name":"雾城回声"}', encoding="utf-8")
+    (project_root / "metadata.json").write_text("{}", encoding="utf-8")
+    (production / "drafts" / "final_draft_polished.md").write_text("# 第 1 章：回城\n\n正文", encoding="utf-8")
+    (production / "final_chapters" / "chapter_001.md").write_text("# 第 1 章：回城\n\n正文", encoding="utf-8")
+
+    release = export_novel_release(project_root, tmp_path / "releases")
+
+    assert release == tmp_path / "releases" / "雾城回声"
+    assert (release / "book.md").exists()
+    assert (release / "chapters" / "001-回城.md").exists()

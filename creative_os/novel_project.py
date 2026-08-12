@@ -25,18 +25,16 @@ def create_novel_project(root: str | Path, title: str, *, author: str = "", genr
     production_path = project_path / "production"
 
     for directory in [
-        project_path / "design",
-        project_path / "reviews",
-        project_path / "reports",
+        project_path / ".creative_os" / "contexts",
+        project_path / ".creative_os" / "knowledge",
+        project_path / ".creative_os" / "reviews",
+        project_path / ".creative_os" / "tasks",
+        project_path / ".creative_os" / "backups",
+        project_path / ".creative_os" / "llm_writer",
         production_path / "drafts",
         production_path / "final_chapters",
-        production_path / "final_chapters_v2",
-        production_path / "llm_writer_pilot",
         production_path / "reports",
-        production_path / "reviews",
         production_path / "runs",
-        production_path / "tasks",
-        production_path / "backups",
     ]:
         directory.mkdir(parents=True, exist_ok=True)
 
@@ -47,8 +45,30 @@ def create_novel_project(root: str | Path, title: str, *, author: str = "", genr
     _write_json(project_path / "brief.json", {"title": title, "author": author, "genre": genre, "logline": ""})
     _write_json(project_path / "baseline.json", {"version": "v1", "created_at": now})
     (project_path / "production_log.jsonl").touch(exist_ok=True)
+    _write_project_readme(project_path / "README.md", title)
     return project_path
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _write_project_readme(path: Path, title: str) -> None:
+    path.write_text(
+        "\n".join(
+            [
+                f"# {title}",
+                "",
+                "## 正文位置",
+                "",
+                "- 研发全书稿：`production/drafts/final_draft_polished.md`",
+                f"- 正式发布版：运行导出后查看 `releases/{title}/book.md`",
+                "",
+                "## 生产过程",
+                "",
+                "研发过程产物在 `.creative_os/` 和 `production/` 中维护。",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )

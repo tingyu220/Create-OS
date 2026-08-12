@@ -70,6 +70,12 @@ python scripts\create_novel_project.py --title 雾城回声 --author 田雨 --ge
 python scripts\export_novel_release.py --project-root projects\validation_novel --output-root releases
 ```
 
+正式新书项目使用书名目录：
+
+```powershell
+python scripts\export_novel_release.py --project-root projects\雾城回声 --output-root releases
+```
+
 生成路径：
 
 ```text
@@ -79,4 +85,12 @@ releases\雾城回声\
 ├─ chapters\
 ├─ metadata.json
 └─ reports\
+```
+
+## 查看控制台任务面板
+
+章节生成或重写任务会写入统一状态文件，之后可以用控制台查看进度：
+
+```powershell
+python scripts\novel_console.py --project-root projects\雾城回声
 ```

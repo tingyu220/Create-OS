@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Protocol
 
 from creative_os.llm_metrics import LLMUsage, TimedCompletion, parse_usage
+from creative_os.task_status import ChapterTaskStatus, write_chapter_status
 from creative_os.validation_runtime import (
     _chapter_specs_for_number,
     validate_reader_facing_text,
@@ -378,6 +379,16 @@ def run_llm_writer_pilot(
                 "usage": metrics[chapter_key]["usage"],
                 "fact_results": validate_llm_rewrite_facts(payload, final_text),
             },
+        )
+        write_chapter_status(
+            root,
+            ChapterTaskStatus(
+                chapter=chapter_number,
+                status="pass" if not final_issues else "fail",
+                attempts=attempts.get(chapter_key, 0),
+                elapsed_seconds=float(metrics[chapter_key]["elapsed_seconds"]),
+                issues=final_issues,
+            ),
         )
         chapter_results[chapter_key] = final_issues
     result = "pass" if all(not issues for issues in chapter_results.values()) else "fail"
