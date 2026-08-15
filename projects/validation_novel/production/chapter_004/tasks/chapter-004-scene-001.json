@@ -1,0 +1,44 @@
+{
+  "id": "chapter-004-scene-001",
+  "title": "第4章 Scene 1：废弃档案库外门",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "进入废弃档案库并建立档案被清理过的异常",
+  "tags": [
+    "scene",
+    "废弃档案库",
+    "林澈",
+    "第四章",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-004-scene-001",
+    "title": "第4章 Scene 1：废弃档案库外门",
+    "pov": "林澈",
+    "time": "凌晨",
+    "location": "废弃档案库",
+    "characters": [
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "进入废弃档案库并建立档案被清理过的异常",
+    "conflict": "外门能打开，内部终端需要林澈旧维护权限",
+    "outcome": "林澈用旧权限进入档案库，发现系统仍识别他为维护员",
+    "new_facts": [
+      "废弃档案库未彻底废弃",
+      "林澈旧维护权限可进入档案库",
+      "档案库与灯务署系统仍连接"
+    ],
+    "target_words": 850,
+    "chapter_label": "第四章"
+  }
+}

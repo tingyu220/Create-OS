@@ -1,0 +1,76 @@
+{
+  "items": [
+    {
+      "id": "summary-chapter-008-scene-001",
+      "kind": "summary",
+      "title": "第8章 Scene 1：记录室缺页 Summary",
+      "body": "让许砚独立查到缺页涉及多人失踪；结果：许砚复制异常索引，确认缺页不只林遥一例",
+      "category": "project",
+      "tags": [
+        "chapter-008-scene-001",
+        "novel",
+        "summary",
+        "同僚",
+        "第八章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-008-scene-001"
+    },
+    {
+      "id": "timeline-chapter-008-scene-001",
+      "kind": "timeline",
+      "title": "第8章 Scene 1：记录室缺页 Timeline",
+      "body": "上午，灯务署记录室：许砚复制异常索引，确认缺页不只林遥一例",
+      "category": "project",
+      "tags": [
+        "novel",
+        "timeline",
+        "同僚",
+        "灯务署记录室",
+        "第八章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-008-scene-001"
+    },
+    {
+      "id": "facts-chapter-008-scene-001",
+      "kind": "fact",
+      "title": "第8章 Scene 1：记录室缺页 Facts",
+      "body": "缺页涉及多人失踪；回声室不是单一案件；许砚开始保留私人证据",
+      "category": "project",
+      "tags": [
+        "chapter-008-scene-001",
+        "fact",
+        "novel",
+        "同僚",
+        "第八章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-008-scene-001"
+    },
+    {
+      "id": "draft-chapter-008-scene-001",
+      "kind": "draft",
+      "title": "第8章 Scene 1：记录室缺页",
+      "body": "## 记录室缺页\n\n上午，灯务署记录室的雾压得很低。\n\n许砚站在光线够不到的地方，先确认身边的人：许砚、同僚。这一刻的目标很清楚：让许砚独立查到缺页涉及多人失踪。但雾城从来不会让一件事按最短的路发生，真正挡在前面的，是同僚提醒她不要越权追查回声室。\n\n林澈把前几章留下的线索重新排了一遍。冷光管证明林遥没有普通离城，旧灯巷证明这类管子和灯务署旧系统有关，暗道又把所有线索推到废弃档案库。每一步都像在黑暗里点一根很细的灯芯，光不够照亮整座城，却足够照见下一扇门。\n\n对方没有立刻让路。雾城的人习惯先判断风险，再判断真相。灯务署的禁灯令贴在墙上，纸面被潮气泡皱，红色印章却仍然清楚。它提醒每一个人：夜晚的光属于灯务署，记忆也最好属于灯务署。\n\n许砚没有退。因为退回去，林遥就会重新变成档案里那句“自愿离城”。这句话太干净，干净到像有人专门擦掉了挣扎、恐惧和求救。真正的记录不会这么平整，真正的离开也不会只剩一个编号。\n\n冲突在沉默里变得尖锐。有人要求按流程处理，有人提醒权限不足，也有人把手伸向冷光管。那截冷白色的东西没有完全亮起，只是在布料下方发出微弱的凉意，像从前文一路跟来的证人。\n\n最终，局面被迫向前推进：许砚复制异常索引，确认缺页不只林遥一例。\n\n这不是胜利，只是下一段危险的入口。新增的事实已经足够沉重：缺页涉及多人失踪；回声室不是单一案件；许砚开始保留私人证据。它们会进入之后的 Context，也会在下一章继续追问同一个问题：如果灯不会制造灾难，灯务署到底为什么害怕有人把它点亮？\n",
+      "category": "project",
+      "tags": [
+        "chapter-008-scene-001",
+        "draft",
+        "novel",
+        "同僚",
+        "第八章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-008-scene-001"
+    }
+  ]
+}

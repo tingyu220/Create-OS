@@ -1,0 +1,44 @@
+{
+  "id": "chapter-001-scene-002",
+  "title": "第1章 Scene 2：林遥住处",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "确认林遥失踪不是普通离城",
+  "tags": [
+    "scene",
+    "林澈",
+    "林遥",
+    "林遥住处",
+    "第一章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-001-scene-002",
+    "title": "第1章 Scene 2：林遥住处",
+    "pov": "林澈",
+    "time": "夜",
+    "location": "林遥住处",
+    "characters": [
+      "林澈",
+      "林遥"
+    ],
+    "goal": "确认林遥失踪不是普通离城",
+    "conflict": "房间被清理，公开档案显示林遥自愿离城",
+    "outcome": "林澈找到半截冷光管和林遥留下的暗号",
+    "new_facts": [
+      "林遥留下半截冷光管",
+      "暗号是别相信灯灭后的自己",
+      "林遥房间被人为清理"
+    ],
+    "target_words": 900,
+    "chapter_label": "第一章"
+  }
+}

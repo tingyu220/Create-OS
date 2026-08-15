@@ -1,0 +1,724 @@
+{
+  "chapters": [
+    {
+      "chapter_id": "chapter-001",
+      "scene_records": [
+        {
+          "task_id": "chapter-001-scene-001",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-character-lin-che",
+            "kb-project-brief",
+            "kb-world-fog-city",
+            "kb-chapter-002-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-005-plan"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-001.md",
+          "review_path": "reviews\\chapter-001-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-001",
+            "timeline-chapter-001-scene-001",
+            "facts-chapter-001-scene-001",
+            "draft-chapter-001-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-001-scene-002",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "draft-chapter-001-scene-001",
+            "facts-chapter-001-scene-001",
+            "summary-chapter-001-scene-001",
+            "timeline-chapter-001-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-002.md",
+          "review_path": "reviews\\chapter-001-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-002",
+            "timeline-chapter-001-scene-002",
+            "facts-chapter-001-scene-002",
+            "draft-chapter-001-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-001-scene-003",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "draft-chapter-001-scene-002",
+            "facts-chapter-001-scene-002",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "summary-chapter-001-scene-002",
+            "timeline-chapter-001-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-003.md",
+          "review_path": "reviews\\chapter-001-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-003",
+            "timeline-chapter-001-scene-003",
+            "facts-chapter-001-scene-003",
+            "draft-chapter-001-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-002",
+      "scene_records": [
+        {
+          "task_id": "chapter-002-scene-001",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-character-a-lan",
+            "kb-chapter-001-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan",
+            "kb-chapter-010-plan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-001.md",
+          "review_path": "reviews\\chapter-002-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-001",
+            "timeline-chapter-002-scene-001",
+            "facts-chapter-002-scene-001",
+            "draft-chapter-002-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-002-scene-002",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-001",
+            "facts-chapter-002-scene-001",
+            "kb-chapter-001-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-005-plan"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-002.md",
+          "review_path": "reviews\\chapter-002-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-002",
+            "timeline-chapter-002-scene-002",
+            "facts-chapter-002-scene-002",
+            "draft-chapter-002-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-002-scene-003",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-002",
+            "facts-chapter-002-scene-001",
+            "facts-chapter-002-scene-002",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-003.md",
+          "review_path": "reviews\\chapter-002-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-003",
+            "timeline-chapter-002-scene-003",
+            "facts-chapter-002-scene-003",
+            "draft-chapter-002-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-003",
+      "scene_records": [
+        {
+          "task_id": "chapter-003-scene-001",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-chapter-003-plan",
+            "draft-chapter-002-scene-003",
+            "facts-chapter-002-scene-003",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan",
+            "kb-chapter-010-plan",
+            "kb-character-a-lan"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-001.md",
+          "review_path": "reviews\\chapter-003-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "draft-chapter-003-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-003-scene-002",
+          "context_sources": [
+            "draft-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "kb-chapter-003-plan",
+            "kb-character-xu-yan",
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-002.md",
+          "review_path": "reviews\\chapter-003-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-002",
+            "timeline-chapter-003-scene-002",
+            "facts-chapter-003-scene-002",
+            "draft-chapter-003-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-003-scene-003",
+          "context_sources": [
+            "kb-chapter-003-plan",
+            "draft-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "kb-character-a-lan",
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-003.md",
+          "review_path": "reviews\\chapter-003-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-003",
+            "timeline-chapter-003-scene-003",
+            "facts-chapter-003-scene-003",
+            "draft-chapter-003-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-004",
+      "scene_records": [
+        {
+          "task_id": "chapter-004-scene-001",
+          "context_sources": [
+            "kb-chapter-004-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-003",
+            "facts-chapter-002-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-001.md",
+          "review_path": "reviews\\chapter-004-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-001",
+            "timeline-chapter-004-scene-001",
+            "facts-chapter-004-scene-001",
+            "draft-chapter-004-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-004-scene-002",
+          "context_sources": [
+            "draft-chapter-004-scene-001",
+            "facts-chapter-004-scene-001",
+            "kb-chapter-001-plan",
+            "kb-chapter-004-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-002.md",
+          "review_path": "reviews\\chapter-004-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-002",
+            "timeline-chapter-004-scene-002",
+            "facts-chapter-004-scene-002",
+            "draft-chapter-004-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-004-scene-003",
+          "context_sources": [
+            "kb-chapter-004-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-001",
+            "draft-chapter-004-scene-002",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-003.md",
+          "review_path": "reviews\\chapter-004-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-003",
+            "timeline-chapter-004-scene-003",
+            "facts-chapter-004-scene-003",
+            "draft-chapter-004-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-005",
+      "scene_records": [
+        {
+          "task_id": "chapter-005-scene-001",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-004-scene-003",
+            "facts-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-001.md",
+          "review_path": "reviews\\chapter-005-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-001",
+            "timeline-chapter-005-scene-001",
+            "facts-chapter-005-scene-001",
+            "draft-chapter-005-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-005-scene-002",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "draft-chapter-005-scene-001",
+            "facts-chapter-005-scene-001",
+            "kb-chapter-001-plan",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "kb-character-xu-yan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-002.md",
+          "review_path": "reviews\\chapter-005-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-002",
+            "timeline-chapter-005-scene-002",
+            "facts-chapter-005-scene-002",
+            "draft-chapter-005-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-005-scene-003",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-001",
+            "draft-chapter-005-scene-002",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-001",
+            "facts-chapter-005-scene-002",
+            "kb-character-xu-yan"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-003.md",
+          "review_path": "reviews\\chapter-005-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-003",
+            "timeline-chapter-005-scene-003",
+            "facts-chapter-005-scene-003",
+            "draft-chapter-005-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-006",
+      "scene_records": [
+        {
+          "task_id": "chapter-006-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "kb-chapter-001-plan",
+            "kb-chapter-007-plan",
+            "kb-project-brief",
+            "kb-world-fog-city",
+            "draft-chapter-001-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-001.md",
+          "review_path": "reviews\\chapter-006-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-001",
+            "timeline-chapter-006-scene-001",
+            "facts-chapter-006-scene-001",
+            "draft-chapter-006-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-006-scene-002",
+          "context_sources": [
+            "draft-chapter-006-scene-001",
+            "facts-chapter-006-scene-001",
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "summary-chapter-006-scene-001",
+            "timeline-chapter-006-scene-001",
+            "kb-chapter-001-plan"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-002.md",
+          "review_path": "reviews\\chapter-006-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-002",
+            "timeline-chapter-006-scene-002",
+            "facts-chapter-006-scene-002",
+            "draft-chapter-006-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-006-scene-003",
+          "context_sources": [
+            "draft-chapter-006-scene-001",
+            "draft-chapter-006-scene-002",
+            "facts-chapter-006-scene-001",
+            "facts-chapter-006-scene-002",
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "summary-chapter-006-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-003.md",
+          "review_path": "reviews\\chapter-006-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-003",
+            "timeline-chapter-006-scene-003",
+            "facts-chapter-006-scene-003",
+            "draft-chapter-006-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-007",
+      "scene_records": [
+        {
+          "task_id": "chapter-007-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "kb-chapter-007-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "timeline-chapter-006-scene-001",
+            "draft-chapter-006-scene-001",
+            "draft-chapter-006-scene-002",
+            "draft-chapter-006-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-001.md",
+          "review_path": "reviews\\chapter-007-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-001",
+            "timeline-chapter-007-scene-001",
+            "facts-chapter-007-scene-001",
+            "draft-chapter-007-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-007-scene-002",
+          "context_sources": [
+            "kb-chapter-007-plan",
+            "kb-character-lin-che",
+            "draft-chapter-007-scene-001",
+            "facts-chapter-007-scene-001",
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "summary-chapter-007-scene-001",
+            "timeline-chapter-007-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-002.md",
+          "review_path": "reviews\\chapter-007-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-002",
+            "timeline-chapter-007-scene-002",
+            "facts-chapter-007-scene-002",
+            "draft-chapter-007-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-007-scene-003",
+          "context_sources": [
+            "kb-chapter-007-plan",
+            "kb-character-lin-che",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-007-scene-001",
+            "draft-chapter-007-scene-002",
+            "facts-chapter-001-scene-001",
+            "facts-chapter-003-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-003.md",
+          "review_path": "reviews\\chapter-007-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-003",
+            "timeline-chapter-007-scene-003",
+            "facts-chapter-007-scene-003",
+            "draft-chapter-007-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-008",
+      "scene_records": [
+        {
+          "task_id": "chapter-008-scene-001",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-005-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-001.md",
+          "review_path": "reviews\\chapter-008-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-001",
+            "timeline-chapter-008-scene-001",
+            "facts-chapter-008-scene-001",
+            "draft-chapter-008-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-008-scene-002",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-xu-yan",
+            "kb-character-zhou-wenbai",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-001",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-002.md",
+          "review_path": "reviews\\chapter-008-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-002",
+            "timeline-chapter-008-scene-002",
+            "facts-chapter-008-scene-002",
+            "draft-chapter-008-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-008-scene-003",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-lin-yao",
+            "kb-character-xu-yan",
+            "draft-chapter-005-scene-002",
+            "draft-chapter-008-scene-001",
+            "draft-chapter-008-scene-002",
+            "facts-chapter-005-scene-002",
+            "facts-chapter-008-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-003.md",
+          "review_path": "reviews\\chapter-008-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-003",
+            "timeline-chapter-008-scene-003",
+            "facts-chapter-008-scene-003",
+            "draft-chapter-008-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-009",
+      "scene_records": [
+        {
+          "task_id": "chapter-009-scene-001",
+          "context_sources": [
+            "kb-character-a-lan",
+            "kb-chapter-002-plan",
+            "kb-chapter-009-plan",
+            "kb-character-xu-yan",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-001.md",
+          "review_path": "reviews\\chapter-009-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-001",
+            "timeline-chapter-009-scene-001",
+            "facts-chapter-009-scene-001",
+            "draft-chapter-009-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-009-scene-002",
+          "context_sources": [
+            "kb-chapter-009-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-003",
+            "draft-chapter-004-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-002.md",
+          "review_path": "reviews\\chapter-009-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-002",
+            "timeline-chapter-009-scene-002",
+            "facts-chapter-009-scene-002",
+            "draft-chapter-009-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-009-scene-003",
+          "context_sources": [
+            "kb-chapter-009-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-002",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-003.md",
+          "review_path": "reviews\\chapter-009-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-003",
+            "timeline-chapter-009-scene-003",
+            "facts-chapter-009-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-010",
+      "scene_records": [
+        {
+          "task_id": "chapter-010-scene-001",
+          "context_sources": [
+            "kb-chapter-010-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-001.md",
+          "review_path": "reviews\\chapter-010-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "draft-chapter-010-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-010-scene-002",
+          "context_sources": [
+            "draft-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "kb-chapter-010-plan",
+            "kb-character-lin-che",
+            "kb-character-xu-yan",
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "draft-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-002.md",
+          "review_path": "reviews\\chapter-010-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-002",
+            "timeline-chapter-010-scene-002",
+            "facts-chapter-010-scene-002",
+            "draft-chapter-010-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-010-scene-003",
+          "context_sources": [
+            "kb-chapter-010-plan",
+            "draft-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-003.md",
+          "review_path": "reviews\\chapter-010-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-003",
+            "timeline-chapter-010-scene-003",
+            "facts-chapter-010-scene-003",
+            "draft-chapter-010-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    }
+  ]
+}

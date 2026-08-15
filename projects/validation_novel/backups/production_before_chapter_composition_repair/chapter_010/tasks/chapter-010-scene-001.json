@@ -1,0 +1,46 @@
+{
+  "id": "chapter-010-scene-001",
+  "title": "第10章 Scene 1：废弃检修口",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "定位回声室外层入口并建立三人互相需要",
+  "tags": [
+    "scene",
+    "废弃检修口",
+    "林澈",
+    "第十章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-010-scene-001",
+    "title": "第10章 Scene 1：废弃检修口",
+    "pov": "许砚",
+    "time": "清晨",
+    "location": "废弃检修口",
+    "characters": [
+      "许砚",
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "定位回声室外层入口并建立三人互相需要",
+    "conflict": "入口需要署内权限和林澈旧编号同时验证",
+    "outcome": "组合权限打开第一层门，三人确认彼此不可替代",
+    "new_facts": [
+      "回声室入口需要双重权限",
+      "许砚权限和林澈旧编号可组合",
+      "阿岚掌握地下路径"
+    ],
+    "target_words": 850,
+    "chapter_label": "第十章"
+  }
+}

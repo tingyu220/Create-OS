@@ -1,0 +1,45 @@
+{
+  "id": "chapter-023-scene-001",
+  "title": "第23章 Scene 1：白姨作证开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "白姨交出事故记录",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第23章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-023-scene-001",
+    "title": "第23章 Scene 1：白姨作证开局",
+    "pov": "白姨",
+    "time": "本章前段",
+    "location": "白塔旧址",
+    "characters": [
+      "白姨",
+      "林澈",
+      "许砚"
+    ],
+    "goal": "白姨交出事故记录",
+    "conflict": "记录会暴露林澈旧身份",
+    "outcome": "局面推进到：记录证明周闻白隐瞒系统用途",
+    "new_facts": [
+      "白姨决定作证",
+      "事故记录出现"
+    ],
+    "target_words": 850,
+    "chapter_label": "第23章"
+  }
+}

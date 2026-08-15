@@ -1,0 +1,44 @@
+{
+  "id": "chapter-003-scene-003",
+  "title": "第3章 Scene 3：废档案库交易",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "明确下一步进入废弃档案库",
+  "tags": [
+    "scene",
+    "暗道",
+    "林澈",
+    "第三章",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-003-scene-003",
+    "title": "第3章 Scene 3：废档案库交易",
+    "pov": "林澈",
+    "time": "夜",
+    "location": "暗道",
+    "characters": [
+      "林澈",
+      "阿岚"
+    ],
+    "goal": "明确下一步进入废弃档案库",
+    "conflict": "阿岚只愿交出入口，条件是林澈也查她哥哥",
+    "outcome": "林澈接受交易，获得废弃档案库入口和回声室的间接线索",
+    "new_facts": [
+      "阿岚哥哥失踪与灯务署有关",
+      "废弃档案库可查林遥记录",
+      "回声室成为下一阶段关键词"
+    ],
+    "target_words": 900,
+    "chapter_label": "第三章"
+  }
+}

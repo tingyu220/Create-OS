@@ -1,0 +1,47 @@
+{
+  "id": "chapter-036-scene-001",
+  "title": "第36章 Scene 1：第一盏灯开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成人物弧光和主题闭合",
+  "tags": [
+    "scene",
+    "林澈",
+    "林遥",
+    "第36章",
+    "许砚",
+    "阿岚",
+    "雾城",
+    "雾城南街"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-036-scene-001",
+    "title": "第36章 Scene 1：第一盏灯开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "雾城南街",
+    "characters": [
+      "林澈",
+      "林遥",
+      "许砚",
+      "阿岚"
+    ],
+    "goal": "完成人物弧光和主题闭合",
+    "conflict": "林澈决定是否离开雾城",
+    "outcome": "局面推进到：林澈留下修复第一盏自愿点亮的灯",
+    "new_facts": [
+      "主线闭合",
+      "兄妹关系完成修复"
+    ],
+    "target_words": 850,
+    "chapter_label": "第36章"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "chapter_id": "chapter-001",
+  "scene_records": [
+    {
+      "task_id": "chapter-001-scene-001",
+      "context_sources": [
+        "kb-chapter-001-plan",
+        "kb-character-lin-che",
+        "kb-project-brief",
+        "kb-world-fog-city",
+        "kb-chapter-002-plan",
+        "kb-chapter-003-plan",
+        "kb-chapter-004-plan",
+        "kb-chapter-005-plan"
+      ],
+      "draft_path": "drafts\\chapter-001-scene-001.md",
+      "review_path": "reviews\\chapter-001-scene-001_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-001-scene-001",
+        "timeline-chapter-001-scene-001",
+        "facts-chapter-001-scene-001",
+        "draft-chapter-001-scene-001"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-001-scene-002",
+      "context_sources": [
+        "kb-chapter-001-plan",
+        "kb-project-brief",
+        "kb-character-lin-che",
+        "kb-character-lin-yao",
+        "draft-chapter-001-scene-001",
+        "facts-chapter-001-scene-001",
+        "summary-chapter-001-scene-001",
+        "timeline-chapter-001-scene-001"
+      ],
+      "draft_path": "drafts\\chapter-001-scene-002.md",
+      "review_path": "reviews\\chapter-001-scene-002_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-001-scene-002",
+        "timeline-chapter-001-scene-002",
+        "facts-chapter-001-scene-002",
+        "draft-chapter-001-scene-002"
+      ],
+      "status": "pass"
+    },
+    {
+      "task_id": "chapter-001-scene-003",
+      "context_sources": [
+        "kb-chapter-001-plan",
+        "kb-project-brief",
+        "draft-chapter-001-scene-002",
+        "facts-chapter-001-scene-002",
+        "kb-character-lin-che",
+        "kb-character-lin-yao",
+        "summary-chapter-001-scene-002",
+        "timeline-chapter-001-scene-002"
+      ],
+      "draft_path": "drafts\\chapter-001-scene-003.md",
+      "review_path": "reviews\\chapter-001-scene-003_review.md",
+      "compiled_knowledge_ids": [
+        "summary-chapter-001-scene-003",
+        "timeline-chapter-001-scene-003",
+        "facts-chapter-001-scene-003",
+        "draft-chapter-001-scene-003"
+      ],
+      "status": "pass"
+    }
+  ],
+  "status": "done",
+  "chapter_path": "drafts\\chapter_001.md"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chapter-025-scene-003",
+  "title": "第25章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：团队潜入冷光塔",
+  "tags": [
+    "scene",
+    "冷光塔入口",
+    "林澈",
+    "第25章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-025-scene-003",
+    "title": "第25章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "冷光塔入口",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：团队潜入冷光塔",
+    "conflict": "权限、巡逻和雾潮同时压迫",
+    "outcome": "林澈被系统识别为维护员",
+    "new_facts": [
+      "团队进入冷光塔",
+      "林澈维护员身份被系统确认",
+      "雾潮压迫升级"
+    ],
+    "target_words": 900,
+    "chapter_label": "第25章"
+  }
+}

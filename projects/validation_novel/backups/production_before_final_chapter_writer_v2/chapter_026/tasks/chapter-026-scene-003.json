@@ -1,0 +1,46 @@
+{
+  "id": "chapter-026-scene-003",
+  "title": "第26章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：林澈读完三年前协议",
+  "tags": [
+    "scene",
+    "冷光塔档案层",
+    "周闻白",
+    "林澈",
+    "第26章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-026-scene-003",
+    "title": "第26章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "冷光塔档案层",
+    "characters": [
+      "林澈",
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：林澈读完三年前协议",
+    "conflict": "他发现自己曾为救林遥妥协",
+    "outcome": "许砚被捕，团队行动受挫",
+    "new_facts": [
+      "林澈曾为救林遥妥协",
+      "三年前协议完整出现",
+      "许砚被捕"
+    ],
+    "target_words": 900,
+    "chapter_label": "第26章"
+  }
+}

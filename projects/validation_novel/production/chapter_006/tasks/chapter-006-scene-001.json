@@ -1,0 +1,44 @@
+{
+  "id": "chapter-006-scene-001",
+  "title": "第6章 Scene 1：白塔旧址到达",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让林澈抵达白塔旧址并寻找回声室来源",
+  "tags": [
+    "scene",
+    "林澈",
+    "白塔旧址",
+    "白姨",
+    "第六章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-006-scene-001",
+    "title": "第6章 Scene 1：白塔旧址到达",
+    "pov": "林澈",
+    "time": "傍晚",
+    "location": "白塔旧址",
+    "characters": [
+      "林澈",
+      "白姨"
+    ],
+    "goal": "让林澈抵达白塔旧址并寻找回声室来源",
+    "conflict": "白姨拒绝说明十年前白塔事故，担心灯务署再次清查",
+    "outcome": "林澈用林遥线索打动白姨，获得一次查看旧档案的机会",
+    "new_facts": [
+      "白塔旧址保存旧事故档案",
+      "白姨知道回声室相关旧事",
+      "十年前事故与禁灯令升级有关"
+    ],
+    "target_words": 900,
+    "chapter_label": "第六章"
+  }
+}

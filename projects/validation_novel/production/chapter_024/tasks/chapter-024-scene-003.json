@@ -1,0 +1,46 @@
+{
+  "id": "chapter-024-scene-003",
+  "title": "第24章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：启动全城雾潮危机",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "第24章",
+    "许砚",
+    "雾城",
+    "雾城街区"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-024-scene-003",
+    "title": "第24章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "雾城街区",
+    "characters": [
+      "林澈",
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：启动全城雾潮危机",
+    "conflict": "居民开始出现记忆错乱",
+    "outcome": "冷光塔进入不可逆倒计时",
+    "new_facts": [
+      "雾潮启动",
+      "居民记忆错乱",
+      "冷光塔倒计时开始"
+    ],
+    "target_words": 900,
+    "chapter_label": "第24章"
+  }
+}

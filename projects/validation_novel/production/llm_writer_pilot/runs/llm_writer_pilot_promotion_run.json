@@ -1,0 +1,18 @@
+{
+  "result": "pass",
+  "chapters": [
+    32,
+    33,
+    34,
+    35,
+    36
+  ],
+  "promoted": [
+    "chapter_032.md",
+    "chapter_033.md",
+    "chapter_034.md",
+    "chapter_035.md",
+    "chapter_036.md"
+  ],
+  "backup": "projects\\validation_novel\\production\\backups\\canonical_before_llm_writer_pilot_promotion"
+}

@@ -1,0 +1,45 @@
+{
+  "id": "chapter-017-scene-001",
+  "title": "第17章 Scene 1：分裂开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让团队因公开真相方式产生分歧",
+  "tags": [
+    "scene",
+    "地下汇合点",
+    "林澈",
+    "第17章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-017-scene-001",
+    "title": "第17章 Scene 1：分裂开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "地下汇合点",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "让团队因公开真相方式产生分歧",
+    "conflict": "阿岚要立刻救人，许砚坚持证据链",
+    "outcome": "局面推进到：林澈独自行动，团队信任受损",
+    "new_facts": [
+      "团队出现分歧",
+      "许砚坚持证据链"
+    ],
+    "target_words": 850,
+    "chapter_label": "第17章"
+  }
+}

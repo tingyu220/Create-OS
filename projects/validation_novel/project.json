@@ -1,0 +1,48 @@
+{
+  "id": "novel-validation-001",
+  "name": "雾城回声",
+  "domain": "novel",
+  "phase": "Archived",
+  "milestones": [
+    {
+      "id": "m1-project",
+      "title": "项目立项",
+      "status": "done"
+    },
+    {
+      "id": "m2-agents",
+      "title": "Agent 契约固定",
+      "status": "done"
+    },
+    {
+      "id": "m3-design",
+      "title": "前期设计通过",
+      "status": "done"
+    },
+    {
+      "id": "m4-first-chapter",
+      "title": "第一章闭环",
+      "status": "done"
+    },
+    {
+      "id": "m5-ten-chapters",
+      "title": "前十章连续创作",
+      "status": "done"
+    },
+    {
+      "id": "m6-draft-complete",
+      "title": "初稿完成",
+      "status": "done"
+    },
+    {
+      "id": "m7-full-review",
+      "title": "全书 Review",
+      "status": "done"
+    },
+    {
+      "id": "m8-v1-1",
+      "title": "V1.1 验收",
+      "status": "done"
+    }
+  ]
+}

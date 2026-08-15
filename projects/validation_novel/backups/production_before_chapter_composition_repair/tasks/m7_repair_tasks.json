@@ -1,0 +1,84 @@
+{
+  "tasks": [
+    {
+      "id": "RT-01",
+      "issue_id": "S-01",
+      "kind": "structure_repair",
+      "target": "chapter-019-to-024",
+      "status": "done",
+      "action": "增加每五章项目级 Review 中的过渡说明"
+    },
+    {
+      "id": "RT-02",
+      "issue_id": "S-02",
+      "kind": "structure_repair",
+      "target": "chapter-035",
+      "status": "done",
+      "action": "在 Final Compile 中标注补公众视角"
+    },
+    {
+      "id": "RT-03",
+      "issue_id": "C-01",
+      "kind": "character_repair",
+      "target": "chapter-022-to-023",
+      "status": "done",
+      "action": "记录阿岚失去旧灯巷后的状态变化"
+    },
+    {
+      "id": "RT-04",
+      "issue_id": "C-02",
+      "kind": "character_repair",
+      "target": "chapter-021",
+      "status": "done",
+      "action": "强化林遥藏下校验片段的主动性"
+    },
+    {
+      "id": "RT-05",
+      "issue_id": "W-01",
+      "kind": "world_repair",
+      "target": "world-bible",
+      "status": "done",
+      "action": "在 Final Compile 输出世界观说明"
+    },
+    {
+      "id": "RT-06",
+      "issue_id": "W-02",
+      "kind": "world_repair",
+      "target": "chapter-024",
+      "status": "done",
+      "action": "标注雾潮是系统副产物不是自然灾害"
+    },
+    {
+      "id": "RT-07",
+      "issue_id": "T-01",
+      "kind": "timeline_repair",
+      "target": "timeline",
+      "status": "done",
+      "action": "Final Compile 输出全书时间线"
+    },
+    {
+      "id": "RT-08",
+      "issue_id": "T-02",
+      "kind": "timeline_repair",
+      "target": "chapter-024-to-025",
+      "status": "done",
+      "action": "统一雾潮倒计时为小时级"
+    },
+    {
+      "id": "RT-09",
+      "issue_id": "X-01",
+      "kind": "text_repair",
+      "target": "chapter-011-to-036",
+      "status": "recorded",
+      "action": "进入后续精修清单，不整本重写"
+    },
+    {
+      "id": "RT-10",
+      "issue_id": "X-02",
+      "kind": "text_repair",
+      "target": "scene-drafts",
+      "status": "recorded",
+      "action": "进入后续局部替换清单"
+    }
+  ]
+}

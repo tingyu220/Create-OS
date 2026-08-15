@@ -1,0 +1,46 @@
+{
+  "id": "chapter-016-scene-003",
+  "title": "第16章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：周闻白与林澈正面对话",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "灯务署会谈室",
+    "第16章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-016-scene-003",
+    "title": "第16章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "灯务署会谈室",
+    "characters": [
+      "林澈",
+      "周闻白",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：周闻白与林澈正面对话",
+    "conflict": "周闻白声称禁灯保护全城并提出交易",
+    "outcome": "林澈拒绝交易，确认周闻白是核心阻力",
+    "new_facts": [
+      "周闻白承认禁灯是维稳工具",
+      "他试图用林遥下落交易",
+      "林澈拒绝放弃真相"
+    ],
+    "target_words": 900,
+    "chapter_label": "第16章"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "result": "pass",
+  "chapters": [
+    32,
+    33,
+    34,
+    35,
+    36
+  ],
+  "chapter_results": {
+    "chapter_032": [],
+    "chapter_033": [],
+    "chapter_034": [],
+    "chapter_035": [],
+    "chapter_036": []
+  },
+  "mode": "revalidate"
+}

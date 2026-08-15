@@ -1,0 +1,2596 @@
+{
+  "chapters": [
+    {
+      "chapter_id": "chapter-001",
+      "scene_records": [
+        {
+          "task_id": "chapter-001-scene-001",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-character-lin-che",
+            "kb-project-brief",
+            "kb-world-fog-city",
+            "kb-chapter-002-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-005-plan"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-001.md",
+          "review_path": "reviews\\chapter-001-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-001",
+            "timeline-chapter-001-scene-001",
+            "facts-chapter-001-scene-001",
+            "draft-chapter-001-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-001-scene-002",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "draft-chapter-001-scene-001",
+            "facts-chapter-001-scene-001",
+            "summary-chapter-001-scene-001",
+            "timeline-chapter-001-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-002.md",
+          "review_path": "reviews\\chapter-001-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-002",
+            "timeline-chapter-001-scene-002",
+            "facts-chapter-001-scene-002",
+            "draft-chapter-001-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-001-scene-003",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "draft-chapter-001-scene-002",
+            "facts-chapter-001-scene-002",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "summary-chapter-001-scene-002",
+            "timeline-chapter-001-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-001-scene-003.md",
+          "review_path": "reviews\\chapter-001-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-001-scene-003",
+            "timeline-chapter-001-scene-003",
+            "facts-chapter-001-scene-003",
+            "draft-chapter-001-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-002",
+      "scene_records": [
+        {
+          "task_id": "chapter-002-scene-001",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-character-a-lan",
+            "kb-chapter-001-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan",
+            "kb-chapter-010-plan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-001.md",
+          "review_path": "reviews\\chapter-002-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-001",
+            "timeline-chapter-002-scene-001",
+            "facts-chapter-002-scene-001",
+            "draft-chapter-002-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-002-scene-002",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-001",
+            "facts-chapter-002-scene-001",
+            "kb-chapter-001-plan",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-005-plan"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-002.md",
+          "review_path": "reviews\\chapter-002-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-002",
+            "timeline-chapter-002-scene-002",
+            "facts-chapter-002-scene-002",
+            "draft-chapter-002-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-002-scene-003",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-002",
+            "facts-chapter-002-scene-001",
+            "facts-chapter-002-scene-002",
+            "kb-chapter-003-plan",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan"
+          ],
+          "draft_path": "drafts\\chapter-002-scene-003.md",
+          "review_path": "reviews\\chapter-002-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-002-scene-003",
+            "timeline-chapter-002-scene-003",
+            "facts-chapter-002-scene-003",
+            "draft-chapter-002-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-003",
+      "scene_records": [
+        {
+          "task_id": "chapter-003-scene-001",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "kb-chapter-003-plan",
+            "draft-chapter-002-scene-003",
+            "facts-chapter-002-scene-003",
+            "kb-chapter-004-plan",
+            "kb-chapter-009-plan",
+            "kb-chapter-010-plan",
+            "kb-character-a-lan"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-001.md",
+          "review_path": "reviews\\chapter-003-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "draft-chapter-003-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-003-scene-002",
+          "context_sources": [
+            "draft-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "kb-chapter-003-plan",
+            "kb-character-xu-yan",
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-002.md",
+          "review_path": "reviews\\chapter-003-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-002",
+            "timeline-chapter-003-scene-002",
+            "facts-chapter-003-scene-002",
+            "draft-chapter-003-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-003-scene-003",
+          "context_sources": [
+            "kb-chapter-003-plan",
+            "draft-chapter-003-scene-001",
+            "facts-chapter-003-scene-001",
+            "kb-character-a-lan",
+            "summary-chapter-003-scene-001",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-003-scene-003.md",
+          "review_path": "reviews\\chapter-003-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-003-scene-003",
+            "timeline-chapter-003-scene-003",
+            "facts-chapter-003-scene-003",
+            "draft-chapter-003-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-004",
+      "scene_records": [
+        {
+          "task_id": "chapter-004-scene-001",
+          "context_sources": [
+            "kb-chapter-004-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-003",
+            "facts-chapter-002-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-001.md",
+          "review_path": "reviews\\chapter-004-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-001",
+            "timeline-chapter-004-scene-001",
+            "facts-chapter-004-scene-001",
+            "draft-chapter-004-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-004-scene-002",
+          "context_sources": [
+            "draft-chapter-004-scene-001",
+            "facts-chapter-004-scene-001",
+            "kb-chapter-001-plan",
+            "kb-chapter-004-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-002.md",
+          "review_path": "reviews\\chapter-004-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-002",
+            "timeline-chapter-004-scene-002",
+            "facts-chapter-004-scene-002",
+            "draft-chapter-004-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-004-scene-003",
+          "context_sources": [
+            "kb-chapter-004-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-001",
+            "draft-chapter-004-scene-002",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-004-scene-003.md",
+          "review_path": "reviews\\chapter-004-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-004-scene-003",
+            "timeline-chapter-004-scene-003",
+            "facts-chapter-004-scene-003",
+            "draft-chapter-004-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-005",
+      "scene_records": [
+        {
+          "task_id": "chapter-005-scene-001",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-004-scene-003",
+            "facts-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-001.md",
+          "review_path": "reviews\\chapter-005-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-001",
+            "timeline-chapter-005-scene-001",
+            "facts-chapter-005-scene-001",
+            "draft-chapter-005-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-005-scene-002",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "draft-chapter-005-scene-001",
+            "facts-chapter-005-scene-001",
+            "kb-chapter-001-plan",
+            "kb-character-lin-che",
+            "kb-character-lin-yao",
+            "kb-character-xu-yan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-002.md",
+          "review_path": "reviews\\chapter-005-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-002",
+            "timeline-chapter-005-scene-002",
+            "facts-chapter-005-scene-002",
+            "draft-chapter-005-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-005-scene-003",
+          "context_sources": [
+            "kb-chapter-005-plan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-001",
+            "draft-chapter-005-scene-002",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-001",
+            "facts-chapter-005-scene-002",
+            "kb-character-xu-yan"
+          ],
+          "draft_path": "drafts\\chapter-005-scene-003.md",
+          "review_path": "reviews\\chapter-005-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-005-scene-003",
+            "timeline-chapter-005-scene-003",
+            "facts-chapter-005-scene-003",
+            "draft-chapter-005-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-006",
+      "scene_records": [
+        {
+          "task_id": "chapter-006-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "kb-chapter-001-plan",
+            "kb-chapter-007-plan",
+            "kb-project-brief",
+            "kb-world-fog-city",
+            "draft-chapter-001-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-001.md",
+          "review_path": "reviews\\chapter-006-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-001",
+            "timeline-chapter-006-scene-001",
+            "facts-chapter-006-scene-001",
+            "draft-chapter-006-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-006-scene-002",
+          "context_sources": [
+            "draft-chapter-006-scene-001",
+            "facts-chapter-006-scene-001",
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "summary-chapter-006-scene-001",
+            "timeline-chapter-006-scene-001",
+            "kb-chapter-001-plan"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-002.md",
+          "review_path": "reviews\\chapter-006-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-002",
+            "timeline-chapter-006-scene-002",
+            "facts-chapter-006-scene-002",
+            "draft-chapter-006-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-006-scene-003",
+          "context_sources": [
+            "draft-chapter-006-scene-001",
+            "draft-chapter-006-scene-002",
+            "facts-chapter-006-scene-001",
+            "facts-chapter-006-scene-002",
+            "kb-chapter-006-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "summary-chapter-006-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-006-scene-003.md",
+          "review_path": "reviews\\chapter-006-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-006-scene-003",
+            "timeline-chapter-006-scene-003",
+            "facts-chapter-006-scene-003",
+            "draft-chapter-006-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-007",
+      "scene_records": [
+        {
+          "task_id": "chapter-007-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "kb-chapter-007-plan",
+            "kb-character-bai-yi",
+            "kb-character-lin-che",
+            "timeline-chapter-006-scene-001",
+            "draft-chapter-006-scene-001",
+            "draft-chapter-006-scene-002",
+            "draft-chapter-006-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-001.md",
+          "review_path": "reviews\\chapter-007-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-001",
+            "timeline-chapter-007-scene-001",
+            "facts-chapter-007-scene-001",
+            "draft-chapter-007-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-007-scene-002",
+          "context_sources": [
+            "kb-chapter-007-plan",
+            "kb-character-lin-che",
+            "draft-chapter-007-scene-001",
+            "facts-chapter-007-scene-001",
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "summary-chapter-007-scene-001",
+            "timeline-chapter-007-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-002.md",
+          "review_path": "reviews\\chapter-007-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-002",
+            "timeline-chapter-007-scene-002",
+            "facts-chapter-007-scene-002",
+            "draft-chapter-007-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-007-scene-003",
+          "context_sources": [
+            "kb-chapter-007-plan",
+            "kb-character-lin-che",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-007-scene-001",
+            "draft-chapter-007-scene-002",
+            "facts-chapter-001-scene-001",
+            "facts-chapter-003-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-007-scene-003.md",
+          "review_path": "reviews\\chapter-007-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-007-scene-003",
+            "timeline-chapter-007-scene-003",
+            "facts-chapter-007-scene-003",
+            "draft-chapter-007-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-008",
+      "scene_records": [
+        {
+          "task_id": "chapter-008-scene-001",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-xu-yan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-002",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-005-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-001.md",
+          "review_path": "reviews\\chapter-008-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-001",
+            "timeline-chapter-008-scene-001",
+            "facts-chapter-008-scene-001",
+            "draft-chapter-008-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-008-scene-002",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-xu-yan",
+            "kb-character-zhou-wenbai",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-001",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-002.md",
+          "review_path": "reviews\\chapter-008-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-002",
+            "timeline-chapter-008-scene-002",
+            "facts-chapter-008-scene-002",
+            "draft-chapter-008-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-008-scene-003",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "kb-character-lin-yao",
+            "kb-character-xu-yan",
+            "draft-chapter-005-scene-002",
+            "draft-chapter-008-scene-001",
+            "draft-chapter-008-scene-002",
+            "facts-chapter-005-scene-002",
+            "facts-chapter-008-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-008-scene-003.md",
+          "review_path": "reviews\\chapter-008-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-008-scene-003",
+            "timeline-chapter-008-scene-003",
+            "facts-chapter-008-scene-003",
+            "draft-chapter-008-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-009",
+      "scene_records": [
+        {
+          "task_id": "chapter-009-scene-001",
+          "context_sources": [
+            "kb-character-a-lan",
+            "kb-chapter-002-plan",
+            "kb-chapter-009-plan",
+            "kb-character-xu-yan",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-001-scene-001",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-001.md",
+          "review_path": "reviews\\chapter-009-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-001",
+            "timeline-chapter-009-scene-001",
+            "facts-chapter-009-scene-001",
+            "draft-chapter-009-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-009-scene-002",
+          "context_sources": [
+            "kb-chapter-009-plan",
+            "kb-character-a-lan",
+            "kb-character-lin-che",
+            "draft-chapter-002-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-003-scene-003",
+            "draft-chapter-004-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-002.md",
+          "review_path": "reviews\\chapter-009-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-002",
+            "timeline-chapter-009-scene-002",
+            "facts-chapter-009-scene-002",
+            "draft-chapter-009-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-009-scene-003",
+          "context_sources": [
+            "kb-chapter-009-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-002",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-009-scene-003.md",
+          "review_path": "reviews\\chapter-009-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-009-scene-003",
+            "timeline-chapter-009-scene-003",
+            "facts-chapter-009-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-010",
+      "scene_records": [
+        {
+          "task_id": "chapter-010-scene-001",
+          "context_sources": [
+            "kb-chapter-010-plan",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "facts-chapter-002-scene-003",
+            "facts-chapter-003-scene-001",
+            "facts-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-001.md",
+          "review_path": "reviews\\chapter-010-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "draft-chapter-010-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-010-scene-002",
+          "context_sources": [
+            "draft-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "kb-chapter-010-plan",
+            "kb-character-lin-che",
+            "kb-character-xu-yan",
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "draft-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-002.md",
+          "review_path": "reviews\\chapter-010-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-002",
+            "timeline-chapter-010-scene-002",
+            "facts-chapter-010-scene-002",
+            "draft-chapter-010-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-010-scene-003",
+          "context_sources": [
+            "kb-chapter-010-plan",
+            "draft-chapter-010-scene-001",
+            "facts-chapter-010-scene-001",
+            "summary-chapter-010-scene-001",
+            "timeline-chapter-010-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-010-scene-003.md",
+          "review_path": "reviews\\chapter-010-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-010-scene-003",
+            "timeline-chapter-010-scene-003",
+            "facts-chapter-010-scene-003",
+            "draft-chapter-010-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-011",
+      "scene_records": [
+        {
+          "task_id": "chapter-011-scene-001",
+          "context_sources": [
+            "kb-chapter-010-plan",
+            "timeline-chapter-010-scene-003",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-011-scene-001.md",
+          "review_path": "reviews\\chapter-011-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-011-scene-001",
+            "timeline-chapter-011-scene-001",
+            "facts-chapter-011-scene-001",
+            "draft-chapter-011-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-011-scene-002",
+          "context_sources": [
+            "timeline-chapter-011-scene-001",
+            "draft-chapter-011-scene-001",
+            "facts-chapter-011-scene-001",
+            "kb-chapter-010-plan",
+            "summary-chapter-011-scene-001",
+            "timeline-chapter-010-scene-003",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-011-scene-002.md",
+          "review_path": "reviews\\chapter-011-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-011-scene-002",
+            "timeline-chapter-011-scene-002",
+            "facts-chapter-011-scene-002",
+            "draft-chapter-011-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-011-scene-003",
+          "context_sources": [
+            "timeline-chapter-011-scene-001",
+            "timeline-chapter-011-scene-002",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002",
+            "facts-chapter-011-scene-001",
+            "facts-chapter-011-scene-002",
+            "kb-chapter-010-plan",
+            "summary-chapter-011-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-011-scene-003.md",
+          "review_path": "reviews\\chapter-011-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-011-scene-003",
+            "timeline-chapter-011-scene-003",
+            "facts-chapter-011-scene-003",
+            "draft-chapter-011-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-012",
+      "scene_records": [
+        {
+          "task_id": "chapter-012-scene-001",
+          "context_sources": [
+            "draft-chapter-005-scene-002",
+            "facts-chapter-005-scene-002",
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "summary-chapter-005-scene-002",
+            "timeline-chapter-005-scene-002",
+            "draft-chapter-001-scene-002",
+            "draft-chapter-001-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-012-scene-001.md",
+          "review_path": "reviews\\chapter-012-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-012-scene-001",
+            "timeline-chapter-012-scene-001",
+            "facts-chapter-012-scene-001",
+            "draft-chapter-012-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-012-scene-002",
+          "context_sources": [
+            "timeline-chapter-012-scene-001",
+            "draft-chapter-012-scene-001",
+            "facts-chapter-012-scene-001",
+            "summary-chapter-012-scene-001",
+            "draft-chapter-005-scene-002",
+            "facts-chapter-005-scene-002",
+            "kb-chapter-001-plan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-012-scene-002.md",
+          "review_path": "reviews\\chapter-012-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-012-scene-002",
+            "timeline-chapter-012-scene-002",
+            "facts-chapter-012-scene-002",
+            "draft-chapter-012-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-012-scene-003",
+          "context_sources": [
+            "timeline-chapter-012-scene-001",
+            "timeline-chapter-012-scene-002",
+            "draft-chapter-012-scene-001",
+            "draft-chapter-012-scene-002",
+            "facts-chapter-012-scene-001",
+            "facts-chapter-012-scene-002",
+            "summary-chapter-012-scene-001",
+            "summary-chapter-012-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-012-scene-003.md",
+          "review_path": "reviews\\chapter-012-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-012-scene-003",
+            "timeline-chapter-012-scene-003",
+            "facts-chapter-012-scene-003",
+            "draft-chapter-012-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-013",
+      "scene_records": [
+        {
+          "task_id": "chapter-013-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-003",
+            "facts-chapter-010-scene-003",
+            "summary-chapter-002-scene-002",
+            "summary-chapter-005-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-013-scene-001.md",
+          "review_path": "reviews\\chapter-013-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-013-scene-001",
+            "timeline-chapter-013-scene-001",
+            "facts-chapter-013-scene-001",
+            "draft-chapter-013-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-013-scene-002",
+          "context_sources": [
+            "timeline-chapter-013-scene-001",
+            "draft-chapter-013-scene-001",
+            "facts-chapter-013-scene-001",
+            "summary-chapter-013-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "facts-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-013-scene-002.md",
+          "review_path": "reviews\\chapter-013-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-013-scene-002",
+            "timeline-chapter-013-scene-002",
+            "facts-chapter-013-scene-002",
+            "draft-chapter-013-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-013-scene-003",
+          "context_sources": [
+            "timeline-chapter-013-scene-001",
+            "timeline-chapter-013-scene-002",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "facts-chapter-013-scene-001",
+            "facts-chapter-013-scene-002",
+            "summary-chapter-013-scene-001",
+            "summary-chapter-013-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-013-scene-003.md",
+          "review_path": "reviews\\chapter-013-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-013-scene-003",
+            "timeline-chapter-013-scene-003",
+            "facts-chapter-013-scene-003",
+            "draft-chapter-013-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-014",
+      "scene_records": [
+        {
+          "task_id": "chapter-014-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "timeline-chapter-006-scene-001",
+            "timeline-chapter-007-scene-001",
+            "draft-chapter-006-scene-001",
+            "draft-chapter-006-scene-002",
+            "draft-chapter-006-scene-003",
+            "draft-chapter-007-scene-001",
+            "facts-chapter-006-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-014-scene-001.md",
+          "review_path": "reviews\\chapter-014-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-014-scene-001",
+            "timeline-chapter-014-scene-001",
+            "facts-chapter-014-scene-001",
+            "draft-chapter-014-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-014-scene-002",
+          "context_sources": [
+            "timeline-chapter-014-scene-001",
+            "draft-chapter-014-scene-001",
+            "facts-chapter-014-scene-001",
+            "kb-chapter-006-plan",
+            "summary-chapter-014-scene-001",
+            "timeline-chapter-006-scene-001",
+            "timeline-chapter-007-scene-001",
+            "draft-chapter-006-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-014-scene-002.md",
+          "review_path": "reviews\\chapter-014-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-014-scene-002",
+            "timeline-chapter-014-scene-002",
+            "facts-chapter-014-scene-002",
+            "draft-chapter-014-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-014-scene-003",
+          "context_sources": [
+            "timeline-chapter-014-scene-001",
+            "timeline-chapter-014-scene-002",
+            "draft-chapter-014-scene-001",
+            "draft-chapter-014-scene-002",
+            "facts-chapter-014-scene-001",
+            "facts-chapter-014-scene-002",
+            "kb-chapter-006-plan",
+            "summary-chapter-014-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-014-scene-003.md",
+          "review_path": "reviews\\chapter-014-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-014-scene-003",
+            "timeline-chapter-014-scene-003",
+            "facts-chapter-014-scene-003",
+            "draft-chapter-014-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-015",
+      "scene_records": [
+        {
+          "task_id": "chapter-015-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-015-scene-001.md",
+          "review_path": "reviews\\chapter-015-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-015-scene-001",
+            "timeline-chapter-015-scene-001",
+            "facts-chapter-015-scene-001",
+            "draft-chapter-015-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-015-scene-002",
+          "context_sources": [
+            "timeline-chapter-015-scene-001",
+            "draft-chapter-015-scene-001",
+            "facts-chapter-015-scene-001",
+            "summary-chapter-015-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-015-scene-002.md",
+          "review_path": "reviews\\chapter-015-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-015-scene-002",
+            "timeline-chapter-015-scene-002",
+            "facts-chapter-015-scene-002",
+            "draft-chapter-015-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-015-scene-003",
+          "context_sources": [
+            "timeline-chapter-015-scene-001",
+            "timeline-chapter-015-scene-002",
+            "draft-chapter-015-scene-001",
+            "draft-chapter-015-scene-002",
+            "facts-chapter-015-scene-001",
+            "facts-chapter-015-scene-002",
+            "summary-chapter-015-scene-001",
+            "summary-chapter-015-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-015-scene-003.md",
+          "review_path": "reviews\\chapter-015-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-015-scene-003",
+            "timeline-chapter-015-scene-003",
+            "facts-chapter-015-scene-003",
+            "draft-chapter-015-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-016",
+      "scene_records": [
+        {
+          "task_id": "chapter-016-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "draft-chapter-013-scene-003",
+            "facts-chapter-002-scene-002",
+            "facts-chapter-005-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-016-scene-001.md",
+          "review_path": "reviews\\chapter-016-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-016-scene-001",
+            "timeline-chapter-016-scene-001",
+            "facts-chapter-016-scene-001",
+            "draft-chapter-016-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-016-scene-002",
+          "context_sources": [
+            "timeline-chapter-016-scene-001",
+            "draft-chapter-016-scene-001",
+            "facts-chapter-016-scene-001",
+            "summary-chapter-016-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-016-scene-002.md",
+          "review_path": "reviews\\chapter-016-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-016-scene-002",
+            "timeline-chapter-016-scene-002",
+            "facts-chapter-016-scene-002",
+            "draft-chapter-016-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-016-scene-003",
+          "context_sources": [
+            "timeline-chapter-016-scene-001",
+            "timeline-chapter-016-scene-002",
+            "draft-chapter-016-scene-001",
+            "draft-chapter-016-scene-002",
+            "facts-chapter-016-scene-001",
+            "facts-chapter-016-scene-002",
+            "summary-chapter-016-scene-001",
+            "summary-chapter-016-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-016-scene-003.md",
+          "review_path": "reviews\\chapter-016-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-016-scene-003",
+            "timeline-chapter-016-scene-003",
+            "facts-chapter-016-scene-003",
+            "draft-chapter-016-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-017",
+      "scene_records": [
+        {
+          "task_id": "chapter-017-scene-001",
+          "context_sources": [
+            "timeline-chapter-009-scene-003",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-017-scene-001.md",
+          "review_path": "reviews\\chapter-017-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-017-scene-001",
+            "timeline-chapter-017-scene-001",
+            "facts-chapter-017-scene-001",
+            "draft-chapter-017-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-017-scene-002",
+          "context_sources": [
+            "timeline-chapter-017-scene-001",
+            "draft-chapter-017-scene-001",
+            "facts-chapter-017-scene-001",
+            "summary-chapter-017-scene-001",
+            "timeline-chapter-009-scene-003",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-017-scene-002.md",
+          "review_path": "reviews\\chapter-017-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-017-scene-002",
+            "timeline-chapter-017-scene-002",
+            "facts-chapter-017-scene-002",
+            "draft-chapter-017-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-017-scene-003",
+          "context_sources": [
+            "timeline-chapter-017-scene-001",
+            "timeline-chapter-017-scene-002",
+            "draft-chapter-017-scene-001",
+            "draft-chapter-017-scene-002",
+            "facts-chapter-017-scene-001",
+            "facts-chapter-017-scene-002",
+            "summary-chapter-017-scene-001",
+            "summary-chapter-017-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-017-scene-003.md",
+          "review_path": "reviews\\chapter-017-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-017-scene-003",
+            "timeline-chapter-017-scene-003",
+            "facts-chapter-017-scene-003",
+            "draft-chapter-017-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-018",
+      "scene_records": [
+        {
+          "task_id": "chapter-018-scene-001",
+          "context_sources": [
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "draft-chapter-001-scene-002",
+            "draft-chapter-001-scene-003",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-004-scene-002",
+            "draft-chapter-005-scene-002",
+            "draft-chapter-005-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-018-scene-001.md",
+          "review_path": "reviews\\chapter-018-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-018-scene-001",
+            "timeline-chapter-018-scene-001",
+            "facts-chapter-018-scene-001",
+            "draft-chapter-018-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-018-scene-002",
+          "context_sources": [
+            "timeline-chapter-018-scene-001",
+            "draft-chapter-018-scene-001",
+            "facts-chapter-018-scene-001",
+            "summary-chapter-018-scene-001",
+            "kb-chapter-001-plan",
+            "kb-project-brief",
+            "draft-chapter-001-scene-002",
+            "draft-chapter-001-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-018-scene-002.md",
+          "review_path": "reviews\\chapter-018-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-018-scene-002",
+            "timeline-chapter-018-scene-002",
+            "facts-chapter-018-scene-002",
+            "draft-chapter-018-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-018-scene-003",
+          "context_sources": [
+            "timeline-chapter-018-scene-001",
+            "timeline-chapter-018-scene-002",
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "facts-chapter-018-scene-001",
+            "facts-chapter-018-scene-002",
+            "summary-chapter-018-scene-001",
+            "summary-chapter-018-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-018-scene-003.md",
+          "review_path": "reviews\\chapter-018-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-018-scene-003",
+            "timeline-chapter-018-scene-003",
+            "facts-chapter-018-scene-003",
+            "draft-chapter-018-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-019",
+      "scene_records": [
+        {
+          "task_id": "chapter-019-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-019-scene-001.md",
+          "review_path": "reviews\\chapter-019-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-019-scene-001",
+            "timeline-chapter-019-scene-001",
+            "facts-chapter-019-scene-001",
+            "draft-chapter-019-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-019-scene-002",
+          "context_sources": [
+            "timeline-chapter-019-scene-001",
+            "draft-chapter-019-scene-001",
+            "facts-chapter-019-scene-001",
+            "summary-chapter-019-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-019-scene-002.md",
+          "review_path": "reviews\\chapter-019-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-019-scene-002",
+            "timeline-chapter-019-scene-002",
+            "facts-chapter-019-scene-002",
+            "draft-chapter-019-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-019-scene-003",
+          "context_sources": [
+            "timeline-chapter-019-scene-001",
+            "timeline-chapter-019-scene-002",
+            "draft-chapter-019-scene-001",
+            "draft-chapter-019-scene-002",
+            "facts-chapter-019-scene-001",
+            "facts-chapter-019-scene-002",
+            "summary-chapter-019-scene-001",
+            "summary-chapter-019-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-019-scene-003.md",
+          "review_path": "reviews\\chapter-019-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-019-scene-003",
+            "timeline-chapter-019-scene-003",
+            "facts-chapter-019-scene-003",
+            "draft-chapter-019-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-020",
+      "scene_records": [
+        {
+          "task_id": "chapter-020-scene-001",
+          "context_sources": [
+            "kb-chapter-008-plan",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-002",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "draft-chapter-013-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-020-scene-001.md",
+          "review_path": "reviews\\chapter-020-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-020-scene-001",
+            "timeline-chapter-020-scene-001",
+            "facts-chapter-020-scene-001",
+            "draft-chapter-020-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-020-scene-002",
+          "context_sources": [
+            "timeline-chapter-020-scene-001",
+            "draft-chapter-020-scene-001",
+            "facts-chapter-020-scene-001",
+            "kb-chapter-008-plan",
+            "summary-chapter-020-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-020-scene-002.md",
+          "review_path": "reviews\\chapter-020-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-020-scene-002",
+            "timeline-chapter-020-scene-002",
+            "facts-chapter-020-scene-002",
+            "draft-chapter-020-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-020-scene-003",
+          "context_sources": [
+            "timeline-chapter-020-scene-001",
+            "timeline-chapter-020-scene-002",
+            "draft-chapter-020-scene-001",
+            "draft-chapter-020-scene-002",
+            "facts-chapter-020-scene-001",
+            "facts-chapter-020-scene-002",
+            "kb-chapter-008-plan",
+            "summary-chapter-020-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-020-scene-003.md",
+          "review_path": "reviews\\chapter-020-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-020-scene-003",
+            "timeline-chapter-020-scene-003",
+            "facts-chapter-020-scene-003",
+            "draft-chapter-020-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-021",
+      "scene_records": [
+        {
+          "task_id": "chapter-021-scene-001",
+          "context_sources": [
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "facts-chapter-018-scene-001",
+            "facts-chapter-018-scene-002",
+            "facts-chapter-018-scene-003",
+            "kb-chapter-001-plan",
+            "kb-chapter-008-plan"
+          ],
+          "draft_path": "drafts\\chapter-021-scene-001.md",
+          "review_path": "reviews\\chapter-021-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-021-scene-001",
+            "timeline-chapter-021-scene-001",
+            "facts-chapter-021-scene-001",
+            "draft-chapter-021-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-021-scene-002",
+          "context_sources": [
+            "timeline-chapter-021-scene-001",
+            "draft-chapter-021-scene-001",
+            "facts-chapter-021-scene-001",
+            "summary-chapter-021-scene-001",
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "facts-chapter-018-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-021-scene-002.md",
+          "review_path": "reviews\\chapter-021-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-021-scene-002",
+            "timeline-chapter-021-scene-002",
+            "facts-chapter-021-scene-002",
+            "draft-chapter-021-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-021-scene-003",
+          "context_sources": [
+            "timeline-chapter-021-scene-001",
+            "timeline-chapter-021-scene-002",
+            "draft-chapter-021-scene-001",
+            "draft-chapter-021-scene-002",
+            "facts-chapter-021-scene-001",
+            "facts-chapter-021-scene-002",
+            "summary-chapter-021-scene-001",
+            "summary-chapter-021-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-021-scene-003.md",
+          "review_path": "reviews\\chapter-021-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-021-scene-003",
+            "timeline-chapter-021-scene-003",
+            "facts-chapter-021-scene-003",
+            "draft-chapter-021-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-022",
+      "scene_records": [
+        {
+          "task_id": "chapter-022-scene-001",
+          "context_sources": [
+            "kb-chapter-002-plan",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-022-scene-001.md",
+          "review_path": "reviews\\chapter-022-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-022-scene-001",
+            "timeline-chapter-022-scene-001",
+            "facts-chapter-022-scene-001",
+            "draft-chapter-022-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-022-scene-002",
+          "context_sources": [
+            "timeline-chapter-022-scene-001",
+            "draft-chapter-022-scene-001",
+            "facts-chapter-022-scene-001",
+            "kb-chapter-002-plan",
+            "summary-chapter-022-scene-001",
+            "timeline-chapter-003-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-022-scene-002.md",
+          "review_path": "reviews\\chapter-022-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-022-scene-002",
+            "timeline-chapter-022-scene-002",
+            "facts-chapter-022-scene-002",
+            "draft-chapter-022-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-022-scene-003",
+          "context_sources": [
+            "timeline-chapter-022-scene-001",
+            "timeline-chapter-022-scene-002",
+            "draft-chapter-022-scene-001",
+            "draft-chapter-022-scene-002",
+            "facts-chapter-022-scene-001",
+            "facts-chapter-022-scene-002",
+            "kb-chapter-002-plan",
+            "summary-chapter-022-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-022-scene-003.md",
+          "review_path": "reviews\\chapter-022-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-022-scene-003",
+            "timeline-chapter-022-scene-003",
+            "facts-chapter-022-scene-003",
+            "draft-chapter-022-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-023",
+      "scene_records": [
+        {
+          "task_id": "chapter-023-scene-001",
+          "context_sources": [
+            "kb-chapter-006-plan",
+            "timeline-chapter-006-scene-001",
+            "timeline-chapter-007-scene-001",
+            "timeline-chapter-014-scene-001",
+            "timeline-chapter-014-scene-002",
+            "timeline-chapter-014-scene-003",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-002-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-023-scene-001.md",
+          "review_path": "reviews\\chapter-023-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-023-scene-001",
+            "timeline-chapter-023-scene-001",
+            "facts-chapter-023-scene-001",
+            "draft-chapter-023-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-023-scene-002",
+          "context_sources": [
+            "timeline-chapter-023-scene-001",
+            "draft-chapter-023-scene-001",
+            "facts-chapter-023-scene-001",
+            "summary-chapter-023-scene-001",
+            "kb-chapter-006-plan",
+            "timeline-chapter-006-scene-001",
+            "timeline-chapter-007-scene-001",
+            "timeline-chapter-014-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-023-scene-002.md",
+          "review_path": "reviews\\chapter-023-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-023-scene-002",
+            "timeline-chapter-023-scene-002",
+            "facts-chapter-023-scene-002",
+            "draft-chapter-023-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-023-scene-003",
+          "context_sources": [
+            "timeline-chapter-023-scene-001",
+            "timeline-chapter-023-scene-002",
+            "draft-chapter-023-scene-001",
+            "draft-chapter-023-scene-002",
+            "facts-chapter-023-scene-001",
+            "facts-chapter-023-scene-002",
+            "summary-chapter-023-scene-001",
+            "summary-chapter-023-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-023-scene-003.md",
+          "review_path": "reviews\\chapter-023-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-023-scene-003",
+            "timeline-chapter-023-scene-003",
+            "facts-chapter-023-scene-003",
+            "draft-chapter-023-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-024",
+      "scene_records": [
+        {
+          "task_id": "chapter-024-scene-001",
+          "context_sources": [
+            "timeline-chapter-013-scene-001",
+            "timeline-chapter-013-scene-002",
+            "timeline-chapter-013-scene-003",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-024-scene-001.md",
+          "review_path": "reviews\\chapter-024-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-024-scene-001",
+            "timeline-chapter-024-scene-001",
+            "facts-chapter-024-scene-001",
+            "draft-chapter-024-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-024-scene-002",
+          "context_sources": [
+            "timeline-chapter-024-scene-001",
+            "draft-chapter-024-scene-001",
+            "facts-chapter-024-scene-001",
+            "summary-chapter-024-scene-001",
+            "timeline-chapter-013-scene-001",
+            "timeline-chapter-013-scene-002",
+            "timeline-chapter-013-scene-003",
+            "draft-chapter-002-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-024-scene-002.md",
+          "review_path": "reviews\\chapter-024-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-024-scene-002",
+            "timeline-chapter-024-scene-002",
+            "facts-chapter-024-scene-002",
+            "draft-chapter-024-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-024-scene-003",
+          "context_sources": [
+            "timeline-chapter-024-scene-001",
+            "timeline-chapter-024-scene-002",
+            "draft-chapter-024-scene-001",
+            "draft-chapter-024-scene-002",
+            "facts-chapter-024-scene-001",
+            "facts-chapter-024-scene-002",
+            "summary-chapter-024-scene-001",
+            "summary-chapter-024-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-024-scene-003.md",
+          "review_path": "reviews\\chapter-024-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-024-scene-003",
+            "timeline-chapter-024-scene-003",
+            "facts-chapter-024-scene-003",
+            "draft-chapter-024-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-025",
+      "scene_records": [
+        {
+          "task_id": "chapter-025-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-025-scene-001.md",
+          "review_path": "reviews\\chapter-025-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-025-scene-001",
+            "timeline-chapter-025-scene-001",
+            "facts-chapter-025-scene-001",
+            "draft-chapter-025-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-025-scene-002",
+          "context_sources": [
+            "timeline-chapter-025-scene-001",
+            "draft-chapter-025-scene-001",
+            "facts-chapter-025-scene-001",
+            "summary-chapter-025-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-025-scene-002.md",
+          "review_path": "reviews\\chapter-025-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-025-scene-002",
+            "timeline-chapter-025-scene-002",
+            "facts-chapter-025-scene-002",
+            "draft-chapter-025-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-025-scene-003",
+          "context_sources": [
+            "timeline-chapter-025-scene-001",
+            "timeline-chapter-025-scene-002",
+            "draft-chapter-025-scene-001",
+            "draft-chapter-025-scene-002",
+            "facts-chapter-025-scene-001",
+            "facts-chapter-025-scene-002",
+            "summary-chapter-025-scene-001",
+            "summary-chapter-025-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-025-scene-003.md",
+          "review_path": "reviews\\chapter-025-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-025-scene-003",
+            "timeline-chapter-025-scene-003",
+            "facts-chapter-025-scene-003",
+            "draft-chapter-025-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-026",
+      "scene_records": [
+        {
+          "task_id": "chapter-026-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "draft-chapter-013-scene-003",
+            "draft-chapter-016-scene-001",
+            "draft-chapter-016-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-026-scene-001.md",
+          "review_path": "reviews\\chapter-026-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-026-scene-001",
+            "timeline-chapter-026-scene-001",
+            "facts-chapter-026-scene-001",
+            "draft-chapter-026-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-026-scene-002",
+          "context_sources": [
+            "timeline-chapter-026-scene-001",
+            "draft-chapter-026-scene-001",
+            "facts-chapter-026-scene-001",
+            "summary-chapter-026-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-026-scene-002.md",
+          "review_path": "reviews\\chapter-026-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-026-scene-002",
+            "timeline-chapter-026-scene-002",
+            "facts-chapter-026-scene-002",
+            "draft-chapter-026-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-026-scene-003",
+          "context_sources": [
+            "timeline-chapter-026-scene-001",
+            "timeline-chapter-026-scene-002",
+            "draft-chapter-026-scene-001",
+            "draft-chapter-026-scene-002",
+            "facts-chapter-026-scene-001",
+            "facts-chapter-026-scene-002",
+            "summary-chapter-026-scene-001",
+            "summary-chapter-026-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-026-scene-003.md",
+          "review_path": "reviews\\chapter-026-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-026-scene-003",
+            "timeline-chapter-026-scene-003",
+            "facts-chapter-026-scene-003",
+            "draft-chapter-026-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-027",
+      "scene_records": [
+        {
+          "task_id": "chapter-027-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-002",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "draft-chapter-013-scene-003",
+            "draft-chapter-016-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-027-scene-001.md",
+          "review_path": "reviews\\chapter-027-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-027-scene-001",
+            "timeline-chapter-027-scene-001",
+            "facts-chapter-027-scene-001",
+            "draft-chapter-027-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-027-scene-002",
+          "context_sources": [
+            "timeline-chapter-027-scene-001",
+            "draft-chapter-027-scene-001",
+            "facts-chapter-027-scene-001",
+            "summary-chapter-027-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-008-scene-002",
+            "draft-chapter-010-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-027-scene-002.md",
+          "review_path": "reviews\\chapter-027-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-027-scene-002",
+            "timeline-chapter-027-scene-002",
+            "facts-chapter-027-scene-002",
+            "draft-chapter-027-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-027-scene-003",
+          "context_sources": [
+            "timeline-chapter-027-scene-001",
+            "timeline-chapter-027-scene-002",
+            "draft-chapter-027-scene-001",
+            "draft-chapter-027-scene-002",
+            "facts-chapter-027-scene-001",
+            "facts-chapter-027-scene-002",
+            "summary-chapter-027-scene-001",
+            "summary-chapter-027-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-027-scene-003.md",
+          "review_path": "reviews\\chapter-027-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-027-scene-003",
+            "timeline-chapter-027-scene-003",
+            "facts-chapter-027-scene-003",
+            "draft-chapter-027-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-028",
+      "scene_records": [
+        {
+          "task_id": "chapter-028-scene-001",
+          "context_sources": [
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "facts-chapter-018-scene-001",
+            "facts-chapter-018-scene-002",
+            "facts-chapter-018-scene-003",
+            "kb-chapter-001-plan",
+            "kb-project-brief"
+          ],
+          "draft_path": "drafts\\chapter-028-scene-001.md",
+          "review_path": "reviews\\chapter-028-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-028-scene-001",
+            "timeline-chapter-028-scene-001",
+            "facts-chapter-028-scene-001",
+            "draft-chapter-028-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-028-scene-002",
+          "context_sources": [
+            "timeline-chapter-028-scene-001",
+            "draft-chapter-028-scene-001",
+            "facts-chapter-028-scene-001",
+            "summary-chapter-028-scene-001",
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "facts-chapter-018-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-028-scene-002.md",
+          "review_path": "reviews\\chapter-028-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-028-scene-002",
+            "timeline-chapter-028-scene-002",
+            "facts-chapter-028-scene-002",
+            "draft-chapter-028-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-028-scene-003",
+          "context_sources": [
+            "timeline-chapter-028-scene-001",
+            "timeline-chapter-028-scene-002",
+            "draft-chapter-028-scene-001",
+            "draft-chapter-028-scene-002",
+            "facts-chapter-028-scene-001",
+            "facts-chapter-028-scene-002",
+            "summary-chapter-028-scene-001",
+            "summary-chapter-028-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-028-scene-003.md",
+          "review_path": "reviews\\chapter-028-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-028-scene-003",
+            "timeline-chapter-028-scene-003",
+            "facts-chapter-028-scene-003",
+            "draft-chapter-028-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-029",
+      "scene_records": [
+        {
+          "task_id": "chapter-029-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-002",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-005-scene-002",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-029-scene-001.md",
+          "review_path": "reviews\\chapter-029-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-029-scene-001",
+            "timeline-chapter-029-scene-001",
+            "facts-chapter-029-scene-001",
+            "draft-chapter-029-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-029-scene-002",
+          "context_sources": [
+            "timeline-chapter-029-scene-001",
+            "draft-chapter-029-scene-001",
+            "facts-chapter-029-scene-001",
+            "summary-chapter-029-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-002",
+            "draft-chapter-004-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-029-scene-002.md",
+          "review_path": "reviews\\chapter-029-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-029-scene-002",
+            "timeline-chapter-029-scene-002",
+            "facts-chapter-029-scene-002",
+            "draft-chapter-029-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-029-scene-003",
+          "context_sources": [
+            "timeline-chapter-029-scene-001",
+            "timeline-chapter-029-scene-002",
+            "draft-chapter-029-scene-001",
+            "draft-chapter-029-scene-002",
+            "facts-chapter-029-scene-001",
+            "facts-chapter-029-scene-002",
+            "summary-chapter-029-scene-001",
+            "summary-chapter-029-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-029-scene-003.md",
+          "review_path": "reviews\\chapter-029-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-029-scene-003",
+            "timeline-chapter-029-scene-003",
+            "facts-chapter-029-scene-003",
+            "draft-chapter-029-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-030",
+      "scene_records": [
+        {
+          "task_id": "chapter-030-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001",
+            "draft-chapter-013-scene-002",
+            "draft-chapter-013-scene-003",
+            "draft-chapter-016-scene-001",
+            "draft-chapter-016-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-030-scene-001.md",
+          "review_path": "reviews\\chapter-030-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-030-scene-001",
+            "timeline-chapter-030-scene-001",
+            "facts-chapter-030-scene-001",
+            "draft-chapter-030-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-030-scene-002",
+          "context_sources": [
+            "timeline-chapter-030-scene-001",
+            "draft-chapter-030-scene-001",
+            "facts-chapter-030-scene-001",
+            "summary-chapter-030-scene-001",
+            "draft-chapter-002-scene-002",
+            "draft-chapter-005-scene-003",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-013-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-030-scene-002.md",
+          "review_path": "reviews\\chapter-030-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-030-scene-002",
+            "timeline-chapter-030-scene-002",
+            "facts-chapter-030-scene-002",
+            "draft-chapter-030-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-030-scene-003",
+          "context_sources": [
+            "timeline-chapter-030-scene-001",
+            "timeline-chapter-030-scene-002",
+            "draft-chapter-030-scene-001",
+            "draft-chapter-030-scene-002",
+            "facts-chapter-030-scene-001",
+            "facts-chapter-030-scene-002",
+            "summary-chapter-030-scene-001",
+            "summary-chapter-030-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-030-scene-003.md",
+          "review_path": "reviews\\chapter-030-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-030-scene-003",
+            "timeline-chapter-030-scene-003",
+            "facts-chapter-030-scene-003",
+            "draft-chapter-030-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-031",
+      "scene_records": [
+        {
+          "task_id": "chapter-031-scene-001",
+          "context_sources": [
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "draft-chapter-028-scene-001",
+            "draft-chapter-028-scene-002",
+            "draft-chapter-028-scene-003",
+            "facts-chapter-018-scene-001",
+            "facts-chapter-018-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-031-scene-001.md",
+          "review_path": "reviews\\chapter-031-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-031-scene-001",
+            "timeline-chapter-031-scene-001",
+            "facts-chapter-031-scene-001",
+            "draft-chapter-031-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-031-scene-002",
+          "context_sources": [
+            "timeline-chapter-031-scene-001",
+            "draft-chapter-031-scene-001",
+            "facts-chapter-031-scene-001",
+            "summary-chapter-031-scene-001",
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "draft-chapter-028-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-031-scene-002.md",
+          "review_path": "reviews\\chapter-031-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-031-scene-002",
+            "timeline-chapter-031-scene-002",
+            "facts-chapter-031-scene-002",
+            "draft-chapter-031-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-031-scene-003",
+          "context_sources": [
+            "timeline-chapter-031-scene-001",
+            "timeline-chapter-031-scene-002",
+            "draft-chapter-031-scene-001",
+            "draft-chapter-031-scene-002",
+            "facts-chapter-031-scene-001",
+            "facts-chapter-031-scene-002",
+            "summary-chapter-031-scene-001",
+            "summary-chapter-031-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-031-scene-003.md",
+          "review_path": "reviews\\chapter-031-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-031-scene-003",
+            "timeline-chapter-031-scene-003",
+            "facts-chapter-031-scene-003",
+            "draft-chapter-031-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-032",
+      "scene_records": [
+        {
+          "task_id": "chapter-032-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-032-scene-001.md",
+          "review_path": "reviews\\chapter-032-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-032-scene-001",
+            "timeline-chapter-032-scene-001",
+            "facts-chapter-032-scene-001",
+            "draft-chapter-032-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-032-scene-002",
+          "context_sources": [
+            "timeline-chapter-032-scene-001",
+            "draft-chapter-032-scene-001",
+            "facts-chapter-032-scene-001",
+            "summary-chapter-032-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-032-scene-002.md",
+          "review_path": "reviews\\chapter-032-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-032-scene-002",
+            "timeline-chapter-032-scene-002",
+            "facts-chapter-032-scene-002",
+            "draft-chapter-032-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-032-scene-003",
+          "context_sources": [
+            "timeline-chapter-032-scene-001",
+            "timeline-chapter-032-scene-002",
+            "draft-chapter-032-scene-001",
+            "draft-chapter-032-scene-002",
+            "facts-chapter-032-scene-001",
+            "facts-chapter-032-scene-002",
+            "summary-chapter-032-scene-001",
+            "summary-chapter-032-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-032-scene-003.md",
+          "review_path": "reviews\\chapter-032-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-032-scene-003",
+            "timeline-chapter-032-scene-003",
+            "facts-chapter-032-scene-003",
+            "draft-chapter-032-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-033",
+      "scene_records": [
+        {
+          "task_id": "chapter-033-scene-001",
+          "context_sources": [
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "draft-chapter-028-scene-001",
+            "draft-chapter-028-scene-002",
+            "draft-chapter-028-scene-003",
+            "draft-chapter-031-scene-001",
+            "draft-chapter-031-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-033-scene-001.md",
+          "review_path": "reviews\\chapter-033-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-033-scene-001",
+            "timeline-chapter-033-scene-001",
+            "facts-chapter-033-scene-001",
+            "draft-chapter-033-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-033-scene-002",
+          "context_sources": [
+            "timeline-chapter-033-scene-001",
+            "draft-chapter-033-scene-001",
+            "facts-chapter-033-scene-001",
+            "summary-chapter-033-scene-001",
+            "draft-chapter-018-scene-001",
+            "draft-chapter-018-scene-002",
+            "draft-chapter-018-scene-003",
+            "draft-chapter-028-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-033-scene-002.md",
+          "review_path": "reviews\\chapter-033-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-033-scene-002",
+            "timeline-chapter-033-scene-002",
+            "facts-chapter-033-scene-002",
+            "draft-chapter-033-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-033-scene-003",
+          "context_sources": [
+            "timeline-chapter-033-scene-001",
+            "timeline-chapter-033-scene-002",
+            "draft-chapter-033-scene-001",
+            "draft-chapter-033-scene-002",
+            "facts-chapter-033-scene-001",
+            "facts-chapter-033-scene-002",
+            "summary-chapter-033-scene-001",
+            "summary-chapter-033-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-033-scene-003.md",
+          "review_path": "reviews\\chapter-033-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-033-scene-003",
+            "timeline-chapter-033-scene-003",
+            "facts-chapter-033-scene-003",
+            "draft-chapter-033-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-034",
+      "scene_records": [
+        {
+          "task_id": "chapter-034-scene-001",
+          "context_sources": [
+            "draft-chapter-005-scene-002",
+            "draft-chapter-012-scene-001",
+            "draft-chapter-012-scene-002",
+            "draft-chapter-012-scene-003",
+            "draft-chapter-029-scene-001",
+            "draft-chapter-029-scene-002",
+            "draft-chapter-029-scene-003",
+            "facts-chapter-005-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-034-scene-001.md",
+          "review_path": "reviews\\chapter-034-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-034-scene-001",
+            "timeline-chapter-034-scene-001",
+            "facts-chapter-034-scene-001",
+            "draft-chapter-034-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-034-scene-002",
+          "context_sources": [
+            "timeline-chapter-034-scene-001",
+            "draft-chapter-034-scene-001",
+            "facts-chapter-034-scene-001",
+            "summary-chapter-034-scene-001",
+            "draft-chapter-005-scene-002",
+            "draft-chapter-012-scene-001",
+            "draft-chapter-012-scene-002",
+            "draft-chapter-012-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-034-scene-002.md",
+          "review_path": "reviews\\chapter-034-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-034-scene-002",
+            "timeline-chapter-034-scene-002",
+            "facts-chapter-034-scene-002",
+            "draft-chapter-034-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-034-scene-003",
+          "context_sources": [
+            "timeline-chapter-034-scene-001",
+            "timeline-chapter-034-scene-002",
+            "draft-chapter-034-scene-001",
+            "draft-chapter-034-scene-002",
+            "facts-chapter-034-scene-001",
+            "facts-chapter-034-scene-002",
+            "summary-chapter-034-scene-001",
+            "summary-chapter-034-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-034-scene-003.md",
+          "review_path": "reviews\\chapter-034-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-034-scene-003",
+            "timeline-chapter-034-scene-003",
+            "facts-chapter-034-scene-003",
+            "draft-chapter-034-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-035",
+      "scene_records": [
+        {
+          "task_id": "chapter-035-scene-001",
+          "context_sources": [
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003",
+            "draft-chapter-010-scene-001",
+            "draft-chapter-010-scene-003",
+            "draft-chapter-011-scene-001",
+            "draft-chapter-011-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-035-scene-001.md",
+          "review_path": "reviews\\chapter-035-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-035-scene-001",
+            "timeline-chapter-035-scene-001",
+            "facts-chapter-035-scene-001",
+            "draft-chapter-035-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-035-scene-002",
+          "context_sources": [
+            "timeline-chapter-035-scene-001",
+            "draft-chapter-035-scene-001",
+            "facts-chapter-035-scene-001",
+            "summary-chapter-035-scene-001",
+            "draft-chapter-002-scene-003",
+            "draft-chapter-003-scene-001",
+            "draft-chapter-004-scene-003",
+            "draft-chapter-009-scene-003"
+          ],
+          "draft_path": "drafts\\chapter-035-scene-002.md",
+          "review_path": "reviews\\chapter-035-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-035-scene-002",
+            "timeline-chapter-035-scene-002",
+            "facts-chapter-035-scene-002",
+            "draft-chapter-035-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-035-scene-003",
+          "context_sources": [
+            "timeline-chapter-035-scene-001",
+            "timeline-chapter-035-scene-002",
+            "draft-chapter-035-scene-001",
+            "draft-chapter-035-scene-002",
+            "facts-chapter-035-scene-001",
+            "facts-chapter-035-scene-002",
+            "summary-chapter-035-scene-001",
+            "summary-chapter-035-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-035-scene-003.md",
+          "review_path": "reviews\\chapter-035-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-035-scene-003",
+            "timeline-chapter-035-scene-003",
+            "facts-chapter-035-scene-003",
+            "draft-chapter-035-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    },
+    {
+      "chapter_id": "chapter-036",
+      "scene_records": [
+        {
+          "task_id": "chapter-036-scene-001",
+          "context_sources": [
+            "draft-chapter-029-scene-001",
+            "draft-chapter-029-scene-002",
+            "draft-chapter-029-scene-003",
+            "facts-chapter-029-scene-001",
+            "facts-chapter-029-scene-002",
+            "facts-chapter-029-scene-003",
+            "summary-chapter-029-scene-001",
+            "summary-chapter-029-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-036-scene-001.md",
+          "review_path": "reviews\\chapter-036-scene-001_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-036-scene-001",
+            "timeline-chapter-036-scene-001",
+            "facts-chapter-036-scene-001",
+            "draft-chapter-036-scene-001"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-036-scene-002",
+          "context_sources": [
+            "timeline-chapter-036-scene-001",
+            "draft-chapter-036-scene-001",
+            "facts-chapter-036-scene-001",
+            "summary-chapter-036-scene-001",
+            "draft-chapter-029-scene-001",
+            "draft-chapter-029-scene-002",
+            "draft-chapter-029-scene-003",
+            "facts-chapter-029-scene-001"
+          ],
+          "draft_path": "drafts\\chapter-036-scene-002.md",
+          "review_path": "reviews\\chapter-036-scene-002_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-036-scene-002",
+            "timeline-chapter-036-scene-002",
+            "facts-chapter-036-scene-002",
+            "draft-chapter-036-scene-002"
+          ],
+          "status": "pass"
+        },
+        {
+          "task_id": "chapter-036-scene-003",
+          "context_sources": [
+            "timeline-chapter-036-scene-001",
+            "timeline-chapter-036-scene-002",
+            "draft-chapter-036-scene-001",
+            "draft-chapter-036-scene-002",
+            "facts-chapter-036-scene-001",
+            "facts-chapter-036-scene-002",
+            "summary-chapter-036-scene-001",
+            "summary-chapter-036-scene-002"
+          ],
+          "draft_path": "drafts\\chapter-036-scene-003.md",
+          "review_path": "reviews\\chapter-036-scene-003_review.md",
+          "compiled_knowledge_ids": [
+            "summary-chapter-036-scene-003",
+            "timeline-chapter-036-scene-003",
+            "facts-chapter-036-scene-003",
+            "draft-chapter-036-scene-003"
+          ],
+          "status": "pass"
+        }
+      ],
+      "status": "done"
+    }
+  ]
+}

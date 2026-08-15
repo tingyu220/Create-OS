@@ -1,0 +1,45 @@
+{
+  "id": "chapter-016-scene-001",
+  "title": "第16章 Scene 1：署长的解释开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "周闻白与林澈正面对话",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "灯务署会谈室",
+    "第16章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-016-scene-001",
+    "title": "第16章 Scene 1：署长的解释开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "灯务署会谈室",
+    "characters": [
+      "林澈",
+      "周闻白",
+      "许砚"
+    ],
+    "goal": "周闻白与林澈正面对话",
+    "conflict": "周闻白声称禁灯保护全城并提出交易",
+    "outcome": "局面推进到：林澈拒绝交易，确认周闻白是核心阻力",
+    "new_facts": [
+      "周闻白承认禁灯是维稳工具",
+      "他试图用林遥下落交易"
+    ],
+    "target_words": 850,
+    "chapter_label": "第16章"
+  }
+}

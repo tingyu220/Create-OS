@@ -1,0 +1,45 @@
+{
+  "id": "chapter-028-scene-001",
+  "title": "第28章 Scene 1：林遥现身开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "林澈见到林遥",
+  "tags": [
+    "scene",
+    "周闻白",
+    "地下回声室",
+    "林澈",
+    "林遥",
+    "第28章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-028-scene-001",
+    "title": "第28章 Scene 1：林遥现身开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "地下回声室",
+    "characters": [
+      "林澈",
+      "林遥",
+      "周闻白"
+    ],
+    "goal": "林澈见到林遥",
+    "conflict": "林遥已成为系统校验钥匙",
+    "outcome": "局面推进到：救人会导致证据消失",
+    "new_facts": [
+      "林遥成为校验钥匙",
+      "救人和公开证据冲突"
+    ],
+    "target_words": 850,
+    "chapter_label": "第28章"
+  }
+}

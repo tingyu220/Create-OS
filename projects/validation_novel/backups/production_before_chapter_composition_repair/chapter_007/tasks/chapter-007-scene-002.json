@@ -1,0 +1,42 @@
+{
+  "id": "chapter-007-scene-002",
+  "title": "第7章 Scene 2：旧维修站签名",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "查找林澈旧工具箱并验证维护员身份",
+  "tags": [
+    "scene",
+    "旧维修站",
+    "林澈",
+    "第七章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-007-scene-002",
+    "title": "第7章 Scene 2：旧维修站签名",
+    "pov": "林澈",
+    "time": "上午",
+    "location": "旧维修站",
+    "characters": [
+      "林澈"
+    ],
+    "goal": "查找林澈旧工具箱并验证维护员身份",
+    "conflict": "工具箱被封存，开启会触发旧系统识别",
+    "outcome": "林澈找到带有自己签名的三年前维护协议碎页",
+    "new_facts": [
+      "林澈签署过维护协议",
+      "三年前协议与冷光塔升级有关",
+      "林澈旧工具箱被系统封存"
+    ],
+    "target_words": 850,
+    "chapter_label": "第七章"
+  }
+}

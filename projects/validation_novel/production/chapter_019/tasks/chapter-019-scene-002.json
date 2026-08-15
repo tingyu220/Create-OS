@@ -1,0 +1,46 @@
+{
+  "id": "chapter-019-scene-002",
+  "title": "第19章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：每个人都隐瞒过信息，合作基础脆弱",
+  "tags": [
+    "scene",
+    "旧灯巷地下",
+    "林澈",
+    "第19章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-019-scene-002",
+    "title": "第19章 Scene 2：压力升级",
+    "pov": "阿岚",
+    "time": "本章中段",
+    "location": "旧灯巷地下",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "加深冲突：每个人都隐瞒过信息，合作基础脆弱",
+    "conflict": "人物必须在每个人都隐瞒过信息，合作基础脆弱中做选择",
+    "outcome": "关键证据被确认：林澈公开部分记忆",
+    "new_facts": [
+      "团队重新合作",
+      "冷光塔核心入口被确定",
+      "林澈公开部分记忆"
+    ],
+    "target_words": 850,
+    "chapter_label": "第19章"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "chapter-019-scene-003",
+  "title": "第19章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：让团队在信任受损后重新合作",
+  "tags": [
+    "scene",
+    "旧灯巷地下",
+    "林澈",
+    "第19章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-019-scene-003",
+    "title": "第19章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "旧灯巷地下",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：让团队在信任受损后重新合作",
+    "conflict": "每个人都隐瞒过信息，合作基础脆弱",
+    "outcome": "三人决定进入冷光塔核心入口",
+    "new_facts": [
+      "团队重新合作",
+      "冷光塔核心入口被确定",
+      "林澈公开部分记忆"
+    ],
+    "target_words": 900,
+    "chapter_label": "第19章"
+  }
+}

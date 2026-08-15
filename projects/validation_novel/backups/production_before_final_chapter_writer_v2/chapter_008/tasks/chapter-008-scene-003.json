@@ -1,0 +1,44 @@
+{
+  "id": "chapter-008-scene-003",
+  "title": "第8章 Scene 3：林遥未离城",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让许砚确认林遥仍在城内",
+  "tags": [
+    "scene",
+    "林遥",
+    "私人终端",
+    "第八章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-008-scene-003",
+    "title": "第8章 Scene 3：林遥未离城",
+    "pov": "许砚",
+    "time": "夜",
+    "location": "私人终端",
+    "characters": [
+      "许砚",
+      "林遥"
+    ],
+    "goal": "让许砚确认林遥仍在城内",
+    "conflict": "系统权限限制，任何查询都可能留下痕迹",
+    "outcome": "许砚确认林遥未离城，并把结果藏入私人密钥",
+    "new_facts": [
+      "林遥仍在城内",
+      "许砚拥有私人证据密钥",
+      "自愿离城记录被正式系统伪装"
+    ],
+    "target_words": 850,
+    "chapter_label": "第八章"
+  }
+}

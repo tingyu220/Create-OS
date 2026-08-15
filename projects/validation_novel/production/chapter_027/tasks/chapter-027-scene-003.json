@@ -1,0 +1,44 @@
+{
+  "id": "chapter-027-scene-003",
+  "title": "第27章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：许砚被迫参与记忆审查",
+  "tags": [
+    "scene",
+    "周闻白",
+    "审查大厅",
+    "第27章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-027-scene-003",
+    "title": "第27章 Scene 3：章节转折",
+    "pov": "许砚",
+    "time": "本章后段",
+    "location": "审查大厅",
+    "characters": [
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：许砚被迫参与记忆审查",
+    "conflict": "她必须选择服从或公开异常",
+    "outcome": "许砚公开内部缺页，彻底背离灯务署",
+    "new_facts": [
+      "许砚公开缺页",
+      "灯务署内部证据链暴露",
+      "许砚完成立场转变"
+    ],
+    "target_words": 900,
+    "chapter_label": "第27章"
+  }
+}

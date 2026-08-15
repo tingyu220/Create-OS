@@ -1,0 +1,80 @@
+{
+  "items": [
+    {
+      "id": "summary-chapter-003-scene-002",
+      "kind": "summary",
+      "title": "第3章 Scene 2：缺帧记录 Summary",
+      "body": "让许砚发现灯务署记录异常；结果：许砚没有上报全部细节，开始怀疑内部篡改",
+      "category": "project",
+      "tags": [
+        "chapter-003-scene-002",
+        "novel",
+        "summary",
+        "巡灯员",
+        "林澈",
+        "第三章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-003-scene-002"
+    },
+    {
+      "id": "timeline-chapter-003-scene-002",
+      "kind": "timeline",
+      "title": "第3章 Scene 2：缺帧记录 Timeline",
+      "body": "夜，封锁线：许砚没有上报全部细节，开始怀疑内部篡改",
+      "category": "project",
+      "tags": [
+        "novel",
+        "timeline",
+        "封锁线",
+        "巡灯员",
+        "林澈",
+        "第三章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-003-scene-002"
+    },
+    {
+      "id": "facts-chapter-003-scene-002",
+      "kind": "fact",
+      "title": "第3章 Scene 2：缺帧记录 Facts",
+      "body": "灯务署监控存在缺帧；许砚具备独立判断；违规点灯案被人为简化",
+      "category": "project",
+      "tags": [
+        "chapter-003-scene-002",
+        "fact",
+        "novel",
+        "巡灯员",
+        "林澈",
+        "第三章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-003-scene-002"
+    },
+    {
+      "id": "draft-chapter-003-scene-002",
+      "kind": "draft",
+      "title": "第3章 Scene 2：缺帧记录",
+      "body": "## Scene 2：缺帧记录\n\n许砚站在封锁线外，看着旧灯巷恢复安静。\n\n巡灯员把巷口围住，按流程登记违规商铺、未备案居民、可疑光源。每个人都在等待她下达审查命令。按照灯务署条例，林澈携带异常冷光管逃入地下，已经足够升级为危害公共安全。\n\n可许砚没有立刻签字。\n\n她调出随身终端，把刚才的巷内监控回放了一遍。画面里，林澈从暗铺后门出来，阿岚引他进入后巷。署灯扫过门洞，旧锁发出反光。下一秒，画面跳到巡灯员冲入空巷。\n\n中间少了七秒。\n\n许砚把回放拖回去。还是少七秒。她切换第二路监控，少的是同一段。第三路、第四路，全部一样。\n\n“许队？”巡灯员低声提醒，“审查车已经到了。”\n\n“谁调过监控？”\n\n巡灯员愣住：“实时记录，没人能调。”\n\n“没人能调，不代表没人调过。”许砚把终端收起，“封锁旧灯巷，暂不抓人。”\n\n“可是署长要求普通违规结案。”\n\n许砚看向他：“普通违规不会让四路监控同时缺帧。”\n\n巡灯员不再说话。\n\n她走到林澈消失的那块石板附近。地面看起来没有异常，连灰尘都被雾压得均匀。许砚蹲下，用手套敲了敲石板。声音空了一点。她没有叫人撬开，而是用终端拍下编号。\n\n如果她现在打开入口，案件会立刻变成抓捕。林澈会被审查，阿岚会被牵连，冷光管会被收缴。所有证据都会进入她看不见的权限层。\n\n她第一次意识到，流程不一定保护真相，也可能保护缺口。\n\n许砚在报告里写下：嫌疑人逃离，未确认地下路径。未登记光源待追踪。\n\n她没有写监控缺帧。\n\n这不是隐瞒。她告诉自己，这是保留证据。\n\n但终端锁屏时，黑色屏幕映出她的脸。许砚忽然不确定，自己到底是在调查林澈，还是开始调查灯务署。\n",
+      "category": "project",
+      "tags": [
+        "chapter-003-scene-002",
+        "draft",
+        "novel",
+        "巡灯员",
+        "林澈",
+        "第三章",
+        "许砚"
+      ],
+      "references": [],
+      "status": "active",
+      "source_task_id": "chapter-003-scene-002"
+    }
+  ]
+}

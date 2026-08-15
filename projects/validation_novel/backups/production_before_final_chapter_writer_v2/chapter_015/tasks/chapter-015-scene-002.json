@@ -1,0 +1,46 @@
+{
+  "id": "chapter-015-scene-002",
+  "title": "第15章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：名单人数远超公开记录，阿岚情绪失控",
+  "tags": [
+    "scene",
+    "废档案库",
+    "林澈",
+    "第15章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-015-scene-002",
+    "title": "第15章 Scene 2：压力升级",
+    "pov": "阿岚",
+    "time": "本章中段",
+    "location": "废档案库",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "加深冲突：名单人数远超公开记录，阿岚情绪失控",
+    "conflict": "人物必须在名单人数远超公开记录，阿岚情绪失控中做选择",
+    "outcome": "关键证据被确认：自愿离城是系统性伪装",
+    "new_facts": [
+      "失踪名单远超公开记录",
+      "岚舟在名单中",
+      "自愿离城是系统性伪装"
+    ],
+    "target_words": 850,
+    "chapter_label": "第15章"
+  }
+}

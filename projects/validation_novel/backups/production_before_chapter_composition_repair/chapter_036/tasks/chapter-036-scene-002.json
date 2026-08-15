@@ -1,0 +1,48 @@
+{
+  "id": "chapter-036-scene-002",
+  "title": "第36章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：林澈决定是否离开雾城",
+  "tags": [
+    "scene",
+    "林澈",
+    "林遥",
+    "第36章",
+    "许砚",
+    "阿岚",
+    "雾城",
+    "雾城南街"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-036-scene-002",
+    "title": "第36章 Scene 2：压力升级",
+    "pov": "林遥",
+    "time": "本章中段",
+    "location": "雾城南街",
+    "characters": [
+      "林澈",
+      "林遥",
+      "许砚",
+      "阿岚"
+    ],
+    "goal": "加深冲突：林澈决定是否离开雾城",
+    "conflict": "人物必须在林澈决定是否离开雾城中做选择",
+    "outcome": "关键证据被确认：雾城出现第一盏自愿点亮的灯",
+    "new_facts": [
+      "主线闭合",
+      "兄妹关系完成修复",
+      "雾城出现第一盏自愿点亮的灯"
+    ],
+    "target_words": 850,
+    "chapter_label": "第36章"
+  }
+}

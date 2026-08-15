@@ -1,0 +1,45 @@
+{
+  "id": "chapter-013-scene-001",
+  "title": "第13章 Scene 1：雾潮预警开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "理解雾潮计划并建立全城危机",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "第13章",
+    "许砚",
+    "雾城",
+    "雾城街区"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-013-scene-001",
+    "title": "第13章 Scene 1：雾潮预警开局",
+    "pov": "林澈",
+    "time": "本章前段",
+    "location": "雾城街区",
+    "characters": [
+      "林澈",
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "理解雾潮计划并建立全城危机",
+    "conflict": "周闻白封锁全城，居民开始被迫熄灯",
+    "outcome": "局面推进到：全城进入强制熄灯，雾潮倒计时启动",
+    "new_facts": [
+      "雾潮计划即将启动",
+      "强制熄灯扩大"
+    ],
+    "target_words": 850,
+    "chapter_label": "第13章"
+  }
+}

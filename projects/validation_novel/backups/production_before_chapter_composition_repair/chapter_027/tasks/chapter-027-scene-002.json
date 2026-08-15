@@ -1,0 +1,44 @@
+{
+  "id": "chapter-027-scene-002",
+  "title": "第27章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：她必须选择服从或公开异常",
+  "tags": [
+    "scene",
+    "周闻白",
+    "审查大厅",
+    "第27章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-027-scene-002",
+    "title": "第27章 Scene 2：压力升级",
+    "pov": "周闻白",
+    "time": "本章中段",
+    "location": "审查大厅",
+    "characters": [
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "加深冲突：她必须选择服从或公开异常",
+    "conflict": "人物必须在她必须选择服从或公开异常中做选择",
+    "outcome": "关键证据被确认：许砚完成立场转变",
+    "new_facts": [
+      "许砚公开缺页",
+      "灯务署内部证据链暴露",
+      "许砚完成立场转变"
+    ],
+    "target_words": 850,
+    "chapter_label": "第27章"
+  }
+}

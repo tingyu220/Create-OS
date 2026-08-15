@@ -1,0 +1,46 @@
+{
+  "id": "chapter-017-scene-003",
+  "title": "第17章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：让团队因公开真相方式产生分歧",
+  "tags": [
+    "scene",
+    "地下汇合点",
+    "林澈",
+    "第17章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-017-scene-003",
+    "title": "第17章 Scene 3：章节转折",
+    "pov": "林澈",
+    "time": "本章后段",
+    "location": "地下汇合点",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：让团队因公开真相方式产生分歧",
+    "conflict": "阿岚要立刻救人，许砚坚持证据链",
+    "outcome": "林澈独自行动，团队信任受损",
+    "new_facts": [
+      "团队出现分歧",
+      "许砚坚持证据链",
+      "林澈独自前往旧系统节点"
+    ],
+    "target_words": 900,
+    "chapter_label": "第17章"
+  }
+}

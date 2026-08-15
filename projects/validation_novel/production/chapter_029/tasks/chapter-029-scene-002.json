@@ -1,0 +1,48 @@
+{
+  "id": "chapter-029-scene-002",
+  "title": "第29章 Scene 2：压力升级",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "加深冲突：主角目标与城市真相冲突",
+  "tags": [
+    "scene",
+    "地下回声室",
+    "林澈",
+    "林遥",
+    "第29章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-029-scene-002",
+    "title": "第29章 Scene 2：压力升级",
+    "pov": "林遥",
+    "time": "本章中段",
+    "location": "地下回声室",
+    "characters": [
+      "林澈",
+      "林遥",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "加深冲突：主角目标与城市真相冲突",
+    "conflict": "人物必须在主角目标与城市真相冲突中做选择",
+    "outcome": "关键证据被确认：团队统一最终行动",
+    "new_facts": [
+      "林遥主动要求公开真相",
+      "林澈目标从救人扩大到救城",
+      "团队统一最终行动"
+    ],
+    "target_words": 850,
+    "chapter_label": "第29章"
+  }
+}

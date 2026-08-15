@@ -1,0 +1,46 @@
+{
+  "id": "chapter-002-scene-002",
+  "title": "第2章 Scene 2：灯务署锁定异常",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "建立许砚追查林澈的任务线",
+  "tags": [
+    "scene",
+    "周闻白",
+    "林澈",
+    "灯务署",
+    "第二章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-002-scene-002",
+    "title": "第2章 Scene 2：灯务署锁定异常",
+    "pov": "许砚",
+    "time": "上午",
+    "location": "灯务署",
+    "characters": [
+      "许砚",
+      "周闻白",
+      "林澈"
+    ],
+    "goal": "建立许砚追查林澈的任务线",
+    "conflict": "周闻白要求快速结案，许砚发现南站异常记录不完整",
+    "outcome": "许砚锁定林澈旧维护证，并决定亲自去旧灯巷",
+    "new_facts": [
+      "许砚负责追查违规点灯",
+      "周闻白知道异常回城",
+      "南站记录存在缺口"
+    ],
+    "target_words": 800,
+    "chapter_label": "第二章"
+  }
+}

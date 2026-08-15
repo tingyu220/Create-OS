@@ -1,0 +1,16 @@
+{
+  "code_version": "914a21c",
+  "data_schema_version": "v1",
+  "prompt_version": "v1",
+  "domain_version": "novel-v1",
+  "agent_version": "production-agent-v1",
+  "model_config": {
+    "provider": "manual-or-external",
+    "model": "not-bound-in-v1-runtime"
+  },
+  "context_config": {
+    "max_items": 8,
+    "max_chars": 12000
+  },
+  "captured_at": "2026-07-28T14:43:09.119196+00:00"
+}

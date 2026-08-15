@@ -1,0 +1,46 @@
+{
+  "id": "chapter-002-scene-003",
+  "title": "第2章 Scene 3：暗铺交易",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "验证冷光管并把林遥线索推向废档案库",
+  "tags": [
+    "scene",
+    "旧灯巷暗铺",
+    "林澈",
+    "第二章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-002-scene-003",
+    "title": "第2章 Scene 3：暗铺交易",
+    "pov": "林澈",
+    "time": "下午",
+    "location": "旧灯巷暗铺",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "验证冷光管并把林遥线索推向废档案库",
+    "conflict": "冷光管触发暗铺警报，许砚同时进入旧灯巷",
+    "outcome": "阿岚指出林遥来过，并留下废弃档案库方向；许砚发现林澈违规入城",
+    "new_facts": [
+      "林遥曾到旧灯巷查冷光管",
+      "废弃档案库与林遥线索相关",
+      "许砚开始追捕林澈"
+    ],
+    "target_words": 900,
+    "chapter_label": "第二章"
+  }
+}

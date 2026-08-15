@@ -1,0 +1,44 @@
+{
+  "id": "chapter-020-scene-003",
+  "title": "第20章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：许砚争取内部支持",
+  "tags": [
+    "scene",
+    "周闻白",
+    "灯务署记录室",
+    "第20章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-020-scene-003",
+    "title": "第20章 Scene 3：章节转折",
+    "pov": "许砚",
+    "time": "本章后段",
+    "location": "灯务署记录室",
+    "characters": [
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "完成章节目标并接入下一章：许砚争取内部支持",
+    "conflict": "同僚害怕禁灯令崩溃而拒绝作证",
+    "outcome": "一个内线交出冷光塔内部图",
+    "new_facts": [
+      "灯务署内部出现内线",
+      "冷光塔内部图流出",
+      "许砚正式背离周闻白控制"
+    ],
+    "target_words": 900,
+    "chapter_label": "第20章"
+  }
+}

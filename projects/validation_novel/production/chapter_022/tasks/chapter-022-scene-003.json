@@ -1,0 +1,46 @@
+{
+  "id": "chapter-022-scene-003",
+  "title": "第22章 Scene 3：章节转折",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "完成章节目标并接入下一章：让灯务署清剿旧灯巷并压缩团队空间",
+  "tags": [
+    "scene",
+    "旧灯巷",
+    "林澈",
+    "第22章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-022-scene-003",
+    "title": "第22章 Scene 3：章节转折",
+    "pov": "阿岚",
+    "time": "本章后段",
+    "location": "旧灯巷",
+    "characters": [
+      "阿岚",
+      "林澈",
+      "许砚"
+    ],
+    "goal": "完成章节目标并接入下一章：让灯务署清剿旧灯巷并压缩团队空间",
+    "conflict": "阿岚必须选择救人还是保线索",
+    "outcome": "旧灯巷被封，阿岚保住核心入口图",
+    "new_facts": [
+      "旧灯巷被封",
+      "阿岚失去安全据点",
+      "地下入口图被保留"
+    ],
+    "target_words": 900,
+    "chapter_label": "第22章"
+  }
+}

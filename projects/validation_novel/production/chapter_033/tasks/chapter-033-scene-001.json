@@ -1,0 +1,45 @@
+{
+  "id": "chapter-033-scene-001",
+  "title": "第33章 Scene 1：署长失控开局",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "周闻白试图重启强制清除",
+  "tags": [
+    "scene",
+    "冷光塔核心",
+    "周闻白",
+    "林澈",
+    "林遥",
+    "第33章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-033-scene-001",
+    "title": "第33章 Scene 1：署长失控开局",
+    "pov": "周闻白",
+    "time": "本章前段",
+    "location": "冷光塔核心",
+    "characters": [
+      "周闻白",
+      "林遥",
+      "林澈"
+    ],
+    "goal": "周闻白试图重启强制清除",
+    "conflict": "系统需要林遥权限",
+    "outcome": "局面推进到：林遥夺回校验权",
+    "new_facts": [
+      "周闻白试图强制清除",
+      "林遥夺回校验权"
+    ],
+    "target_words": 850,
+    "chapter_label": "第33章"
+  }
+}

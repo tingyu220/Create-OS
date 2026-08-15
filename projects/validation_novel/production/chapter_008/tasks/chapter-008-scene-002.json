@@ -1,0 +1,44 @@
+{
+  "id": "chapter-008-scene-002",
+  "title": "第8章 Scene 2：署长施压",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "展示周闻白阻止许砚扩大案件",
+  "tags": [
+    "scene",
+    "周闻白",
+    "周闻白办公室",
+    "第八章",
+    "许砚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-008-scene-002",
+    "title": "第8章 Scene 2：署长施压",
+    "pov": "许砚",
+    "time": "下午",
+    "location": "周闻白办公室",
+    "characters": [
+      "许砚",
+      "周闻白"
+    ],
+    "goal": "展示周闻白阻止许砚扩大案件",
+    "conflict": "许砚询问回声室，周闻白要求她停止追查",
+    "outcome": "许砚被调离林澈案件，但确认周闻白知道回声室",
+    "new_facts": [
+      "周闻白知道回声室",
+      "许砚被调离案件",
+      "灯务署高层主动压制调查"
+    ],
+    "target_words": 850,
+    "chapter_label": "第八章"
+  }
+}

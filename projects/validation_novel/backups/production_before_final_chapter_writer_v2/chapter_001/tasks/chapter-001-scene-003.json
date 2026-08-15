@@ -1,0 +1,44 @@
+{
+  "id": "chapter-001-scene-003",
+  "title": "第1章 Scene 3：旧路灯残影",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "用异常旧灯触发第一个核心谜团",
+  "tags": [
+    "scene",
+    "林澈",
+    "林遥",
+    "楼下旧路灯",
+    "第一章",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-001-scene-003",
+    "title": "第1章 Scene 3：旧路灯残影",
+    "pov": "林澈",
+    "time": "深夜",
+    "location": "楼下旧路灯",
+    "characters": [
+      "林澈",
+      "林遥"
+    ],
+    "goal": "用异常旧灯触发第一个核心谜团",
+    "conflict": "点亮旧灯会违反禁灯令，且可能引来巡灯员",
+    "outcome": "灯光中出现林遥被带走的记忆残影",
+    "new_facts": [
+      "低亮冷光能显影记忆残影",
+      "林遥被灯务署相关人员带走",
+      "林澈确认妹妹仍在雾城线索内"
+    ],
+    "target_words": 900,
+    "chapter_label": "第一章"
+  }
+}

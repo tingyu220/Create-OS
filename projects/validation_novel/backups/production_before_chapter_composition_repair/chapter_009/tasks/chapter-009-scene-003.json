@@ -1,0 +1,46 @@
+{
+  "id": "chapter-009-scene-003",
+  "title": "第9章 Scene 3：三方汇合",
+  "kind": "writing",
+  "domain": "novel",
+  "goal": "让林澈、阿岚、许砚第一次共享关键证据",
+  "tags": [
+    "scene",
+    "地下汇合点",
+    "林澈",
+    "第九章",
+    "许砚",
+    "阿岚",
+    "雾城"
+  ],
+  "priority": 3,
+  "owner": "writer",
+  "acceptance_criteria": [
+    "正文完成 Scene Goal",
+    "包含 Conflict 和 Outcome",
+    "不违反 Story Bible 和 Character Bible",
+    "新增事实进入 Compiler"
+  ],
+  "scene_spec": {
+    "id": "chapter-009-scene-003",
+    "title": "第9章 Scene 3：三方汇合",
+    "pov": "林澈",
+    "time": "夜",
+    "location": "地下汇合点",
+    "characters": [
+      "林澈",
+      "阿岚",
+      "许砚"
+    ],
+    "goal": "让林澈、阿岚、许砚第一次共享关键证据",
+    "conflict": "三方互不信任，且许砚仍是灯务署调查员",
+    "outcome": "三人确认回声室入口在冷光塔下，形成最低合作基础",
+    "new_facts": [
+      "回声室入口在冷光塔下",
+      "三人开始有限合作",
+      "许砚交出林遥未离城证据"
+    ],
+    "target_words": 900,
+    "chapter_label": "第九章"
+  }
+}
