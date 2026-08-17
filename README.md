@@ -1,6 +1,6 @@
 # Creative OS V1
 
-Creative OS V1 是一个知识驱动的长期创作系统底座。
+Creative OS V1 是一个知识与受控记忆驱动的长期创作系统底座。
 
 正式执行依据：[EXECUTION_PLAN.md](EXECUTION_PLAN.md)
 
@@ -27,7 +27,8 @@ Capability ◀──── Context ──── Retriever
 
 V1 不追求完整产品 UI，而是验证：
 
-- Knowledge 是唯一可信数据源；
+- Knowledge 是事实和设定的唯一可信数据源；
+- Memory 保存经人工审批的决策、偏好和可复用经验；
 - Task 驱动系统推进；
 - Capability 只接收 Context，不直接读写 Knowledge；
 - Result 必须经过 Compiler 才能回写 Knowledge；
@@ -45,6 +46,8 @@ DOMAINS/Novel/ 小说领域包文档
 creative_os/   V1 最小可运行核心
 tests/         V1 验收测试
 ```
+
+核心边界：[Knowledge](DOMAIN/Knowledge.md) · [Memory](DOMAIN/Memory.md) · [Context](ENGINE/Context.md)
 
 ## 验证
 

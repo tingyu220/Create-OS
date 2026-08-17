@@ -1,6 +1,6 @@
 # Knowledge Model
 
-Knowledge 是 Creative OS 的唯一可信数据源。
+Knowledge 是 Creative OS 对事实、设定和外部资料的唯一可信数据源。
 
 它不是聊天记录，不是 Prompt，也不是运行时 Context。
 
@@ -44,7 +44,8 @@ Archived -> Draft
 ## 边界
 
 - Knowledge 保存长期事实。
-- Memory 不作为独立长期层存在。
+- Memory 独立保存决策、偏好和可复用方法，不具备事实裁决权。
+- Memory 与 Knowledge 冲突时，以 Active Knowledge 为准并生成 Review Issue。
 - Context 是运行时数据包，不回写为 Knowledge。
 - State 只保存当前状态，不保存长期知识。
 

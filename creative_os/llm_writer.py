@@ -329,6 +329,7 @@ def run_llm_writer_pilot(
     chapters: list[int] | None = None,
     max_attempts: int = 2,
     use_local_repair: bool = False,
+    compiled_contexts: dict[int, object] | None = None,
 ) -> dict[str, object]:
     root = Path(project_root)
     selected = chapters or [4, 5, 6]
@@ -336,8 +337,15 @@ def run_llm_writer_pilot(
     chapter_results: dict[str, list[str]] = {}
     attempts: dict[str, int] = {}
     metrics: dict[str, dict[str, object]] = {}
+    context_usage: dict[str, dict[str, object]] = {}
     for chapter_number in selected:
         chapter_key = f"chapter_{chapter_number:03d}"
+        compiled_context = (compiled_contexts or {}).get(chapter_number)
+        if compiled_context is not None:
+            context_usage[chapter_key] = {
+                "fingerprint": str(getattr(compiled_context, "fingerprint")),
+                "memory_ids": [item.id for item in getattr(compiled_context, "memory")],
+            }
         payload = build_chapter_rewrite_input(root, chapter_number)
         _write_json(out_root / "inputs" / f"chapter_{chapter_number:03d}_input.json", asdict(payload))
         final_text = ""
@@ -398,6 +406,7 @@ def run_llm_writer_pilot(
         "chapter_results": chapter_results,
         "attempts": attempts,
         "metrics": metrics,
+        "context_usage": context_usage,
     }
     _write_json(out_root / "runs" / "llm_writer_pilot_run.json", run_record)
     return run_record

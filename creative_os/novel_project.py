@@ -31,6 +31,8 @@ def create_novel_project(root: str | Path, title: str, *, author: str = "", genr
         project_path / ".creative_os" / "tasks",
         project_path / ".creative_os" / "backups",
         project_path / ".creative_os" / "llm_writer",
+        project_path / ".creative_os" / "memory" / "items",
+        project_path / ".creative_os" / "memory" / "revisions",
         production_path / "drafts",
         production_path / "final_chapters",
         production_path / "reports",
@@ -45,6 +47,7 @@ def create_novel_project(root: str | Path, title: str, *, author: str = "", genr
     _write_json(project_path / "brief.json", {"title": title, "author": author, "genre": genre, "logline": ""})
     _write_json(project_path / "baseline.json", {"version": "v1", "created_at": now})
     (project_path / "production_log.jsonl").touch(exist_ok=True)
+    (project_path / ".creative_os" / "memory" / "audit.jsonl").touch(exist_ok=True)
     _write_project_readme(project_path / "README.md", title)
     return project_path
 

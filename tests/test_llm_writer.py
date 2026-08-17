@@ -12,6 +12,8 @@ from creative_os.llm_writer import (
     validate_llm_rewrite,
 )
 from creative_os.validation_runtime import write_v11_acceptance_artifacts
+from creative_os.memory.context_compiler import CompiledContext
+from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
 
 
 def test_openai_compatible_client_reads_env(monkeypatch):
@@ -224,6 +226,44 @@ def test_run_llm_writer_pilot_writes_chapters_four_to_six(tmp_path):
     assert (tmp_path / "llm_writer_pilot" / "reviews" / "chapter_004_review.json").exists()
     chapter_004 = (tmp_path / "llm_writer_pilot" / "chapters" / "chapter_004.md").read_text(encoding="utf-8")
     assert not chapter_004.splitlines()[2].startswith(("凌晨", "清晨", "上午", "中午", "下午", "傍晚", "夜", "深夜"))
+
+
+def test_run_record_tracks_compiled_context_memory_sources(tmp_path):
+    write_v11_acceptance_artifacts(tmp_path)
+    memory = MemoryItem.new_candidate(
+        id="exp-transition",
+        kind=MemoryKind.EXPERIENCE,
+        scope=MemoryScope.DOMAIN,
+        scope_id="novel",
+        title="自然转场",
+        content="转场服务动作。",
+        evidence=[MemoryEvidence(source_type="review", source_id="review-1")],
+    ).activate(actor="tingyu")
+    context = CompiledContext(
+        user_input="续写",
+        task=None,  # type: ignore[arg-type]
+        state=None,  # type: ignore[arg-type]
+        working=[],
+        knowledge=[],
+        memory=[memory],
+        rules=[],
+        sources=[],
+        size_chars=4,
+        compiler_version="1",
+        fingerprint="context-fingerprint",
+    )
+
+    record = run_llm_writer_pilot(
+        tmp_path,
+        FakeWriterClient(),
+        chapters=[4],
+        compiled_contexts={4: context},
+    )
+
+    assert record["context_usage"]["chapter_004"] == {
+        "fingerprint": "context-fingerprint",
+        "memory_ids": ["exp-transition"],
+    }
 
 
 class RetryAwareFakeWriterClient:

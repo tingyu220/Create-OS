@@ -9,6 +9,9 @@ def test_new_book_project_uses_book_title_and_clean_top_level(tmp_path):
     assert (project / "metadata.json").exists()
     assert (project / "production").is_dir()
     assert (project / ".creative_os").is_dir()
+    assert (project / ".creative_os" / "memory" / "items").is_dir()
+    assert (project / ".creative_os" / "memory" / "revisions").is_dir()
+    assert (project / ".creative_os" / "memory" / "audit.jsonl").is_file()
     assert not (project / "validation_novel").exists()
 
 
