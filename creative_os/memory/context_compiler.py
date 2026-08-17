@@ -45,6 +45,9 @@ class CompiledContext:
     compiler_version: str
     fingerprint: str
 
+    def contains_source(self, source_id: str) -> bool:
+        return any(source.source_id == source_id for source in self.sources)
+
 
 class ContextCompiler:
     VERSION = "1"
