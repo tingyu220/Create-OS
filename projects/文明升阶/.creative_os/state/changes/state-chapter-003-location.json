@@ -1,0 +1,18 @@
+{
+  "memory_id": "state-chapter-003-location",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "显示屏上的男人没有说话，只是看着林子轩。他的眼神不像在打量一个陌生人，也不像在审视一个闯入者。那是一种林子轩从未见过的目光，像是有太多话压在了喉咙口，反而一个字也吐不出来。",
+        "source_chapter": "production/final_chapters/chapter_003.md"
+      }
+    ],
+    "fields": {
+      "last_seen": "龙渊"
+    },
+    "id": "chapter-003-location",
+    "kind": "location",
+    "status": "candidate",
+    "subject": "龙渊"
+  }
+}

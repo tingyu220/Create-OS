@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from creative_os.llm_writer import OpenAICompatibleClient
-from creative_os.novel_continuation_runner import continue_one_chapter
+from creative_os.novel_continuation_runner import continue_one_chapter, promote_passing_draft
 
 
 def main() -> None:
@@ -17,9 +17,21 @@ def main() -> None:
     parser.add_argument("--project-root", required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-attempts", type=int, default=1)
+    parser.add_argument("--target-chinese-chars", type=int, help="覆盖下一章的大纲目标中文字符数，至少 1000")
+    parser.add_argument("--promote-draft", action="store_true")
     args = parser.parse_args()
-    client = None if args.dry_run else OpenAICompatibleClient.from_env()
-    result = continue_one_chapter(args.project_root, client=client, dry_run=args.dry_run, max_attempts=args.max_attempts)
+    if args.promote_draft:
+        result = promote_passing_draft(args.project_root, require_narrative_contract=True)
+    else:
+        client = None if args.dry_run else OpenAICompatibleClient.from_env()
+        result = continue_one_chapter(
+            args.project_root,
+            client=client,
+            dry_run=args.dry_run,
+            max_attempts=args.max_attempts,
+            target_chinese_chars=args.target_chinese_chars,
+            require_narrative_contract=not args.dry_run,
+        )
     print(f"chapter={result.chapter_number} status={result.status}")
 
 

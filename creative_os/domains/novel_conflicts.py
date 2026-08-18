@@ -61,8 +61,8 @@ def _volume_count_conflicts(draft: NovelBaselineDraft) -> list[ImportConflict]:
 
 def _completed_chapter_count_conflicts(draft: NovelBaselineDraft) -> list[ImportConflict]:
     claims = _claims(
-        draft.style_constraints,
-        r"(?:当前总章节数|已完成(?:正文)?|完成章节数)\s*[：:]\s*(\d+)\s*章?",
+        [*draft.world_rules, *draft.plot_milestones, *draft.style_constraints],
+        r"(?:当前总章节数|已完成(?:正文)?|完成章节数|已重写(?:/新增)?|已新增)\s*[：:]?\s*(\d+)\s*章?",
     )
     actual = str(len(draft.canon_chapters))
     conflicting = [(value, source) for value, source in claims if value != actual]

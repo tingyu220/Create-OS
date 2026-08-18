@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“现在我可以确定。”林正弘把手机还给他，声音低了下来，“这条短信的发送源，在龙渊第九区的内部服务器上。那台服务器，不对外联网。”\", \"source_chapter\": \"production/final_chapters/chapter_006.md\"}], \"fields\": {\"access_constraints\": [\"仅七名高权限者可同时访问神经接口和回滚时刻表\"], \"anchors\": [\"第八号日志服务器\", \"神经接口数据轮询\", \"例行数据回滚\"]}, \"id\": \"chapter-006-location-龙渊第九区服务器\", \"kind\": \"location\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"龙渊第九区服务器\"}",
+  "created_at": "2026-08-17T15:56:35.453303+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_006.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-006-location-龙渊第九区服务器",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "location",
+    "novel",
+    "state"
+  ],
+  "title": "第 6 章状态：location",
+  "updated_at": "2026-08-17T15:56:35.453303+00:00",
+  "version": 1
+}

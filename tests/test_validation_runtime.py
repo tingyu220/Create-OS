@@ -167,6 +167,20 @@ def test_reader_facing_quality_gate_rejects_system_and_template_language():
     assert "duplicate_reader_paragraph" in issues
 
 
+def test_reader_facing_quality_gate_rejects_reversed_dialogue_reference():
+    text = "“所以我们找到了你。”林子轩说。\n\n“不是找到了我。”林正弘说，“是在你出生前，我们就知道你可能是唯一解。”"
+
+    issues = validate_reader_facing_text(text)
+
+    assert "dialogue_reference_mismatch" in issues
+
+
+def test_reader_facing_quality_gate_rejects_wrong_father_child_gender():
+    text = "林正弘看着林子轩，像是想把这些字在女儿面前摆稳一些。"
+
+    assert "character_relation_mismatch" in validate_reader_facing_text(text)
+
+
 def test_final_chapter_v2_artifacts_remove_ai_flavor_and_scene_stitching(tmp_path):
     write_v11_acceptance_artifacts(tmp_path)
 

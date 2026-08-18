@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"显示屏上的男人没有说话，只是看着林子轩。他的眼神不像在打量一个陌生人，也不像在审视一个闯入者。那是一种林子轩从未见过的目光，像是有太多话压在了喉咙口，反而一个字也吐不出来。\", \"source_chapter\": \"production/final_chapters/chapter_003.md\"}, {\"excerpt\": \"控制室里的监测屏幕上，他的θ波突然出现了一组异常的尖锐波动，像是一道裂痕划破了那些规律性的曲线。但没有人坐在那台屏幕前。那些波形自顾自地跳动着，默默记录着一个年轻人在这个地下深处第一次面对自己的两张脸时，那一瞬间的破碎与缝合。\", \"source_chapter\": \"production/final_chapters/chapter_003.md\"}], \"fields\": {\"audience\": \"reader\", \"revealed_in_chapter\": true}, \"id\": \"chapter-003-information\", \"kind\": \"information_boundary\", \"status\": \"candidate\", \"subject\": \"chapter_revelation\"}",
+  "created_at": "2026-08-17T13:56:35.072065+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_003.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-003-information",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "information_boundary",
+    "novel",
+    "state"
+  ],
+  "title": "第 3 章状态：information_boundary",
+  "updated_at": "2026-08-17T13:56:36.041133+00:00",
+  "version": 1
+}

@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“现在我可以确定。”林正弘把手机还给他，声音低了下来，“这条短信的发送源，在龙渊第九区的内部服务器上。那台服务器，不对外联网。”\", \"source_chapter\": \"production/final_chapters/chapter_006.md\"}], \"fields\": {\"outcome\": \"短信被定位至龙渊内部服务器；林子轩成为潜在投递工具，周远被指向为关键线索。\", \"participants\": [\"林子轩\", \"林正弘\", \"周远\", \"苏晚晴\"]}, \"id\": \"chapter-006-event-短信来源暴露\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"短信来源暴露\"}",
+  "created_at": "2026-08-17T15:56:35.455305+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_006.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-006-event-短信来源暴露",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 6 章状态：event",
+  "updated_at": "2026-08-17T15:56:35.455305+00:00",
+  "version": 1
+}

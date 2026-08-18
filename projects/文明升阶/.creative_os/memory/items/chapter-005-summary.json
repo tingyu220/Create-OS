@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "陈景行说“四点”，林子轩回到那间地下深处的小房间，在模拟屏幕永远灿烂的假阳光里躺了下去。他以为自己会睡不着。他没有做梦，只是陷进了一片很深的、没有尽头的东西里。 再醒来时，他觉得自己像是被人从很深的水底拽上来的。额角发紧，后颈有一小片皮肤在突突地跳，像有什么极小的东西埋在那里，正随着脉搏一收一缩。他坐起来，心跳快得不正常。他朝床头看了一眼，发现那里没有闹钟，也没有任何显示时间的东西。唯一亮着的是门边那面比一本书大不了多少的模拟屏幕，上面正显示着一行字： 不知过了多久，他听见了第二个声音。很弱，很旧，像从很远很远的星星上传来的降雨。那是五个字： “不要一个人走。”",
+  "created_at": "2026-08-17T15:41:36.012949+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_005.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-005-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_005",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 5 章章节摘要",
+  "updated_at": "2026-08-17T15:41:36.012949+00:00",
+  "version": 1
+}

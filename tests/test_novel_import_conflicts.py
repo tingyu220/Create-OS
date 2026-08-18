@@ -32,5 +32,24 @@ def test_conflict_detector_reports_duplicate_chapter_number():
     assert any(issue.code == "duplicate_chapter_number" and issue.severity == "high" for issue in issues)
 
 
+def test_conflict_detector_recognizes_rewritten_chapter_count_claims_in_outline():
+    draft = NovelBaselineDraft(
+        canon_chapters=[CanonChapter(1, "开端", "text", "04_Chapters/第1章.md", "a")],
+        world_rules=[],
+        characters=[],
+        plot_milestones=[_artifact("02_Plot/Plot_Outline.md", "截止今日，已重写/新增16章。")],
+        hooks=[],
+        style_constraints=[],
+        knowledge_candidates=[],
+    )
+
+    issues = detect_import_conflicts(draft)
+
+    issue = next(issue for issue in issues if issue.code == "completed_chapter_count_conflict")
+    assert issue.severity == "high"
+    assert issue.values == ["1", "16"]
+    assert issue.sources == ["02_Plot/Plot_Outline.md", "04_Chapters/第1章.md"]
+
+
 def _artifact(path: str, content: str) -> BaselineArtifact:
     return BaselineArtifact("source", content, path, "hash", "heading")

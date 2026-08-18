@@ -54,6 +54,10 @@ def approve_import(project_root: str | Path, *, actor: str, decisions_path: str 
     known_paths = {chapter.source_path for chapter in baseline.canon_chapters}
     if not accepted or not set(accepted) <= known_paths:
         raise ImportApprovalError("accepted_canon_paths must select canonical chapter paths")
+    known_knowledge_paths = {item.source_path for item in baseline.knowledge_candidates}
+    accepted_knowledge = list(decisions.get("accepted_knowledge_paths", sorted(known_knowledge_paths)))
+    if not set(accepted_knowledge) <= known_knowledge_paths:
+        raise ImportApprovalError("accepted_knowledge_paths contains unknown documents")
     resolutions = decisions.get("resolutions", {})
     high_codes = {conflict.code for conflict in conflicts if conflict.severity == "high"}
     if not high_codes <= set(resolutions):
@@ -64,6 +68,7 @@ def approve_import(project_root: str | Path, *, actor: str, decisions_path: str 
             "actor": normalized_actor,
             "approved_at": datetime.now(timezone.utc).isoformat(),
             "accepted_canon_paths": accepted,
+            "accepted_knowledge_paths": accepted_knowledge,
             "resolutions": resolutions,
         },
     )
@@ -82,6 +87,7 @@ def materialize_project(project_root: str | Path) -> list[Path]:
     accepted = set(approval.get("accepted_canon_paths", []))
     if not accepted:
         raise ImportApprovalError("approval has no canonical chapters")
+    accepted_knowledge = set(approval.get("accepted_knowledge_paths", []))
     manifest = _load_manifest(_import_root(root) / "manifest.json")
     _verify_source_unchanged(manifest)
 
@@ -105,9 +111,17 @@ def materialize_project(project_root: str | Path) -> list[Path]:
             "approved_by": approval["actor"],
         }
         for item in baseline.knowledge_candidates
+        if item.source_path in accepted_knowledge
     ]
     knowledge_path = root / ".creative_os" / "knowledge" / "imported_active.json"
     _write_json(knowledge_path, active_knowledge)
+    active_baseline = _baseline_dict(baseline)
+    active_baseline["canon_chapters"] = [
+        chapter for chapter in active_baseline["canon_chapters"] if chapter["source_path"] in accepted
+    ]
+    for key in ("world_rules", "characters", "plot_milestones", "hooks", "style_constraints", "knowledge_candidates"):
+        active_baseline[key] = [item for item in active_baseline[key] if item["source_path"] in accepted_knowledge]
+    _write_json(_import_root(root) / "active_baseline.json", active_baseline)
     return copied
 
 

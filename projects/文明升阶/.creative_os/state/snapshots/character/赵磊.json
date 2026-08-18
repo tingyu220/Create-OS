@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "kind": "character",
+  "subject": "赵磊",
+  "fields": {
+    "observed_in_chapter": 5,
+    "current_goal": "等待林子轩说明去向",
+    "emotional_state": [
+      "担心",
+      "不解"
+    ],
+    "knows": [
+      "林子轩参加紧急项目并将离开一段时间"
+    ],
+    "location": "北华大学宿舍",
+    "must_not_assume": [
+      "龙渊、CMB、神经介入和太阳倒计时"
+    ]
+  },
+  "latest_change": "state-chapter-004-character-赵磊",
+  "evidence": [
+    {
+      "excerpt": "“我还有些东西在宿舍。衣服，书，电脑。”林子轩顿了一下，“还有赵磊。”",
+      "source_chapter": "production/final_chapters/chapter_004.md"
+    }
+  ]
+}

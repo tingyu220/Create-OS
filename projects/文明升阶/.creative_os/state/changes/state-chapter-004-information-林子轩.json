@@ -1,0 +1,26 @@
+{
+  "memory_id": "state-chapter-004-information-林子轩",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“赵磊那边，我们会安排正常的信息流。他不会有任何察觉。”",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "knows": [
+        "龙渊会监控并安排他的生活",
+        "赵磊会被隔离在真相之外"
+      ],
+      "must_not_assume": [
+        "安全部的全部安排",
+        "脑纹校准的完整风险"
+      ]
+    },
+    "id": "chapter-004-information-林子轩",
+    "kind": "information_boundary",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "林子轩"
+  }
+}

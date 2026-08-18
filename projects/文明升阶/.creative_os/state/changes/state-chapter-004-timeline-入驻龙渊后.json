@@ -1,0 +1,20 @@
+{
+  "memory_id": "state-chapter-004-timeline-入驻龙渊后",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "四点整，他推开门，走进了通往核心解码室的灰色走廊。门在他身后轻轻合上。那条走廊很长，一直延伸到未知的深处。林子轩没有回头。",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "precision": "relative_only",
+      "relative_order": "与赵磊告别、搬入龙渊安全宿舍之后，首次脑纹校准之前"
+    },
+    "id": "chapter-004-timeline-入驻龙渊后",
+    "kind": "timeline",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "入驻龙渊后"
+  }
+}

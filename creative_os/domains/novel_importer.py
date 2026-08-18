@@ -29,6 +29,7 @@ def default_novel_mapping() -> dict[str, str]:
         "02_Plot": DocumentRole.OUTLINE.value,
         "03_Hooks": DocumentRole.HOOK.value,
         "05_Context": DocumentRole.AUTHOR_CONTEXT.value,
+        "06_重构方案.md": DocumentRole.OUTLINE.value,
         "核心框架.md": DocumentRole.WORLD.value,
         "Novel_README.md": DocumentRole.AUTHOR_CONTEXT.value,
     }

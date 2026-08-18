@@ -1,0 +1,20 @@
+{
+  "schema_version": 2,
+  "kind": "event",
+  "subject": "林子轩身世揭露",
+  "fields": {
+    "outcome": "林子轩得知父母身份、D-7介入和九年窗口，双方关系从隐瞒转为无法回避的对峙。",
+    "participants": [
+      "林子轩",
+      "林正弘",
+      "苏晚晴"
+    ]
+  },
+  "latest_change": "state-chapter-003-event-身世揭露",
+  "evidence": [
+    {
+      "excerpt": "“新生儿林子轩，出生72小时。已实施神经介入方案D-7。介入结果：成功。皮层响应测试通过。预期目标：待持续观察。”",
+      "source_chapter": "production/final_chapters/chapter_003.md"
+    }
+  ]
+}

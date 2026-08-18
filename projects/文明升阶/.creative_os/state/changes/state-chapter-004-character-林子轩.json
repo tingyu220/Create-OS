@@ -1,0 +1,29 @@
+{
+  "memory_id": "state-chapter-004-character-林子轩",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“我还有些东西在宿舍。衣服，书，电脑。”林子轩顿了一下，“还有赵磊。”",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "current_goal": "适应龙渊生活并完成首次脑纹校准",
+      "emotional_state": [
+        "疲惫",
+        "失重感",
+        "克制"
+      ],
+      "known_facts": [
+        "自己将长期留在龙渊",
+        "离开校园会被项目以正常信息流掩盖"
+      ],
+      "location": "龙渊安全宿舍"
+    },
+    "id": "chapter-004-character-林子轩",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "林子轩"
+  }
+}

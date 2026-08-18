@@ -11,6 +11,7 @@ def test_classifier_keeps_official_chapters_and_excludes_fix_tree(tmp_path):
         "02_Plot/第一卷.md",
         "03_Hooks/Hooks_Tracker.md",
         "05_Context/Author_Diary.md",
+        "06_重构方案.md",
         "fix/第1章 数据里的幽灵.md",
     ):
         path = source / relative
@@ -22,6 +23,7 @@ def test_classifier_keeps_official_chapters_and_excludes_fix_tree(tmp_path):
     assert role_of(result, "04_Chapters/第1章 数据里的幽灵.md") == "canon_chapter"
     assert role_of(result, "00_Worldview/Main_Worldview.md") == "world"
     assert role_of(result, "01_Characters/林子轩.md") == "character"
+    assert role_of(result, "06_重构方案.md") == "outline"
     assert role_of(result, "fix/第1章 数据里的幽灵.md") == "archive"
 
 

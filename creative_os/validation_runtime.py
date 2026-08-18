@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -937,7 +938,24 @@ def validate_reader_facing_text(text: str) -> list[str]:
         issues.append("reader_subheading")
     if _has_duplicate_reader_paragraph(text):
         issues.append("duplicate_reader_paragraph")
+    if _has_reversed_dialogue_reference(text):
+        issues.append("dialogue_reference_mismatch")
+    if _has_character_relation_mismatch(text):
+        issues.append("character_relation_mismatch")
     return issues
+
+
+def _has_reversed_dialogue_reference(text: str) -> bool:
+    exchanges = re.findall(r"“([^”]+)”[^\n]{0,32}(?:说|问|答|道|回应|声音)", text)
+    for previous, current in zip(exchanges, exchanges[1:]):
+        match = re.search(r"我们([^。！？，,]{1,12})你", previous)
+        if match and re.search(rf"不是[^。！？，,]*{re.escape(match.group(1))}我", current):
+            return True
+    return False
+
+
+def _has_character_relation_mismatch(text: str) -> bool:
+    return "林子轩" in text and bool(re.search(r"林正弘[^。！？]{0,100}女儿", text))
 
 
 def compose_final_chapter_from_text(source_text: str) -> str:
