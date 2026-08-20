@@ -11,7 +11,11 @@ from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import NarrativeDecision
 from creative_os.domains.narrative_memory import build_narrative_candidate_item
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope, MemoryStatus
-from creative_os.memory.store import JsonMemoryStore, MemoryStoreError
+from creative_os.memory.store import (
+    ImmutableMemoryConflictError,
+    JsonMemoryStore,
+    MemoryStoreError,
+)
 
 
 _CONTRACT_ID_PATTERN = re.compile(r"^narrative-chapter-(00[1-9]|0[1-9][0-9]|[1-9][0-9]{2})$")
@@ -86,6 +90,7 @@ class ContractLifecycleCoordinator:
 
         item_id = physical_key(decision.contract_id, decision.contract_version)
         canonical_content = NarrativeDecisionCodec.encode_v2(decision)
+        expected_hash = NarrativeDecisionCodec.content_hash(decision)
         try:
             existing = self.store.get_strict(item_id)
         except KeyError:
@@ -94,19 +99,12 @@ class ContractLifecycleCoordinator:
             raise ContractStorageError("invalid_contract_envelope") from error
 
         if existing is not None:
-            existing_decision = self._validate_contract_item(
+            return self._require_matching_initial_candidate(
                 existing,
-                expected_contract_id=decision.contract_id,
-                expected_version=1,
-                expected_status=MemoryStatus.CANDIDATE,
+                decision=decision,
+                canonical_content=canonical_content,
+                expected_hash=expected_hash,
             )
-            if (
-                existing.content != canonical_content
-                or NarrativeDecisionCodec.content_hash(existing_decision)
-                != NarrativeDecisionCodec.content_hash(decision)
-            ):
-                raise ContractStorageError("immutable_contract_conflict")
-            return existing
 
         item = build_narrative_candidate_item(
             self.project_root,
@@ -116,6 +114,19 @@ class ContractLifecycleCoordinator:
         )
         try:
             self.store.add_immutable(item)
+        except ImmutableMemoryConflictError:
+            try:
+                stored = self.store.get_strict(item_id)
+            except KeyError as error:
+                raise ContractStorageError("immutable_contract_conflict") from error
+            except MemoryStoreError as error:
+                raise ContractStorageError("invalid_contract_envelope") from error
+            return self._require_matching_initial_candidate(
+                stored,
+                decision=decision,
+                canonical_content=canonical_content,
+                expected_hash=expected_hash,
+            )
         except MemoryStoreError as error:
             raise ContractStorageError("immutable_contract_conflict") from error
         try:
@@ -128,6 +139,27 @@ class ContractLifecycleCoordinator:
             expected_version=1,
             expected_status=MemoryStatus.CANDIDATE,
         )
+        return stored
+
+    def _require_matching_initial_candidate(
+        self,
+        stored: MemoryItem,
+        *,
+        decision: NarrativeDecision,
+        canonical_content: str,
+        expected_hash: str,
+    ) -> MemoryItem:
+        stored_decision = self._validate_contract_item(
+            stored,
+            expected_contract_id=decision.contract_id,
+            expected_version=1,
+            expected_status=MemoryStatus.CANDIDATE,
+        )
+        if (
+            stored.content != canonical_content
+            or NarrativeDecisionCodec.content_hash(stored_decision) != expected_hash
+        ):
+            raise ContractStorageError("immutable_contract_conflict")
         return stored
 
     def read_pointer(self, contract: str | int) -> ContractPointer | None:

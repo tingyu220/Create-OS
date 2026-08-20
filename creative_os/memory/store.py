@@ -23,6 +23,10 @@ class MemoryStoreError(ValueError):
     pass
 
 
+class ImmutableMemoryConflictError(MemoryStoreError):
+    pass
+
+
 _LOCAL_LOCKS: dict[str, threading.Lock] = {}
 _LOCAL_LOCKS_GUARD = threading.Lock()
 _ITEM_FIELDS = frozenset(
@@ -74,9 +78,9 @@ class JsonMemoryStore:
                 try:
                     existing = self._read_item_strict(path, expected_id=item.id)
                 except MemoryStoreError as error:
-                    raise MemoryStoreError(f"immutable memory conflict: {item.id}") from error
+                    raise ImmutableMemoryConflictError(f"immutable memory conflict: {item.id}") from error
                 if existing != item:
-                    raise MemoryStoreError(f"immutable memory conflict: {item.id}")
+                    raise ImmutableMemoryConflictError(f"immutable memory conflict: {item.id}")
                 return existing
             self._write_item(path, item)
             return item

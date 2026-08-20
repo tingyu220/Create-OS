@@ -1,5 +1,7 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from threading import Barrier
 
 import pytest
 
@@ -13,7 +15,7 @@ from creative_os.domains.contract_lifecycle import (
     read_pointer,
 )
 from creative_os.domains.narrative_codec import NarrativeDecisionCodec
-from creative_os.memory.model import MemoryEvidence, MemoryStatus
+from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryStatus
 from creative_os.memory.store import JsonMemoryStore
 from tests.test_narrative_memory import _decision
 
@@ -25,6 +27,23 @@ def _evidence() -> tuple[MemoryEvidence, ...]:
 def _lifecycle(tmp_path) -> tuple[ContractLifecycleCoordinator, object]:
     project = tmp_path / "文明升阶"
     return ContractLifecycleCoordinator(project), project
+
+
+def _race_initial_candidates(project, decisions):
+    lifecycles = tuple(ContractLifecycleCoordinator(project) for _ in decisions)
+    barrier = Barrier(len(decisions))
+
+    def create(index):
+        barrier.wait()
+        try:
+            return lifecycles[index].create_initial_candidate(
+                decisions[index], evidence=_evidence()
+            )
+        except Exception as error:  # Assertions below verify the public error boundary.
+            return error
+
+    with ThreadPoolExecutor(max_workers=len(decisions)) as executor:
+        return tuple(executor.map(create, range(len(decisions))))
 
 
 def test_physical_key_and_pointer_require_the_same_strict_business_version():
@@ -99,6 +118,43 @@ def test_repeated_same_hash_is_idempotent_but_different_content_cannot_overwrite
         )
 
     assert item_path.read_bytes() == before
+
+
+def test_concurrent_same_contract_content_returns_the_single_persisted_candidate(tmp_path):
+    decision = _decision()
+
+    for round_number in range(12):
+        project = tmp_path / f"same-{round_number}" / "文明升阶"
+        results = _race_initial_candidates(project, (decision,) * 8)
+        stored = JsonMemoryStore(project / ".creative_os" / "memory").get_strict(
+            "narrative-chapter-007-v0001"
+        )
+
+        assert results == (stored,) * 8
+        assert list((project / ".creative_os" / "memory" / "items").glob("*.tmp")) == []
+
+
+def test_concurrent_different_contract_content_has_one_winner_and_one_conflict(tmp_path):
+    first = _decision()
+    second = replace(first, arc_goal="同一版本的竞争剧情目标")
+
+    for round_number in range(12):
+        project = tmp_path / f"different-{round_number}" / "文明升阶"
+        results = _race_initial_candidates(project, (first, second))
+        successes = tuple(result for result in results if isinstance(result, MemoryItem))
+        errors = tuple(result for result in results if isinstance(result, Exception))
+
+        assert len(successes) == 1
+        assert len(errors) == 1
+        assert isinstance(errors[0], ContractStorageError)
+        assert str(errors[0]) == "immutable_contract_conflict"
+        assert (
+            JsonMemoryStore(project / ".creative_os" / "memory").get_strict(
+                "narrative-chapter-007-v0001"
+            )
+            == successes[0]
+        )
+        assert list((project / ".creative_os" / "memory" / "items").glob("*.tmp")) == []
 
 
 def test_current_read_uses_only_the_pointer_and_pointer_json_has_three_fields(tmp_path):
