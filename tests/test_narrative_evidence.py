@@ -1,4 +1,6 @@
 import json
+import ast
+from pathlib import Path
 
 import pytest
 
@@ -11,6 +13,7 @@ from creative_os.domains.narrative_evidence import (
     deduplicate_evidence_refs,
     load_chapter_evidence,
 )
+from creative_os.domains.narrative_replay_model import EvidenceRef as ReplayEvidenceRef
 
 
 def _seed_chapter_artifacts(root, chapter_number=1):
@@ -146,3 +149,59 @@ def test_integrity_validator_rejects_memory_evidence_as_field_evidence():
     )
 
     assert [issue.code for issue in issues] == ["evidence_ref_required"]
+
+
+def test_replay_evidence_ref_is_the_single_public_evidence_ref_type():
+    legacy_ref = ReplayEvidenceRef("task", "production/chapter_001/tasks/scene.json", "goal: 推进主线")
+    class_definitions = []
+    for path in Path("creative_os").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        class_definitions.extend(path for node in ast.walk(tree) if isinstance(node, ast.ClassDef) and node.name == "EvidenceRef")
+
+    assert ReplayEvidenceRef is EvidenceRef
+    assert legacy_ref.source_type == "task"
+    assert legacy_ref.source_ref == "production/chapter_001/tasks/scene.json"
+    assert len(class_definitions) == 1
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"located_excerpts": []},
+        {"located_excerpts": ([EvidenceLocator(kind="json_pointer", value="/functions/0"), "文本"],)},
+        {"assertions_by_field_path": []},
+        {"assertions_by_field_path": (("chapter_contract.functions[0]", ["断言"]),)},
+    ],
+)
+def test_resolved_evidence_source_rejects_mutable_nested_containers(changes):
+    with pytest.raises(ValueError, match="tuple"):
+        _resolved_source(**changes)
+
+
+@pytest.mark.parametrize(
+    "resolver",
+    [
+        lambda source_id: RuntimeError("source failed"),
+        lambda source_id: (_ for _ in ()).throw(RuntimeError("source failed")),
+    ],
+)
+def test_integrity_validator_converts_invalid_resolver_results_to_blocking_issues(resolver):
+    issues = EvidenceIntegrityValidator(resolver).validate(_evidence_ref(), "chapter_contract.functions[0]")
+
+    assert [issue.code for issue in issues] == ["evidence_source_unavailable"]
+    assert issues[0].blocking
+
+
+def test_integrity_validator_converts_source_property_errors_to_blocking_issues():
+    class ExplodingSource:
+        @property
+        def source_id(self):
+            raise RuntimeError("source failed")
+
+    issues = EvidenceIntegrityValidator(lambda source_id: ExplodingSource()).validate(
+        _evidence_ref(),
+        "chapter_contract.functions[0]",
+    )
+
+    assert [issue.code for issue in issues] == ["evidence_source_unavailable"]
+    assert issues[0].blocking

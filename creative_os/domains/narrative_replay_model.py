@@ -3,20 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from creative_os.domains.narrative_decision import ProtagonistChoice
+from creative_os.domains.narrative_evidence import EvidenceRef
 
 
 UNKNOWN = "unknown"
-
-
-@dataclass(frozen=True, slots=True)
-class EvidenceRef:
-    source_type: str
-    source_ref: str
-    excerpt: str
-
-    def validate(self) -> None:
-        if not self.source_type.strip() or not self.source_ref.strip() or not self.excerpt.strip():
-            raise ValueError("evidence requires source_type, source_ref and excerpt")
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,9 +4,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from creative_os.domains.narrative_decision import NarrativeDecision, NarrativeValidationError
+from creative_os.domains.narrative_evidence import EvidenceRef
 from creative_os.domains.narrative_progression import evaluate_progression
 from creative_os.domains.narrative_replay_model import (
-    EvidenceRef,
     ReplayNarrativeIssue,
     ReplayedChapterContract,
     UNKNOWN,

@@ -6,8 +6,8 @@ from pathlib import Path
 
 from creative_os.domains.narrative_decision import NarrativeDecision
 from creative_os.domains.narrative_decision import ProtagonistChoice
-from creative_os.domains.narrative_evidence import ChapterEvidence, JsonArtifact, load_chapter_evidence
-from creative_os.domains.narrative_replay_model import EvidenceRef, ReplayedChapterContract, UNKNOWN
+from creative_os.domains.narrative_evidence import ChapterEvidence, EvidenceRef, JsonArtifact, load_chapter_evidence
+from creative_os.domains.narrative_replay_model import ReplayedChapterContract, UNKNOWN
 from creative_os.domains.narrative_replay_store import NarrativeReplayEvent, NarrativeReplayStore
 from creative_os.domains.narrative_review import TIME_OPENERS, review_narrative
 

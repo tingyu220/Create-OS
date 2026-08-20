@@ -36,23 +36,119 @@ class EvidenceLocator:
         _require_text(self.value, "locator value")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class EvidenceRef:
-    """Immutable evidence bound to one contract field and one source version."""
+    """The single immutable evidence type for contracts and legacy replay reads."""
 
-    evidence_id: str
-    contract_id: str
-    contract_version: int
-    field_path: str
-    role: EvidenceRole
-    source_id: str
-    source_version: str
-    source_content_hash: str
-    locator: EvidenceLocator
+    source_type: str | None
+    source_ref: str | None
     excerpt: str
-    assertion: str
+    evidence_id: str | None
+    contract_id: str | None
+    contract_version: int | None
+    field_path: str | None
+    role: EvidenceRole | None
+    source_id: str | None
+    source_version: str | None
+    source_content_hash: str | None
+    locator: EvidenceLocator | None
+    assertion: str | None
 
-    def __post_init__(self) -> None:
+    def __init__(
+        self,
+        source_type: str | None = None,
+        source_ref: str | None = None,
+        excerpt: str | None = None,
+        *,
+        evidence_id: str | None = None,
+        contract_id: str | None = None,
+        contract_version: int | None = None,
+        field_path: str | None = None,
+        role: EvidenceRole | None = None,
+        source_id: str | None = None,
+        source_version: str | None = None,
+        source_content_hash: str | None = None,
+        locator: EvidenceLocator | None = None,
+        assertion: str | None = None,
+    ) -> None:
+        legacy_values = (source_type, source_ref)
+        field_values = (
+            evidence_id,
+            contract_id,
+            contract_version,
+            field_path,
+            role,
+            source_id,
+            source_version,
+            source_content_hash,
+            locator,
+            assertion,
+        )
+        if any(value is not None for value in legacy_values):
+            if any(value is not None for value in field_values):
+                raise ValueError("legacy replay evidence cannot include contract binding fields")
+            _require_text(source_type, "source_type")
+            _require_text(source_ref, "source_ref")
+            _require_text(excerpt, "excerpt")
+            object.__setattr__(self, "source_type", source_type)
+            object.__setattr__(self, "source_ref", source_ref)
+            object.__setattr__(self, "excerpt", excerpt)
+            for name in (
+                "evidence_id",
+                "contract_id",
+                "contract_version",
+                "field_path",
+                "role",
+                "source_id",
+                "source_version",
+                "source_content_hash",
+                "locator",
+                "assertion",
+            ):
+                object.__setattr__(self, name, None)
+            return
+
+        for name in (
+            "evidence_id",
+            "contract_id",
+            "field_path",
+            "source_id",
+            "source_version",
+            "source_content_hash",
+            "excerpt",
+            "assertion",
+        ):
+            _require_text(locals()[name], name)
+        if not isinstance(contract_version, int) or contract_version < 1:
+            raise ValueError("contract_version must be a positive integer")
+        if not isinstance(role, EvidenceRole):
+            raise ValueError("role must be an EvidenceRole")
+        if not isinstance(locator, EvidenceLocator):
+            raise ValueError("locator must be an EvidenceLocator")
+        object.__setattr__(self, "source_type", None)
+        object.__setattr__(self, "source_ref", None)
+        object.__setattr__(self, "excerpt", excerpt)
+        object.__setattr__(self, "evidence_id", evidence_id)
+        object.__setattr__(self, "contract_id", contract_id)
+        object.__setattr__(self, "contract_version", contract_version)
+        object.__setattr__(self, "field_path", field_path)
+        object.__setattr__(self, "role", role)
+        object.__setattr__(self, "source_id", source_id)
+        object.__setattr__(self, "source_version", source_version)
+        object.__setattr__(self, "source_content_hash", source_content_hash)
+        object.__setattr__(self, "locator", locator)
+        object.__setattr__(self, "assertion", assertion)
+
+    @property
+    def is_legacy_replay_ref(self) -> bool:
+        return self.source_type is not None
+
+    def validate(self) -> None:
+        if self.is_legacy_replay_ref:
+            _require_text(self.source_type, "source_type")
+            _require_text(self.source_ref, "source_ref")
+            _require_text(self.excerpt, "excerpt")
+            return
         for name in (
             "evidence_id",
             "contract_id",
@@ -73,6 +169,16 @@ class EvidenceRef:
 
     @property
     def deduplication_key(self) -> tuple[str, int, str, EvidenceRole, str, str, EvidenceLocator, str]:
+        if self.is_legacy_replay_ref:
+            raise ValueError("legacy replay evidence has no contract deduplication key")
+        assert self.contract_id is not None
+        assert self.contract_version is not None
+        assert self.field_path is not None
+        assert self.role is not None
+        assert self.source_id is not None
+        assert self.source_version is not None
+        assert self.locator is not None
+        assert self.source_content_hash is not None
         return (
             self.contract_id,
             self.contract_version,
@@ -113,12 +219,22 @@ class ResolvedEvidenceSource:
         _require_text(self.source_id, "source_id")
         _require_text(self.source_version, "source_version")
         _require_text(self.source_content_hash, "source_content_hash")
-        for locator, excerpt in self.located_excerpts:
+        if not isinstance(self.located_excerpts, tuple) or not isinstance(self.assertions_by_field_path, tuple):
+            raise ValueError("resolved evidence source collections must be tuples")
+        for item in self.located_excerpts:
+            if not isinstance(item, tuple) or len(item) != 2:
+                raise ValueError("located_excerpts entries must be tuples")
+            locator, excerpt = item
             if not isinstance(locator, EvidenceLocator):
                 raise ValueError("located_excerpts requires EvidenceLocator values")
             _require_text(excerpt, "located excerpt")
-        for field_path, assertions in self.assertions_by_field_path:
+        for item in self.assertions_by_field_path:
+            if not isinstance(item, tuple) or len(item) != 2:
+                raise ValueError("assertion entries must be tuples")
+            field_path, assertions = item
             _require_text(field_path, "assertion field_path")
+            if not isinstance(assertions, tuple):
+                raise ValueError("assertions must be tuples")
             if not assertions or any(not isinstance(value, str) or not value.strip() for value in assertions):
                 raise ValueError("assertions must contain non-empty values")
 
@@ -144,24 +260,24 @@ class EvidenceIntegrityValidator:
     def validate(self, ref: object, expected_field_path: str) -> tuple[ContractIssue, ...]:
         if not isinstance(ref, EvidenceRef):
             return (self._issue("evidence_ref_required", expected_field_path, "请提供字段级 EvidenceRef，而不是存储信封证据。"),)
-        if ref.field_path != expected_field_path:
+        if ref.is_legacy_replay_ref or ref.field_path != expected_field_path:
             return (self._issue("evidence_field_path_mismatch", expected_field_path, "将证据绑定到当前字段路径。"),)
         try:
             source = self._source_resolver(ref.source_id)
+            if source is None:
+                return (self._issue("evidence_source_missing", ref.field_path, "恢复来源或重新绑定证据。"),)
+            if source.source_id != ref.source_id:
+                return (self._issue("evidence_source_mismatch", ref.field_path, "重新绑定正确的来源。"),)
+            if source.source_version != ref.source_version:
+                return (self._issue("evidence_version_mismatch", ref.field_path, "更新为来源的当前版本。"),)
+            if source.source_content_hash != ref.source_content_hash:
+                return (self._issue("evidence_hash_mismatch", ref.field_path, "更新为来源的当前内容哈希。"),)
+            if source.excerpt_at(ref.locator) is None:
+                return (self._issue("evidence_locator_unresolved", ref.field_path, "使用当前来源中可定位的位置。"),)
+            if not source.supports_assertion(ref.field_path, ref.assertion):
+                return (self._issue("evidence_assertion_mismatch", ref.field_path, "为该字段提供可验证的断言。"),)
         except Exception:
             return (self._issue("evidence_source_unavailable", ref.field_path, "恢复可读取的权威来源后重新校验。"),)
-        if source is None:
-            return (self._issue("evidence_source_missing", ref.field_path, "恢复来源或重新绑定证据。"),)
-        if source.source_id != ref.source_id:
-            return (self._issue("evidence_source_mismatch", ref.field_path, "重新绑定正确的来源。"),)
-        if source.source_version != ref.source_version:
-            return (self._issue("evidence_version_mismatch", ref.field_path, "更新为来源的当前版本。"),)
-        if source.source_content_hash != ref.source_content_hash:
-            return (self._issue("evidence_hash_mismatch", ref.field_path, "更新为来源的当前内容哈希。"),)
-        if source.excerpt_at(ref.locator) is None:
-            return (self._issue("evidence_locator_unresolved", ref.field_path, "使用当前来源中可定位的位置。"),)
-        if not source.supports_assertion(ref.field_path, ref.assertion):
-            return (self._issue("evidence_assertion_mismatch", ref.field_path, "为该字段提供可验证的断言。"),)
         return ()
 
     @staticmethod
