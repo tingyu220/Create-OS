@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from creative_os.domains.narrative_decision import NarrativeDecision, NarrativeValidationError
 from creative_os.domains.narrative_progression import evaluate_progression
+from creative_os.domains.narrative_replay_model import (
+    EvidenceRef,
+    ReplayNarrativeIssue,
+    ReplayedChapterContract,
+    UNKNOWN,
+)
 
 
 TIME_OPENERS = ("凌晨", "清晨", "早晨", "上午", "中午", "午后", "傍晚", "夜晚", "深夜")
@@ -14,6 +21,59 @@ class NarrativeIssue:
     code: str
     severity: str
     evidence: str
+
+
+def review_replayed_contract(
+    contract: ReplayedChapterContract,
+    recent: tuple[ReplayedChapterContract, ...] = (),
+) -> tuple[ReplayNarrativeIssue, ...]:
+    contract.validate()
+    issues: list[ReplayNarrativeIssue] = []
+
+    if contract.protagonist_choice is None:
+        issues.append(_replay_issue(
+            "missing_protagonist_choice",
+            "没有结构化证据证明主角在本章作出主动选择。",
+            contract,
+            "人工核对任务与正文；确认后补录人物选择证据。",
+        ))
+    elif not contract.protagonist_choice.cost.strip() or contract.protagonist_choice.cost == UNKNOWN:
+        issues.append(_replay_issue(
+            "missing_choice_cost",
+            "人物选择缺少可确认的代价。",
+            contract,
+            "人工确认选择造成的即时或延迟代价并补录证据。",
+        ))
+
+    if contract.reader_before == UNKNOWN or contract.reader_after == UNKNOWN:
+        issues.append(_replay_issue(
+            "unknown_reader_change",
+            "读者认知前后变化缺少明确证据。",
+            contract,
+            "人工标注本章揭示、隐藏或误导的信息变化。",
+        ))
+
+    current_functions = {item for item in contract.functions if item != UNKNOWN}
+    for previous in reversed(recent):
+        overlap = current_functions & {item for item in previous.functions if item != UNKNOWN}
+        if overlap:
+            issues.append(ReplayNarrativeIssue(
+                code="repeated_chapter_function",
+                severity="warning",
+                message=f"与近期章节重复功能：{'、'.join(sorted(overlap))}",
+                evidence=_unique_replay_evidence((*contract.evidence, *previous.evidence)),
+                repair_hint="人工判断该重复是否承担升级、转折或兑现功能；否则调整章节职责。",
+            ))
+            break
+
+    if contract.ending_shift == UNKNOWN:
+        issues.append(_replay_issue(
+            "unknown_ending_shift",
+            "章节结尾的新失衡缺少明确证据。",
+            contract,
+            "人工确认结尾改变了哪项风险、关系、信息或行动条件。",
+        ))
+    return tuple(issues)
 
 
 def review_narrative(
@@ -68,3 +128,29 @@ def _opening(text: str) -> str:
         if value and not value.startswith("#"):
             return value[:120]
     return ""
+
+
+def _replay_issue(
+    code: str,
+    message: str,
+    contract: ReplayedChapterContract,
+    repair_hint: str,
+) -> ReplayNarrativeIssue:
+    return ReplayNarrativeIssue(
+        code=code,
+        severity="warning",
+        message=message,
+        evidence=contract.evidence,
+        repair_hint=repair_hint,
+    )
+
+
+def _unique_replay_evidence(values: Iterable[EvidenceRef]) -> tuple[EvidenceRef, ...]:
+    result: list[EvidenceRef] = []
+    seen: set[tuple[str, str, str]] = set()
+    for value in values:
+        marker = (value.source_type, value.source_ref, value.excerpt)
+        if marker not in seen:
+            seen.add(marker)
+            result.append(value)
+    return tuple(result)
