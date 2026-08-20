@@ -55,6 +55,16 @@ tests/         V1 验收测试
 python -m pytest -q
 ```
 
+## 只读章节叙事回放
+
+从现有正式正文和生产 Artifact 回放可追溯的章节合同，不生成或修改正文：
+
+```powershell
+python scripts\replay_narrative.py --project-root projects\validation_novel --start 1 --end 6
+```
+
+报告写入 `production\reports\narrative_replay_001_006.json` 和同名 Markdown 文件。缺少结构化证据的戏剧问题、人物选择、Reader State 或压力变化会保留为 `unknown`，Reviewer 仅生成 Issue 和人工修复建议。
+
 ## 新开一本小说
 
 使用书名作为项目总文件夹：

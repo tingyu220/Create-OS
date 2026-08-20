@@ -1,0 +1,737 @@
+{
+  "chapter_count": 6,
+  "chapters": [
+    {
+      "chapter_id": "chapter_001",
+      "contract": {
+        "chapter_id": "chapter_001",
+        "dramatic_question": "unknown",
+        "ending_shift": "灯光中出现林遥被带走的记忆残影",
+        "evidence": [
+          {
+            "excerpt": "雾城南站的钟停在六点十七分。",
+            "source_ref": "production/final_chapters/chapter_001.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 让林澈回到雾城，并建立禁灯令压力",
+            "source_ref": "production/chapter_001/tasks/chapter-001-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 确认林遥失踪不是普通离城",
+            "source_ref": "production/chapter_001/tasks/chapter-001-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 用异常旧灯触发第一个核心谜团",
+            "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 灯光中出现林遥被带走的记忆残影",
+            "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "让林澈回到雾城，并建立禁灯令压力",
+          "确认林遥失踪不是普通离城",
+          "用异常旧灯触发第一个核心谜团"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "雾城南站的钟停在六点十七分。",
+              "source_ref": "production/final_chapters/chapter_001.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈回到雾城，并建立禁灯令压力",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 确认林遥失踪不是普通离城",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 用异常旧灯触发第一个核心谜团",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 灯光中出现林遥被带走的记忆残影",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "雾城南站的钟停在六点十七分。",
+              "source_ref": "production/final_chapters/chapter_001.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈回到雾城，并建立禁灯令压力",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 确认林遥失踪不是普通离城",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 用异常旧灯触发第一个核心谜团",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 灯光中出现林遥被带走的记忆残影",
+              "source_ref": "production/chapter_001/tasks/chapter-001-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    },
+    {
+      "chapter_id": "chapter_002",
+      "contract": {
+        "chapter_id": "chapter_002",
+        "dramatic_question": "unknown",
+        "ending_shift": "阿岚指出林遥来过，并留下废弃档案库方向；许砚发现林澈违规入城",
+        "evidence": [
+          {
+            "excerpt": "旧灯巷白天也像夜里。",
+            "source_ref": "production/final_chapters/chapter_002.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 让林澈找到冷光管来源，并引出阿岚",
+            "source_ref": "production/chapter_002/tasks/chapter-002-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 建立许砚追查林澈的任务线",
+            "source_ref": "production/chapter_002/tasks/chapter-002-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 验证冷光管并把林遥线索推向废档案库",
+            "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 阿岚指出林遥来过，并留下废弃档案库方向；许砚发现林澈违规入城",
+            "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "让林澈找到冷光管来源，并引出阿岚",
+          "建立许砚追查林澈的任务线",
+          "验证冷光管并把林遥线索推向废档案库"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "旧灯巷白天也像夜里。",
+              "source_ref": "production/final_chapters/chapter_002.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈找到冷光管来源，并引出阿岚",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 建立许砚追查林澈的任务线",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 验证冷光管并把林遥线索推向废档案库",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 阿岚指出林遥来过，并留下废弃档案库方向；许砚发现林澈违规入城",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "旧灯巷白天也像夜里。",
+              "source_ref": "production/final_chapters/chapter_002.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈找到冷光管来源，并引出阿岚",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 建立许砚追查林澈的任务线",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 验证冷光管并把林遥线索推向废档案库",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 阿岚指出林遥来过，并留下废弃档案库方向；许砚发现林澈违规入城",
+              "source_ref": "production/chapter_002/tasks/chapter-002-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    },
+    {
+      "chapter_id": "chapter_003",
+      "contract": {
+        "chapter_id": "chapter_003",
+        "dramatic_question": "unknown",
+        "ending_shift": "林澈接受交易，获得废弃档案库入口和回声室的间接线索",
+        "evidence": [
+          {
+            "excerpt": "旧灯巷的路不像路，更像一串被雾泡软的缝。",
+            "source_ref": "production/final_chapters/chapter_003.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 让林澈在追捕中保住冷光管和林遥线索",
+            "source_ref": "production/chapter_003/tasks/chapter-003-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 让许砚发现灯务署记录异常",
+            "source_ref": "production/chapter_003/tasks/chapter-003-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 明确下一步进入废弃档案库",
+            "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 林澈接受交易，获得废弃档案库入口和回声室的间接线索",
+            "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "让林澈在追捕中保住冷光管和林遥线索",
+          "让许砚发现灯务署记录异常",
+          "明确下一步进入废弃档案库"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "旧灯巷的路不像路，更像一串被雾泡软的缝。",
+              "source_ref": "production/final_chapters/chapter_003.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈在追捕中保住冷光管和林遥线索",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚发现灯务署记录异常",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 明确下一步进入废弃档案库",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈接受交易，获得废弃档案库入口和回声室的间接线索",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "旧灯巷的路不像路，更像一串被雾泡软的缝。",
+              "source_ref": "production/final_chapters/chapter_003.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈在追捕中保住冷光管和林遥线索",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚发现灯务署记录异常",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 明确下一步进入废弃档案库",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈接受交易，获得废弃档案库入口和回声室的间接线索",
+              "source_ref": "production/chapter_003/tasks/chapter-003-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    },
+    {
+      "chapter_id": "chapter_004",
+      "contract": {
+        "chapter_id": "chapter_004",
+        "dramatic_question": "unknown",
+        "ending_shift": "林澈逃脱但编号暴露，许砚开始私下追查回声室",
+        "evidence": [
+          {
+            "excerpt": "钥匙插进去的时候，林澈感觉到锁芯在吃他的指纹。",
+            "source_ref": "production/final_chapters/chapter_004.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 进入废弃档案库并建立档案被清理过的异常",
+            "source_ref": "production/chapter_004/tasks/chapter-004-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 读取林遥和岚舟的自愿离城底稿",
+            "source_ref": "production/chapter_004/tasks/chapter-004-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 让许砚追上林澈并看到回声室编号",
+            "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 林澈逃脱但编号暴露，许砚开始私下追查回声室",
+            "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "进入废弃档案库并建立档案被清理过的异常",
+          "读取林遥和岚舟的自愿离城底稿",
+          "让许砚追上林澈并看到回声室编号"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "钥匙插进去的时候，林澈感觉到锁芯在吃他的指纹。",
+              "source_ref": "production/final_chapters/chapter_004.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 进入废弃档案库并建立档案被清理过的异常",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 读取林遥和岚舟的自愿离城底稿",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚追上林澈并看到回声室编号",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈逃脱但编号暴露，许砚开始私下追查回声室",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "钥匙插进去的时候，林澈感觉到锁芯在吃他的指纹。",
+              "source_ref": "production/final_chapters/chapter_004.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 进入废弃档案库并建立档案被清理过的异常",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 读取林遥和岚舟的自愿离城底稿",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚追上林澈并看到回声室编号",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈逃脱但编号暴露，许砚开始私下追查回声室",
+              "source_ref": "production/chapter_004/tasks/chapter-004-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    },
+    {
+      "chapter_id": "chapter_005",
+      "contract": {
+        "chapter_id": "chapter_005",
+        "dramatic_question": "unknown",
+        "ending_shift": "许砚发现缺页与回声室编号相关，决定暂缓上报林澈看到的残影",
+        "evidence": [
+          {
+            "excerpt": "审查室的门关上时，林澈往左挪了半步。",
+            "source_ref": "production/final_chapters/chapter_005.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 通过审问揭示林澈熟悉灯务署流程",
+            "source_ref": "production/chapter_005/tasks/chapter-005-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 让许砚首次看到记忆残影",
+            "source_ref": "production/chapter_005/tasks/chapter-005-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 让许砚发现审查记录缺页并形成后续调查动机",
+            "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 许砚发现缺页与回声室编号相关，决定暂缓上报林澈看到的残影",
+            "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "通过审问揭示林澈熟悉灯务署流程",
+          "让许砚首次看到记忆残影",
+          "让许砚发现审查记录缺页并形成后续调查动机"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "审查室的门关上时，林澈往左挪了半步。",
+              "source_ref": "production/final_chapters/chapter_005.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 通过审问揭示林澈熟悉灯务署流程",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚首次看到记忆残影",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚发现审查记录缺页并形成后续调查动机",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 许砚发现缺页与回声室编号相关，决定暂缓上报林澈看到的残影",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "审查室的门关上时，林澈往左挪了半步。",
+              "source_ref": "production/final_chapters/chapter_005.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 通过审问揭示林澈熟悉灯务署流程",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚首次看到记忆残影",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让许砚发现审查记录缺页并形成后续调查动机",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 许砚发现缺页与回声室编号相关，决定暂缓上报林澈看到的残影",
+              "source_ref": "production/chapter_005/tasks/chapter-005-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    },
+    {
+      "chapter_id": "chapter_006",
+      "contract": {
+        "chapter_id": "chapter_006",
+        "dramatic_question": "unknown",
+        "ending_shift": "林澈看见自己安装过与回声室相连的模块",
+        "evidence": [
+          {
+            "excerpt": "白塔旧址的铁门推开时，锈迹从铰链上簌簌往下掉。",
+            "source_ref": "production/final_chapters/chapter_006.md",
+            "source_type": "chapter"
+          },
+          {
+            "excerpt": "goal: 让林澈抵达白塔旧址并寻找回声室来源",
+            "source_ref": "production/chapter_006/tasks/chapter-006-scene-001.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 让林澈发现自己与白塔事故存在旧关联",
+            "source_ref": "production/chapter_006/tasks/chapter-006-scene-002.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "goal: 触发林澈关于安装模块的第一段记忆残影",
+            "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+            "source_type": "task"
+          },
+          {
+            "excerpt": "outcome: 林澈看见自己安装过与回声室相连的模块",
+            "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+            "source_type": "task"
+          }
+        ],
+        "functions": [
+          "让林澈抵达白塔旧址并寻找回声室来源",
+          "让林澈发现自己与白塔事故存在旧关联",
+          "触发林澈关于安装模块的第一段记忆残影"
+        ],
+        "pressure_end": "unknown",
+        "pressure_start": "unknown",
+        "protagonist_choice": null,
+        "reader_after": "unknown",
+        "reader_before": "unknown"
+      },
+      "issues": [
+        {
+          "code": "missing_protagonist_choice",
+          "evidence": [
+            {
+              "excerpt": "白塔旧址的铁门推开时，锈迹从铰链上簌簌往下掉。",
+              "source_ref": "production/final_chapters/chapter_006.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈抵达白塔旧址并寻找回声室来源",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让林澈发现自己与白塔事故存在旧关联",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 触发林澈关于安装模块的第一段记忆残影",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈看见自己安装过与回声室相连的模块",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "没有结构化证据证明主角在本章作出主动选择。",
+          "repair_hint": "人工核对任务与正文；确认后补录人物选择证据。",
+          "severity": "warning"
+        },
+        {
+          "code": "unknown_reader_change",
+          "evidence": [
+            {
+              "excerpt": "白塔旧址的铁门推开时，锈迹从铰链上簌簌往下掉。",
+              "source_ref": "production/final_chapters/chapter_006.md",
+              "source_type": "chapter"
+            },
+            {
+              "excerpt": "goal: 让林澈抵达白塔旧址并寻找回声室来源",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-001.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 让林澈发现自己与白塔事故存在旧关联",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-002.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "goal: 触发林澈关于安装模块的第一段记忆残影",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+              "source_type": "task"
+            },
+            {
+              "excerpt": "outcome: 林澈看见自己安装过与回声室相连的模块",
+              "source_ref": "production/chapter_006/tasks/chapter-006-scene-003.json",
+              "source_type": "task"
+            }
+          ],
+          "message": "读者认知前后变化缺少明确证据。",
+          "repair_hint": "人工标注本章揭示、隐藏或误导的信息变化。",
+          "severity": "warning"
+        }
+      ],
+      "unknown_fields": [
+        "dramatic_question",
+        "protagonist_choice",
+        "reader_before",
+        "reader_after",
+        "pressure_start",
+        "pressure_end"
+      ]
+    }
+  ],
+  "end": 6,
+  "issue_count": 12,
+  "project_id": "validation_novel",
+  "start": 1,
+  "traceable": true,
+  "unknown_field_count": 36
+}
