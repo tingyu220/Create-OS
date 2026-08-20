@@ -111,37 +111,56 @@ class CausalDependencyAnalyzer:
         result: object,
     ) -> tuple[ContractIssue, ...]:
         path = "chapter_contract.optional_candidates"
+        issues: list[ContractIssue] = []
+        if not isinstance(result, CausalAnalysisResult):
+            return (_issue("causal_analysis_failed", path, "恢复完整因果结果后重新分析。"),)
+        if isinstance(result.issues, tuple) and all(isinstance(issue, ContractIssue) for issue in result.issues):
+            issues.extend(result.issues)
+        else:
+            issues.append(_issue("causal_analysis_failed", path, "因果 issues 必须是 ContractIssue tuple。"))
+        if not isinstance(candidate, NarrativeDecision):
+            issues.append(_issue("causal_analysis_failed", path, "恢复完整候选后重新分析。"))
+            return _deduplicate_issues(issues)
+
         try:
-            if not isinstance(candidate, NarrativeDecision) or not isinstance(result, CausalAnalysisResult):
-                raise TypeError("candidate and result types are required")
-            candidate.validate()
-            expected_hash = NarrativeDecisionCodec.content_hash(candidate)
-            if not isinstance(result.issues, tuple) or not all(
-                isinstance(issue, ContractIssue) for issue in result.issues
-            ):
-                raise TypeError("causal issues must be ContractIssue tuple")
-
-            issues = list(result.issues)
-            if result.candidate_content_hash != expected_hash:
-                issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选内容哈希。"))
-            if result.ruleset_version != CAUSAL_RULESET_VERSION_V1:
-                issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用当前规则版本。"))
-            if result.field_paths != CAUSAL_FIELD_PATHS_V1:
-                issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用完整字段闭包。"))
-
             resolutions, validation_issues = self._validate_candidate(candidate)
             issues.extend(validation_issues)
-            if result.resolutions != resolutions:
-                issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选的完整裁决集合。"))
-            elif not validation_issues:
+        except Exception:
+            resolutions = ()
+            issues.append(_issue("causal_analysis_failed", path, "恢复候选裁决集合后重新分析。"))
+
+        if not isinstance(result.resolutions, tuple) or result.resolutions != resolutions:
+            issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选的完整裁决集合。"))
+        else:
+            valid_resolutions: list[OptionalCandidateResolution] = []
+            for resolution in resolutions:
+                try:
+                    resolution.validate()
+                except Exception:
+                    continue
+                valid_resolutions.append(resolution)
+            try:
                 issues.extend(
                     issue
-                    for resolution in resolutions
+                    for resolution in valid_resolutions
                     for issue in self._analyze_resolution(candidate, resolution)
                 )
-            return _deduplicate_issues(issues)
+            except Exception:
+                issues.append(_issue("causal_analysis_failed", path, "重新验证候选因果语义。"))
+
+        if result.ruleset_version != CAUSAL_RULESET_VERSION_V1:
+            issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用当前规则版本。"))
+        if result.field_paths != CAUSAL_FIELD_PATHS_V1:
+            issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用完整字段闭包。"))
+        try:
+            candidate.validate()
+            expected_hash = NarrativeDecisionCodec.content_hash(candidate)
         except Exception:
-            return (_issue("causal_analysis_failed", path, "恢复完整候选与因果结果后重新分析。"),)
+            issues.append(_issue("causal_analysis_failed", path, "修复候选后重新计算因果绑定哈希。"))
+        else:
+            if result.candidate_content_hash != expected_hash:
+                issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选内容哈希。"))
+        return _deduplicate_issues(issues)
 
     @staticmethod
     def _validate_candidate(

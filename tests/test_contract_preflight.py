@@ -429,6 +429,67 @@ def test_same_task_and_director_intent_value_is_accepted_but_conflict_is_blockin
     )
 
 
+def test_director_and_profile_value_difference_does_not_use_task_director_conflict_code():
+    path = "chapter_contract.functions[0]"
+    candidate = _candidate()
+    profile_ref = _ref(path, INTENT_VALUES[path], source_id="profile/chapter-007")
+    candidate = replace(
+        candidate,
+        chapter_contract=replace(
+            candidate.chapter_contract,
+            intent_evidence_bindings=tuple(
+                replace(binding, evidence=binding.evidence + (profile_ref,))
+                if binding.field_path == path
+                else binding
+                for binding in candidate.chapter_contract.intent_evidence_bindings
+            ),
+        ),
+    )
+    resolver = _resolver(
+        _source(AUTHORITATIVE_VALUES),
+        _source(
+            {path: "Profile 中的不同约束值"},
+            source_id="profile/chapter-007",
+            source_kind=EvidenceSourceKind.PROFILE,
+        ),
+    )
+
+    result = _validate(candidate, sources=resolver)
+
+    assert any(issue.code == "evidence_excerpt_mismatch" for issue in result.issues)
+    assert not any(issue.code == "conflicting_intent_evidence" for issue in result.issues)
+
+
+def test_multiple_intent_evidence_from_one_director_source_does_not_conflict():
+    path = "chapter_contract.functions[0]"
+    candidate = _candidate()
+    duplicate = replace(
+        next(
+            binding.evidence[0]
+            for binding in candidate.chapter_contract.intent_evidence_bindings
+            if binding.field_path == path
+        ),
+        evidence_id="ev-director-second-proof",
+        assertion="Task 明确要求本章推进主线",
+    )
+    candidate = replace(
+        candidate,
+        chapter_contract=replace(
+            candidate.chapter_contract,
+            intent_evidence_bindings=tuple(
+                replace(binding, evidence=binding.evidence + (duplicate,))
+                if binding.field_path == path
+                else binding
+                for binding in candidate.chapter_contract.intent_evidence_bindings
+            ),
+        ),
+    )
+
+    result = _validate(candidate)
+
+    assert result.issues == ()
+
+
 def test_intent_path_rejects_an_extra_non_applicability_role_even_when_intent_exists():
     path = "chapter_contract.functions[0]"
     candidate = _candidate()
@@ -543,6 +604,36 @@ def test_forged_issue_free_undetermined_causal_result_still_fails_closed():
     assert any(
         issue.code == "unresolved_causal_candidate"
         and issue.field_path == "chapter_contract.optional_candidates[candidate-undetermined]"
+        and issue.blocking
+        for issue in result.issues
+    )
+
+
+def test_preflight_preserves_task3_exact_invalid_causal_candidate_issue_before_hash_failure():
+    candidate = _candidate()
+    invalid_resolution = OptionalCandidateResolution(
+        candidate_id="candidate-invalid-rationale",
+        kind="scene_transition",
+        value_state=CandidateValueState.UNKNOWN,
+        proposed_value=None,
+        dependency_inputs=("chapter_contract.pressure_curve.end",),
+        affects_current_chapter=CandidateImpact.NO,
+        rationale="有效理由",
+        decided_by="human",
+        decision_ref="human-ruling-1",
+    )
+    object.__setattr__(invalid_resolution, "rationale", "")
+    candidate = replace(
+        candidate,
+        chapter_contract=replace(candidate.chapter_contract, optional_candidates=(invalid_resolution,)),
+    )
+    causal_result = _causal(candidate)
+
+    result = _validate(candidate, causal_result=causal_result)
+
+    assert any(
+        issue.code == "invalid_causal_candidate"
+        and issue.field_path == "chapter_contract.optional_candidates[candidate-invalid-rationale]"
         and issue.blocking
         for issue in result.issues
     )

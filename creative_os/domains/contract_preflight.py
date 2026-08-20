@@ -304,8 +304,9 @@ def _validate_evidence(
             values_by_kind: dict[EvidenceSourceKind, set[tuple[type, EvidenceValue]]] = {}
             for source_kind, asserted_value in authoritative_intents:
                 values_by_kind.setdefault(source_kind, set()).add((type(asserted_value), asserted_value))
-            all_values = {value for values in values_by_kind.values() for value in values}
-            if len(values_by_kind) > 1 and len(all_values) > 1:
+            task_values = values_by_kind.get(EvidenceSourceKind.TASK)
+            director_values = values_by_kind.get(EvidenceSourceKind.DIRECTOR)
+            if task_values and director_values and len(task_values | director_values) > 1:
                 issues.append(
                     _issue(
                         "conflicting_intent_evidence",
