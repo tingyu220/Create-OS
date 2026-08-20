@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
@@ -62,3 +64,16 @@ def test_revising_active_memory_requires_fresh_approval(tmp_path):
 
     assert revised.status.value == "candidate"
     assert revised.approved_by is None
+
+
+def test_immutable_add_is_idempotent_only_for_the_equal_item(tmp_path):
+    store = JsonMemoryStore(tmp_path / "memory")
+    original = _candidate("contract-physical-v0001")
+
+    assert store.add_immutable(original) == original
+    assert store.add_immutable(original) == original
+
+    with pytest.raises(MemoryStoreError, match="immutable memory conflict"):
+        store.add_immutable(replace(original, content="不能覆盖的另一份内容"))
+
+    assert store.get(original.id) == original

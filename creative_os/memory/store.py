@@ -31,6 +31,17 @@ class JsonMemoryStore:
             raise MemoryStoreError(f"memory already exists: {item.id}")
         self._write_item(path, item)
 
+    def add_immutable(self, item: MemoryItem) -> MemoryItem:
+        """Create an item once; an exact repeated write is idempotent."""
+        path = self._item_path(item.id)
+        if path.exists():
+            existing = self._read_item(path)
+            if existing != item:
+                raise MemoryStoreError(f"immutable memory conflict: {item.id}")
+            return existing
+        self._write_item(path, item)
+        return item
+
     def get(self, item_id: str) -> MemoryItem:
         path = self._item_path(item_id)
         if not path.exists():

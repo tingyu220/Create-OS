@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import NarrativeChangeRequest, NarrativeDecision, NarrativeProjectProfile
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope, MemoryStatus
 from creative_os.memory.store import JsonMemoryStore
@@ -36,14 +37,37 @@ def save_narrative_candidate(
     *,
     evidence: Iterable[MemoryEvidence],
 ) -> MemoryItem:
-    decision.validate()
-    return _save_candidate(
+    item = build_narrative_candidate_item(
         project_root,
-        item_id=f"narrative-chapter-{decision.chapter:03d}",
-        title=f"第 {decision.chapter} 章叙事合同",
-        content=decision.to_json(),
+        decision,
         evidence=evidence,
+        item_id=f"narrative-chapter-{decision.chapter:03d}",
+    )
+    JsonMemoryStore(Path(project_root) / ".creative_os" / "memory").add_candidate(item)
+    return item
+
+
+def build_narrative_candidate_item(
+    project_root: str | Path,
+    decision: NarrativeDecision,
+    *,
+    evidence: Iterable[MemoryEvidence],
+    item_id: str,
+) -> MemoryItem:
+    """Build one canonical contract envelope without choosing a storage policy."""
+    decision.validate()
+    root = Path(project_root)
+    return MemoryItem.new_candidate(
+        id=item_id,
+        kind=MemoryKind.PROJECT_DECISION,
+        scope=MemoryScope.PROJECT,
+        scope_id=root.name,
+        title=f"第 {decision.chapter} 章叙事合同",
+        content=NarrativeDecisionCodec.encode_v2(decision),
+        evidence=tuple(evidence),
+        applicability=("writing", "planning", "review"),
         tags={"novel", "narrative", "narrative_decision", f"chapter_{decision.chapter:03d}"},
+        confidence=1.0,
     )
 
 
