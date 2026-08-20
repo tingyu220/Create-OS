@@ -568,6 +568,20 @@ class NarrativeDecisionCodec:
             nested = contract.get(field_name)
             if not isinstance(nested, dict) or set(nested) != expected:
                 return False
+        evidence_values = [
+            value
+            for value in (payload.get("evidence"), contract.get("evidence"))
+            if value is not None
+        ]
+        if len(evidence_values) > 1:
+            return False
+        legacy_evidence_fields = {"source_type", "source_ref", "excerpt"}
+        if any(
+            not isinstance(evidence, list)
+            or any(not isinstance(item, dict) or set(item) != legacy_evidence_fields for item in evidence)
+            for evidence in evidence_values
+        ):
+            return False
         return all(
             isinstance(contract.get(field_name), list)
             for field_name in ("foreshadow_actions", "forbidden")

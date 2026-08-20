@@ -119,7 +119,7 @@ class EvidenceRef:
             "assertion",
         ):
             _require_text(locals()[name], name)
-        if not isinstance(contract_version, int) or contract_version < 1:
+        if type(contract_version) is not int or contract_version < 1:
             raise ValueError("contract_version must be a positive integer")
         if not isinstance(role, EvidenceRole):
             raise ValueError("role must be an EvidenceRole")
@@ -160,7 +160,7 @@ class EvidenceRef:
             "assertion",
         ):
             _require_text(getattr(self, name), name)
-        if not isinstance(self.contract_version, int) or self.contract_version < 1:
+        if type(self.contract_version) is not int or self.contract_version < 1:
             raise ValueError("contract_version must be a positive integer")
         if not isinstance(self.role, EvidenceRole):
             raise ValueError("role must be an EvidenceRole")

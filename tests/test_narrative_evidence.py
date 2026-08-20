@@ -106,6 +106,19 @@ def test_evidence_locator_only_accepts_design_kinds():
         EvidenceLocator(kind="page", value="1")
 
 
+def test_evidence_ref_constructor_rejects_bool_contract_version():
+    with pytest.raises(ValueError, match="positive integer"):
+        _evidence_ref(contract_version=True)
+
+
+def test_evidence_ref_validate_rejects_bool_contract_version_defensively():
+    evidence = _evidence_ref()
+    object.__setattr__(evidence, "contract_version", True)
+
+    with pytest.raises(ValueError, match="positive integer"):
+        evidence.validate()
+
+
 def test_evidence_deduplication_uses_contract_eight_tuple_not_excerpt():
     original = _evidence_ref()
     same_binding = _evidence_ref(evidence_id="ev-002", excerpt="相同绑定的不同摘录")

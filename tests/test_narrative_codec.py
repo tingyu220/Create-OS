@@ -101,6 +101,29 @@ def test_missing_schema_version_rejects_hybrid_v2_discriminators(scope, field, v
 
 
 @pytest.mark.parametrize(
+    ("scope", "field", "value"),
+    [
+        ("root", "contract_version", 2),
+        ("root", "confidence", 1.0),
+        ("chapter_contract", "role", "intent"),
+        ("chapter_contract", "confidence", 1.0),
+    ],
+)
+def test_missing_schema_version_rejects_legacy_evidence_with_extra_fields(scope, field, value):
+    payload = _legacy_v1_payload()
+    payload.pop("schema_version")
+    if scope == "chapter_contract":
+        payload["chapter_contract"]["evidence"] = payload.pop("evidence")
+        evidence = payload["chapter_contract"]["evidence"]
+    else:
+        evidence = payload["evidence"]
+    evidence[0][field] = value
+
+    with pytest.raises(NarrativeValidationError, match="schema_version"):
+        NarrativeDecisionCodec.decode(json.dumps(payload, ensure_ascii=False))
+
+
+@pytest.mark.parametrize(
     "choice",
     [
         ProtagonistChoice(
@@ -142,6 +165,17 @@ def test_validate_and_encode_success_round_trips_for_real_v2_choice_states(choic
     encoded = NarrativeDecisionCodec.encode_v2(decision)
 
     assert NarrativeDecisionCodec.decode_v2(encoded) == decision
+
+
+def test_v2_round_trip_closes_over_strict_evidence_binding_version():
+    decision = _v2_decision()
+
+    decoded = NarrativeDecisionCodec.decode_v2(NarrativeDecisionCodec.encode_v2(decision))
+    evidence = decoded.chapter_contract.intent_evidence_bindings[0].evidence[0]
+
+    assert decoded == decision
+    assert type(evidence.contract_version) is int
+    assert evidence.contract_version == decision.contract_version
 
 
 @pytest.mark.parametrize(
