@@ -90,7 +90,14 @@ class ContractRecordStore:
     """Append-only authority for approval-time contract records."""
 
     def __init__(self, project_root: str | Path) -> None:
-        self.project_root = Path(project_root)
+        requested_root = Path(project_root).absolute()
+        try:
+            _io_path(requested_root).mkdir(parents=True, exist_ok=True)
+            self.project_root = requested_root.resolve(strict=True)
+        except (OSError, RuntimeError) as error:
+            raise ContractRecordStoreError("trusted project root is unavailable") from error
+        self._trusted_directory_identities: dict[Path, tuple[int, int]] = {}
+        self._pin_trusted_directory(self.project_root, "trusted project root")
         self.root = self.project_root / ".creative_os" / "memory" / "contract_records"
         self.journal_dir = self.root / "journal"
         self._directories = {
@@ -98,7 +105,7 @@ class ContractRecordStore:
             for record_type, directory in _RECORD_DIRECTORIES.items()
         }
         for directory in (*self._directories.values(), self.journal_dir):
-            _ensure_store_directory(directory)
+            self._create_and_pin_store_chain(directory)
         self._lock_path = self.journal_dir / ".contract-records.lock"
 
     def save_baseline(
@@ -175,7 +182,7 @@ class ContractRecordStore:
         approval_id = (
             f"approval-{contract_id}-v{contract_version:04d}-{contract_hash}-{baseline_fingerprint}"
         )
-        with _exclusive_lock(self._lock_path):
+        with self._authority_lock():
             self._recover_locked()
             baseline = self._load_if_present_locked("baseline", baseline_id)
             approval = self._load_if_present_locked("approval", approval_id)
@@ -246,7 +253,7 @@ class ContractRecordStore:
             )
 
     def recover(self) -> None:
-        with _exclusive_lock(self._lock_path):
+        with self._authority_lock():
             try:
                 self._recover_locked()
             except ContractRecordStoreError:
@@ -260,7 +267,7 @@ class ContractRecordStore:
             canonical_payload = _payload_for(record_type, model, payload)
             envelope = _make_envelope(record_type, canonical_payload)
             record_id = _record_id_for(record_type, canonical_payload, model, envelope["payload_hash"])
-            with _exclusive_lock(self._lock_path):
+            with self._authority_lock():
                 self._recover_locked()
                 if validate_binding:
                     self._validate_disposition_binding_locked(model)
@@ -281,7 +288,7 @@ class ContractRecordStore:
                             f"append-only contract record conflict: {record_id}"
                         )
                 else:
-                    _atomic_write_json(
+                    self._write_json(
                         journal_path,
                         _make_journal("prepared", record_type, record_id, envelope),
                     )
@@ -293,12 +300,12 @@ class ContractRecordStore:
                             f"append-only contract record conflict: {record_id}"
                         )
                 else:
-                    _atomic_write_json(target, envelope)
+                    self._write_json(target, envelope)
                 if self._read_record_file(record_type, record_id) != envelope:
                     raise ContractRecordConflictError(
                         f"append-only contract record conflict: {record_id}"
                     )
-                _atomic_write_json(
+                self._write_json(
                     journal_path,
                     _make_journal("committed", record_type, record_id, envelope),
                 )
@@ -311,7 +318,7 @@ class ContractRecordStore:
     def _load(self, record_type: str, record_id: str):
         _require_record_id(record_id)
         try:
-            with _exclusive_lock(self._lock_path):
+            with self._authority_lock():
                 self._recover_locked()
                 model = self._load_if_present_locked(record_type, record_id)
                 if model is None:
@@ -340,7 +347,7 @@ class ContractRecordStore:
 
     def _recover_locked(self) -> None:
         journals: dict[tuple[str, str], tuple[Path, dict[str, Any]]] = {}
-        for path in _strict_json_files(self.journal_dir, allow_lock=True):
+        for path in self._json_files(self.journal_dir, allow_lock=True):
             journal = self._read_journal(path)
             key = (journal["record_type"], journal["record_id"])
             if key in journals:
@@ -362,18 +369,18 @@ class ContractRecordStore:
                     if self._read_record_file(record_type, record_id) != journal["envelope"]:
                         raise ContractRecordConflictError("prepared record conflicts with journal")
                 elif journal["state"] == "prepared":
-                    _atomic_write_json(target, journal["envelope"])
+                    self._write_json(target, journal["envelope"])
                 else:
                     raise ContractRecordStoreError("committed contract record is missing")
                 if journal["state"] == "prepared":
                     committed = _make_journal(
                         "committed", record_type, record_id, journal["envelope"]
                     )
-                    _atomic_write_json(path, committed)
+                    self._write_json(path, committed)
                     journals[key] = (path, committed)
 
         for record_type, directory in self._directories.items():
-            for path in _strict_json_files(directory):
+            for path in self._json_files(directory):
                 record_id = path.stem
                 if (record_type, record_id) not in journals:
                     raise ContractRecordStoreError("orphan contract record has no journal")
@@ -382,7 +389,7 @@ class ContractRecordStore:
     def _scan_locked(self, record_type: str) -> tuple[tuple[str, object], ...]:
         return tuple(
             (path.stem, self._load_if_present_locked(record_type, path.stem))
-            for path in _strict_json_files(self._directories[record_type])
+            for path in self._json_files(self._directories[record_type])
         )
 
     def _validate_disposition_binding_locked(self, model: object) -> None:
@@ -419,12 +426,12 @@ class ContractRecordStore:
 
     def _read_record_file(self, record_type: str, record_id: str) -> dict[str, Any]:
         path = self._record_path(record_type, record_id)
-        envelope = _read_canonical_json(path)
+        envelope = self._read_json(path)
         _validate_envelope(record_type, record_id, envelope)
         return envelope
 
     def _read_journal(self, path: Path) -> dict[str, Any]:
-        journal = _read_canonical_json(path)
+        journal = self._read_json(path)
         _require_object(journal, _JOURNAL_FIELDS, "journal")
         if type(journal["journal_version"]) is not int or journal["journal_version"] != 1:
             raise ContractRecordStoreError("unsupported journal version")
@@ -450,6 +457,87 @@ class ContractRecordStore:
     def _journal_path(self, record_type: str, record_id: str) -> Path:
         operation_id = _canonical_hash({"record_id": record_id, "record_type": record_type})
         return self.journal_dir / f"{operation_id}.json"
+
+    def _pin_trusted_directory(self, path: Path, name: str) -> None:
+        info = _require_directory_path(path, name)
+        identity = (info.st_dev, info.st_ino)
+        previous = self._trusted_directory_identities.get(path)
+        if previous is not None and previous != identity:
+            raise ContractRecordStoreError(f"{name} changed after trust was established")
+        self._trusted_directory_identities[path] = identity
+
+    def _create_and_pin_store_chain(self, target: Path) -> None:
+        try:
+            relative = target.relative_to(self.project_root)
+        except ValueError as error:
+            raise ContractRecordStoreError("contract record path escapes trusted project root") from error
+        current = self.project_root
+        self._pin_trusted_directory(current, "trusted project root")
+        for part in relative.parts:
+            current = current / part
+            if not _path_exists(current):
+                _io_path(current).mkdir()
+            self._pin_trusted_directory(current, "contract record directory")
+        self._require_within_trusted_root(target)
+
+    def _validate_store_chain(self, target: Path) -> None:
+        try:
+            relative = target.relative_to(self.project_root)
+        except ValueError as error:
+            raise ContractRecordStoreError("contract record path escapes trusted project root") from error
+        components = [self.project_root]
+        for part in relative.parts:
+            components.append(components[-1] / part)
+        for component in components:
+            info = _require_directory_path(component, "trusted contract record directory")
+            expected = self._trusted_directory_identities.get(component)
+            if expected is None or expected != (info.st_dev, info.st_ino):
+                raise ContractRecordStoreError("trusted contract record directory changed")
+        self._require_within_trusted_root(target)
+
+    def _require_within_trusted_root(self, target: Path) -> None:
+        try:
+            target.resolve(strict=True).relative_to(self.project_root)
+        except (OSError, RuntimeError, ValueError) as error:
+            raise ContractRecordStoreError("contract record path escapes trusted project root") from error
+
+    def _validate_all_store_directories(self) -> None:
+        for directory in (*self._directories.values(), self.journal_dir):
+            self._validate_store_chain(directory)
+
+    @contextmanager
+    def _authority_lock(self) -> Iterator[None]:
+        self._validate_all_store_directories()
+        with _exclusive_lock(self._lock_path):
+            self._validate_all_store_directories()
+            try:
+                yield
+            finally:
+                self._validate_all_store_directories()
+        self._validate_all_store_directories()
+
+    def _read_json(self, path: Path) -> dict[str, Any]:
+        self._validate_store_chain(path.parent)
+        try:
+            return _read_canonical_json(path)
+        finally:
+            self._validate_store_chain(path.parent)
+
+    def _write_json(self, path: Path, payload: dict[str, Any]) -> None:
+        self._validate_all_store_directories()
+        self._validate_store_chain(path.parent)
+        try:
+            _atomic_write_json(path, payload)
+        finally:
+            self._validate_store_chain(path.parent)
+            self._validate_all_store_directories()
+
+    def _json_files(self, directory: Path, *, allow_lock: bool = False) -> tuple[Path, ...]:
+        self._validate_store_chain(directory)
+        try:
+            return _strict_json_files(directory, allow_lock=allow_lock)
+        finally:
+            self._validate_store_chain(directory)
 
 
 def _make_envelope(record_type: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -1004,6 +1092,18 @@ def _require_regular_path(path: Path, name: str) -> os.stat_result:
         raise ContractRecordStoreError(f"{name} is missing") from error
     if not stat.S_ISREG(info.st_mode):
         raise ContractRecordStoreError(f"{name} must be a regular file")
+    return info
+
+
+def _require_directory_path(path: Path, name: str) -> os.stat_result:
+    if _path_is_link_or_reparse(path):
+        raise ContractRecordStoreError(f"{name} cannot be a link or reparse point")
+    try:
+        info = os.lstat(_io_path(path))
+    except FileNotFoundError as error:
+        raise ContractRecordStoreError(f"{name} is missing") from error
+    if not stat.S_ISDIR(info.st_mode):
+        raise ContractRecordStoreError(f"{name} must be a directory")
     return info
 
 

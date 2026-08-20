@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import multiprocessing
 import os
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
@@ -190,6 +191,42 @@ def _write_json(path: Path, payload: object) -> None:
 
 def _copy_file(source: Path, target: Path) -> None:
     _io_path(target).write_bytes(_io_path(source).read_bytes())
+
+
+def _install_prepared_journal(
+    source_root: Path,
+    target_root: Path,
+    record_type: str,
+    record_id: str,
+) -> Path:
+    journal = _read_json(_journal_path(source_root, record_type, record_id))
+    journal["state"] = "prepared"
+    journal["entry_hash"] = _canonical_hash(
+        {key: value for key, value in journal.items() if key != "entry_hash"}
+    )
+    target = _journal_path(target_root, record_type, record_id)
+    _write_json(target, journal)
+    return target
+
+
+def _process_save_approval(
+    project_root: str,
+    reason: str,
+    start_event,
+    result_queue,
+) -> None:
+    """Spawn-safe worker proving serialization is provided by the OS lock."""
+    try:
+        store = ContractRecordStore(project_root)
+        approval = _approval(_baseline(), reason=reason)
+        if not start_event.wait(15):
+            result_queue.put(("timeout", reason))
+            return
+        result_queue.put(("saved", store.save_approval(approval)))
+    except ContractRecordConflictError:
+        result_queue.put(("conflict", reason))
+    except Exception as error:  # pragma: no cover - reported to the parent assertion
+        result_queue.put(("error", f"{type(error).__name__}: {error}"))
 
 
 def test_four_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_path: Path):
@@ -630,6 +667,72 @@ def test_prepared_disposition_recovery_validates_reviewer_before_record_or_commi
     assert persisted_journal["state"] == "prepared"
 
 
+def test_recover_rebuilds_missing_prepared_reviewer_before_its_prepared_disposition(
+    tmp_path: Path,
+):
+    source_root = tmp_path / "source"
+    source = ContractRecordStore(source_root)
+    _, _, review, disposition, record_ids = _seed(source)
+    review_id, disposition_id = record_ids[2:]
+
+    target_root = tmp_path / "target"
+    target = ContractRecordStore(target_root)
+    review_journal = _install_prepared_journal(
+        source_root, target_root, "reviewer_result", review_id
+    )
+    disposition_journal = _install_prepared_journal(
+        source_root, target_root, "disposition", disposition_id
+    )
+
+    target.recover()
+
+    assert target.load_reviewer_result(review_id) == review
+    assert target.load_disposition(disposition_id) == disposition
+    assert _read_json(review_journal)["state"] == "committed"
+    assert _read_json(disposition_journal)["state"] == "committed"
+
+
+def test_recover_never_materializes_a_disposition_after_recovering_a_mismatched_reviewer(
+    tmp_path: Path,
+):
+    baseline = _baseline()
+    expected_root = tmp_path / "expected"
+    expected = ContractRecordStore(expected_root)
+    expected_review = _review(baseline, result_id="review-shared")
+    expected_review_id = expected.save_reviewer_result(expected_review)
+    disposition = _disposition(expected_review, expected_review.issues[0])
+    disposition_id = expected.save_disposition(disposition)
+
+    mismatched_root = tmp_path / "mismatched"
+    mismatched = ContractRecordStore(mismatched_root)
+    mismatched_review = _review(
+        baseline,
+        result_id="review-shared",
+        issues=(),
+    )
+    mismatched_review_id = mismatched.save_reviewer_result(mismatched_review)
+
+    target_root = tmp_path / "target"
+    target = ContractRecordStore(target_root)
+    _install_prepared_journal(
+        mismatched_root, target_root, "reviewer_result", mismatched_review_id
+    )
+    disposition_journal = _install_prepared_journal(
+        expected_root, target_root, "disposition", disposition_id
+    )
+
+    with pytest.raises(ContractRecordStoreError, match="binding"):
+        target.recover()
+
+    assert _record_path(target_root, "reviews", mismatched_review_id).is_file()
+    assert _read_json(
+        _journal_path(target_root, "reviewer_result", mismatched_review_id)
+    )["state"] == "committed"
+    assert not _record_path(target_root, "dispositions", disposition_id).exists()
+    assert _read_json(disposition_journal)["state"] == "prepared"
+    assert expected_review_id != mismatched_review_id
+
+
 def test_lock_file_symlink_is_rejected_without_following_or_changing_its_target(tmp_path: Path):
     store = ContractRecordStore(tmp_path)
     outside = tmp_path / "outside-lock-target"
@@ -676,6 +779,81 @@ def test_lock_file_directory_is_rejected_before_open(tmp_path: Path):
 
     with pytest.raises(ContractRecordStoreError, match="regular file"):
         store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+
+@pytest.mark.parametrize(
+    "relative_ancestor",
+    (
+        Path(".creative_os"),
+        Path(".creative_os/memory"),
+        Path(".creative_os/memory/contract_records"),
+        Path(".creative_os/memory/contract_records/baselines"),
+    ),
+    ids=("metadata", "memory", "records", "record-type"),
+)
+def test_every_store_ancestor_reparse_is_rejected_before_any_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    relative_ancestor: Path,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    marked = (tmp_path / relative_ancestor).absolute()
+    outside = tmp_path / "outside-sentinel"
+    outside.write_bytes(b"unchanged")
+    original = record_store_module._path_is_link_or_reparse
+
+    def report_reparse(path: Path) -> bool:
+        return Path(path).absolute() == marked or original(path)
+
+    monkeypatch.setattr(record_store_module, "_path_is_link_or_reparse", report_reparse)
+
+    with pytest.raises(ContractRecordStoreError, match="link|reparse"):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    root = _record_root(tmp_path)
+    assert tuple((root / "baselines").glob("*.json")) == ()
+    assert tuple((root / "journal").glob("*.json")) == ()
+    assert outside.read_bytes() == b"unchanged"
+
+
+def test_existing_store_fails_closed_when_a_parent_directory_is_replaced(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    records = _record_root(tmp_path)
+    backup = tmp_path / "contract-records-backup"
+    records.replace(backup)
+    for directory in ("baselines", "approvals", "reviews", "dispositions", "journal"):
+        (records / directory).mkdir(parents=True, exist_ok=True)
+    sentinel = backup / "authority-sentinel"
+    sentinel.write_bytes(b"original-authority")
+
+    with pytest.raises(ContractRecordStoreError, match="changed|trust"):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert tuple(records.rglob("*.json")) == ()
+    assert sentinel.read_bytes() == b"original-authority"
+
+
+def test_existing_store_rejects_an_actual_symlinked_store_ancestor_without_writing_outside(
+    tmp_path: Path,
+):
+    store = ContractRecordStore(tmp_path)
+    memory = tmp_path / ".creative_os" / "memory"
+    backup = tmp_path / "memory-backup"
+    memory.replace(backup)
+    outside = tmp_path / "outside-memory"
+    outside.mkdir()
+    try:
+        memory.symlink_to(outside, target_is_directory=True)
+    except OSError as error:
+        pytest.skip(f"directory symlink unavailable: {error}")
+
+    with pytest.raises(ContractRecordStoreError, match="link|reparse"):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert tuple(outside.rglob("*")) == ()
+    assert (backup / "contract_records" / "baselines").is_dir()
 
 
 @pytest.mark.parametrize("malicious_kind", ("wrong-name", "directory", "symlink"))
@@ -867,3 +1045,50 @@ def test_multiple_store_instances_share_file_lock_serialization(tmp_path: Path):
 
     assert len(set(record_ids)) == 1
     assert first.load_approval(record_ids[0]) == approval
+
+
+@pytest.mark.parametrize(
+    ("reasons", "expected_statuses"),
+    (
+        (("同一裁决", "同一裁决"), ("saved", "saved")),
+        (("裁决甲", "裁决乙"), ("conflict", "saved")),
+    ),
+    ids=("same-content", "different-content"),
+)
+def test_independent_processes_use_the_os_lock_for_deterministic_writes(
+    tmp_path: Path,
+    reasons: tuple[str, str],
+    expected_statuses: tuple[str, str],
+):
+    store = ContractRecordStore(tmp_path)
+    store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+    context = multiprocessing.get_context("spawn")
+    start_event = context.Event()
+    result_queue = context.Queue()
+    processes = tuple(
+        context.Process(
+            target=_process_save_approval,
+            args=(str(tmp_path), reason, start_event, result_queue),
+        )
+        for reason in reasons
+    )
+
+    for process in processes:
+        process.start()
+    start_event.set()
+    outcomes = tuple(result_queue.get(timeout=20) for _ in processes)
+    for process in processes:
+        process.join(timeout=20)
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=5)
+            pytest.fail("contract record writer process hung")
+
+    assert tuple(process.exitcode for process in processes) == (0, 0)
+    assert tuple(sorted(status for status, _ in outcomes)) == expected_statuses
+    if reasons[0] == reasons[1]:
+        assert len({record_id for _, record_id in outcomes}) == 1
+    else:
+        approval_id = next(value for status, value in outcomes if status == "saved")
+        persisted = ContractRecordStore(tmp_path).load_approval(approval_id)
+        assert persisted.full_contract.reason in reasons
