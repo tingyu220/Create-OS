@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, fields, is_dataclass
 from datetime import datetime
 from enum import StrEnum
 from re import fullmatch
@@ -33,30 +33,6 @@ _CONCRETE_FIELD_PATH = (
     r"[A-Za-z_][A-Za-z0-9_]*(?:\[\d+\])?"
     r"(?:\.[A-Za-z_][A-Za-z0-9_]*(?:\[\d+\])?)*"
 )
-_FULL_CONTRACT_EXACT_PATHS = frozenset(
-    {
-        "chapter",
-        "profile_id",
-        "volume_id",
-        "arc_id",
-        "arc_phase",
-        "arc_goal",
-        "inherited_pressure",
-        "contract_id",
-        "contract_version",
-        "schema_version",
-        "kind",
-        "BaselineManifest.fingerprint",
-    }
-)
-_FULL_CONTRACT_ARRAY_OR_OBJECT_PATHS = (
-    "NarrativeDecision.*",
-    "future_pressures[*]",
-    "chapter_contract.*",
-    "legacy_unclassified_evidence[*]",
-)
-
-
 def _require_text(value: object, name: str) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{name} must be text")
@@ -208,8 +184,8 @@ _PHASE_A_REAPPROVAL_PATHS: tuple[tuple[str, tuple[str, ...]], ...] = (
 
 
 @dataclass(frozen=True, slots=True)
-class PhaseAApprovalEvents:
-    """Explicit event domains that are not represented by chapter-contract value fields."""
+class PhaseAApplicabilityContext:
+    """Explicit Phase A event applicability, including an intentional empty context."""
 
     foreshadow_event_paths: tuple[str, ...] = ()
     new_fact_paths: tuple[str, ...] = ()
@@ -237,10 +213,10 @@ class PhaseAApprovalEvents:
 class PhaseAReapprovalChanges:
     """Phase A change channels kept separate for deterministic reapproval propagation."""
 
+    event_changes: PhaseAApplicabilityContext
     direct_changed_paths: tuple[str, ...] = ()
     causal_dependency_affected_paths: tuple[str, ...] = ()
     baseline_changed_roles: tuple[str, ...] = ()
-    event_changes: PhaseAApprovalEvents = field(default_factory=PhaseAApprovalEvents)
 
     def __post_init__(self) -> None:
         for paths in (self.direct_changed_paths, self.causal_dependency_affected_paths):
@@ -251,8 +227,18 @@ class PhaseAReapprovalChanges:
         allowed_roles = frozenset({"profile", "fact_snapshot", "previous_chapter", "outline_change"})
         if any(role not in allowed_roles for role in roles):
             raise ValueError("baseline_changed_roles contains an unsupported role")
-        if not isinstance(self.event_changes, PhaseAApprovalEvents):
-            raise TypeError("event_changes must be PhaseAApprovalEvents")
+        if not isinstance(self.event_changes, PhaseAApplicabilityContext):
+            raise TypeError("event_changes must be PhaseAApplicabilityContext")
+
+
+@dataclass(frozen=True, slots=True)
+class _CandidatePathIndex:
+    nodes: frozenset[str]
+    leaves: frozenset[str]
+
+    @property
+    def all_paths(self) -> frozenset[str]:
+        return self.nodes | self.leaves
 
 
 class ContractApprovalPolicy:
@@ -270,25 +256,24 @@ class ContractApprovalPolicy:
     def required_items(
         cls,
         candidate: NarrativeDecision,
-        events: PhaseAApprovalEvents | None = None,
+        context: PhaseAApplicabilityContext,
     ) -> tuple[str, ...]:
         if not isinstance(candidate, NarrativeDecision):
             raise TypeError("candidate must be a NarrativeDecision")
         candidate.validate()
-        phase_a_events = PhaseAApprovalEvents() if events is None else events
-        if not isinstance(phase_a_events, PhaseAApprovalEvents):
-            raise TypeError("events must be PhaseAApprovalEvents")
+        if not isinstance(context, PhaseAApplicabilityContext):
+            raise TypeError("context must be PhaseAApplicabilityContext")
 
         required = [
             FULL_CONTRACT,
             "major_choice_and_cost",
             "information_reveal_and_misdirect",
         ]
-        if candidate.chapter_contract.foreshadow_actions.values or phase_a_events.foreshadow_event_paths:
+        if candidate.chapter_contract.foreshadow_actions.values or context.foreshadow_event_paths:
             required.append("foreshadow_payoff_or_close")
-        if phase_a_events.new_fact_paths:
+        if context.new_fact_paths:
             required.append("new_facts")
-        if phase_a_events.outline_change_paths:
+        if context.outline_change_paths:
             required.append("outline_change")
         return tuple(required)
 
@@ -297,12 +282,15 @@ class ContractApprovalPolicy:
         cls,
         candidate: NarrativeDecision,
         changes: PhaseAReapprovalChanges,
-        current_events: PhaseAApprovalEvents | None = None,
+        context: PhaseAApplicabilityContext,
     ) -> tuple[str, ...]:
         if not isinstance(changes, PhaseAReapprovalChanges):
             raise TypeError("changes must be PhaseAReapprovalChanges")
-        phase_a_events = PhaseAApprovalEvents() if current_events is None else current_events
-        current_required = cls.required_items(candidate, phase_a_events)
+        current_required = cls.required_items(candidate, context)
+        candidate_paths = _candidate_path_index(candidate).all_paths
+        changed_paths = changes.direct_changed_paths + changes.causal_dependency_affected_paths
+        if any(path not in candidate_paths for path in changed_paths):
+            raise ValueError("reapproval changes contain a non-canonical candidate path")
         if not any(
             (
                 changes.direct_changed_paths,
@@ -316,7 +304,6 @@ class ContractApprovalPolicy:
             return ()
 
         required = {FULL_CONTRACT}
-        changed_paths = changes.direct_changed_paths + changes.causal_dependency_affected_paths
         for item_name, patterns in _PHASE_A_REAPPROVAL_PATHS:
             if any(_path_matches(pattern, path) for pattern in patterns for path in changed_paths):
                 required.add(item_name)
@@ -341,7 +328,7 @@ class ContractApprovalPolicy:
         cls,
         record: ContractApprovalRecord,
         candidate: NarrativeDecision,
-        events: PhaseAApprovalEvents | None = None,
+        context: PhaseAApplicabilityContext,
     ) -> None:
         if not isinstance(record, ContractApprovalRecord):
             raise TypeError("record must be a ContractApprovalRecord")
@@ -353,7 +340,13 @@ class ContractApprovalPolicy:
             or record.contract_content_hash != NarrativeDecisionCodec.content_hash(candidate)
         ):
             raise ValueError("approval record candidate binding mismatch")
-        for item_name in cls.required_items(candidate, events):
+        candidate_leaves = _candidate_path_index(candidate).leaves
+        for item_name, item in record.approvals:
+            if any(evidence.field_path not in candidate_leaves for evidence in item.decision_evidence):
+                raise ValueError(
+                    f"approval {item_name} decision evidence is not a canonical candidate leaf"
+                )
+        for item_name in cls.required_items(candidate, context):
             if item_name != FULL_CONTRACT and record.item(item_name).status == ApprovalStatus.NOT_APPLICABLE:
                 raise ValueError(f"invalid_approval_not_applicable: {item_name}")
 
@@ -379,9 +372,11 @@ def _require_event_paths(value: object, patterns: tuple[str, ...], name: str) ->
 def _path_matches(pattern: str, path: str) -> bool:
     if pattern.endswith(".*"):
         prefix = pattern[:-2]
-        return path.startswith(prefix + ".")
+        return path == prefix or path.startswith(prefix + ".")
     if pattern.endswith("[*]"):
         prefix = pattern[:-3]
+        if path == prefix:
+            return True
         suffix = path[len(prefix) :] if path.startswith(prefix) else ""
         return fullmatch(
             r"\[\d+\](?:\.[A-Za-z_][A-Za-z0-9_]*(?:\[\d+\])?)*",
@@ -395,11 +390,7 @@ def _validate_decision_evidence_coverage(item_name: str, field_path: str | None)
         raise ValueError(f"approval {item_name} decision evidence requires a field_path")
     _require_concrete_field_path(field_path)
     if item_name == FULL_CONTRACT:
-        if field_path in _FULL_CONTRACT_EXACT_PATHS or any(
-            _path_matches(pattern, field_path) for pattern in _FULL_CONTRACT_ARRAY_OR_OBJECT_PATHS
-        ):
-            return
-        raise ValueError("approval full_contract decision evidence is outside its coverage")
+        return
     patterns = ContractApprovalPolicy.covered_paths(item_name)
     if not any(_path_matches(pattern, field_path) for pattern in patterns):
         raise ValueError(f"approval {item_name} decision evidence is outside its coverage")
@@ -409,3 +400,30 @@ def _require_concrete_field_path(path: str) -> str:
     if fullmatch(_CONCRETE_FIELD_PATH, path) is None:
         raise ValueError("field path must be a concrete path with numeric array indices")
     return path
+
+
+def _candidate_path_index(candidate: NarrativeDecision) -> _CandidatePathIndex:
+    candidate.validate()
+    nodes: set[str] = set()
+    leaves: set[str] = set()
+
+    def visit(value: object, path: str) -> None:
+        if is_dataclass(value) and not isinstance(value, type):
+            if path:
+                nodes.add(path)
+            for model_field in fields(value):
+                child_path = f"{path}.{model_field.name}" if path else model_field.name
+                visit(getattr(value, model_field.name), child_path)
+            return
+        if isinstance(value, tuple):
+            nodes.add(path)
+            for index, item in enumerate(value):
+                visit(item, f"{path}[{index}]")
+            return
+        if value is None:
+            nodes.add(path)
+            return
+        leaves.add(path)
+
+    visit(candidate, "")
+    return _CandidatePathIndex(nodes=frozenset(nodes), leaves=frozenset(leaves))
