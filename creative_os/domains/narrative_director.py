@@ -23,6 +23,8 @@ class DirectorInput:
 
 
 class NarrativeDirector:
+    """Builds and validates candidates only; approval and persistence live elsewhere."""
+
     def propose(self, input: DirectorInput, proposal: NarrativeDecision) -> NarrativeDecision:
         self._validate_input(input)
         try:

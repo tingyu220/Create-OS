@@ -77,6 +77,8 @@ def test_director_accepts_a_contract_aligned_with_profile_and_facts():
     assert decision.chapter_contract.chapter_id == "chapter_007"
     assert decision.chapter_contract.target_chinese_chars == 7000
     assert not hasattr(decision, "manuscript")
+    assert not hasattr(decision, "approval")
+    assert not hasattr(decision, "preflight_result")
 
 
 @pytest.mark.parametrize(
