@@ -128,5 +128,72 @@ def test_retry_includes_previous_quality_issues_in_writer_prompt(tmp_path):
 
     continue_one_chapter(project, client=client, max_attempts=2)
 
-    assert "上一版未通过" in client.messages[-1].content
-    assert "below_minimum_chinese_chars" in client.messages[-1].content
+    assert "正文尚差篇幅" in client.messages[-1].content
+    assert "只输出可直接接在末段后的正文" in client.messages[-1].content
+
+
+def test_length_failure_uses_a_seamless_extension_instead_of_rewriting_the_draft(tmp_path):
+    project = _project(tmp_path)
+
+    class ExtendingClient(FakeClient):
+        def complete(self, messages, *, temperature: float, max_tokens: int):
+            self.calls += 1
+            self.messages = messages
+            return "# 第2章\n" + "初稿" * 600 if self.calls == 1 else "延续" * 800
+
+    result = continue_one_chapter(project, client=ExtendingClient(""), max_attempts=2, target_chinese_chars=2000)
+
+    assert result.status == "pass"
+    text = result.final_chapter_path.read_text(encoding="utf-8")
+    assert "初稿" in text and "延续" in text
+    assert text.count("# 第2章") == 1
+
+
+def test_runner_returns_recoverable_failure_when_model_execution_fails(tmp_path):
+    project = _project(tmp_path)
+
+    class FailingClient:
+        model = "deepseek-v4-pro"
+
+        def complete(self, messages, *, temperature, max_tokens):
+            raise RuntimeError("LLM request failed: HTTP 402 Insufficient Balance")
+
+    result = continue_one_chapter(project, client=FailingClient(), max_attempts=2)
+
+    assert result.status == "fail"
+    assert result.issues == ["model_execution_failed"]
+    assert result.final_chapter_path is None
+    assert not (project / "production/final_chapters/chapter_002.md").exists()
+
+
+def test_chapter_run_writes_business_events_to_append_only_log(tmp_path):
+    project = _project(tmp_path)
+
+    continue_one_chapter(project, client=FakeClient("# 第2章\n太短。"), max_attempts=1)
+
+    events = [
+        json.loads(line)
+        for line in (project / ".creative_os/runtime/events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    event_types = [event["event_type"] for event in events]
+    assert event_types[:3] == ["TaskCreated", "TaskStarted", "ContextBuilt"]
+    assert "CapabilityCalled" in event_types
+    assert "ResultGenerated" in event_types
+    assert event_types[-2:] == ["ReviewFailed", "TaskFailed"]
+    assert [event["sequence"] for event in events] == list(range(1, len(events) + 1))
+
+
+def test_passing_chapter_completes_production_loop_and_records_events(tmp_path):
+    project = _project(tmp_path)
+    result = continue_one_chapter(project, client=FakeClient("# 第2章\n" + "正文" * 3000), max_attempts=1)
+
+    assert result.status == "pass"
+    assert result.final_chapter_path is not None and result.final_chapter_path.exists()
+    assert (project / ".creative_os/memory/items/chapter-002-summary.json").exists()
+    events = [
+        json.loads(line)
+        for line in (project / ".creative_os/runtime/events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    event_types = [event["event_type"] for event in events]
+    assert event_types[-4:] == ["ReviewPassed", "KnowledgeUpdated", "StateChanged", "TaskCompleted"]
+    assert [event["sequence"] for event in events] == list(range(1, len(events) + 1))

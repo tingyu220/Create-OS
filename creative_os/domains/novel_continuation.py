@@ -78,7 +78,14 @@ def build_next_chapter(
     )
     state = ProjectState("Draft", task.id, task.goal, "novel")
     memory = MemoryRetriever().retrieve(
-        MemoryQuery(task_id=task.id, project_id=root.name, user_id="local", domain="novel", task_kind="writing", tags={"novel", "continuation"}),
+        MemoryQuery(
+            task_id=task.id,
+            project_id=root.name,
+            user_id="local",
+            domain="novel",
+            task_kind="writing",
+            tags={"novel", "continuation", "lesson"},
+        ),
         [JsonMemoryStore(root / ".creative_os" / "memory")],
         limit=16,
     )

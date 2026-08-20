@@ -11,18 +11,13 @@ from pathlib import Path
 from typing import Protocol
 
 from creative_os.llm_metrics import LLMUsage, TimedCompletion, parse_usage
+from creative_os.runtime import AppendOnlyEventLog, ModelMessage, RuntimeRequest, RuntimeRunner
 from creative_os.task_status import ChapterTaskStatus, write_chapter_status
 from creative_os.validation_runtime import (
     _chapter_specs_for_number,
     validate_reader_facing_text,
     write_final_chapter_v2_artifacts,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class ModelMessage:
-    role: str
-    content: str
 
 
 class ModelClient(Protocol):
@@ -35,6 +30,7 @@ class OpenAICompatibleClient:
     base_url: str
     api_key: str
     model: str
+    timeout_seconds: float = 300.0
 
     @classmethod
     def from_env(cls, env_file: str | Path | None = ".env") -> OpenAICompatibleClient:
@@ -45,11 +41,17 @@ class OpenAICompatibleClient:
         ).rstrip("/")
         api_key = os.environ.get("CREATIVE_OS_LLM_API_KEY", dotenv.get("CREATIVE_OS_LLM_API_KEY", ""))
         model = os.environ.get("CREATIVE_OS_LLM_MODEL", dotenv.get("CREATIVE_OS_LLM_MODEL", ""))
+        timeout_seconds = float(os.environ.get(
+            "CREATIVE_OS_LLM_TIMEOUT_SECONDS",
+            dotenv.get("CREATIVE_OS_LLM_TIMEOUT_SECONDS", "300"),
+        ))
         if not api_key:
             raise ValueError("CREATIVE_OS_LLM_API_KEY is required")
         if not model:
             raise ValueError("CREATIVE_OS_LLM_MODEL is required")
-        return cls(base_url=base_url, api_key=api_key, model=model)
+        if timeout_seconds <= 0:
+            raise ValueError("CREATIVE_OS_LLM_TIMEOUT_SECONDS must be positive")
+        return cls(base_url=base_url, api_key=api_key, model=model, timeout_seconds=timeout_seconds)
 
     def complete(self, messages: list[ModelMessage], *, temperature: float, max_tokens: int) -> TimedCompletion:
         payload = {
@@ -69,7 +71,7 @@ class OpenAICompatibleClient:
         )
         started_at = time.monotonic()
         try:
-            with urllib.request.urlopen(request, timeout=120) as response:
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
                 data = json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="replace")
@@ -330,6 +332,7 @@ def run_llm_writer_pilot(
     max_attempts: int = 2,
     use_local_repair: bool = False,
     compiled_contexts: dict[int, object] | None = None,
+    runtime_runner: RuntimeRunner | None = None,
 ) -> dict[str, object]:
     root = Path(project_root)
     selected = chapters or [4, 5, 6]
@@ -338,6 +341,8 @@ def run_llm_writer_pilot(
     attempts: dict[str, int] = {}
     metrics: dict[str, dict[str, object]] = {}
     context_usage: dict[str, dict[str, object]] = {}
+    event_log = None if runtime_runner is not None else AppendOnlyEventLog(root / ".creative_os" / "runtime" / "events.jsonl")
+    runtime = runtime_runner or RuntimeRunner(record_sink=event_log.append_execution)
     for chapter_number in selected:
         chapter_key = f"chapter_{chapter_number:03d}"
         compiled_context = (compiled_contexts or {}).get(chapter_number)
@@ -359,16 +364,24 @@ def run_llm_writer_pilot(
 
                 if detect_repair_scope(final_issues) == "local":
                     messages = build_local_repair_messages(final_text, final_issues)
-            started_at = time.monotonic()
-            completion = client.complete(
-                messages,
-                temperature=0.78,
-                max_tokens=12000,
+            context_id = str(getattr(compiled_context, "fingerprint", chapter_key))
+            runtime_result = runtime.execute(
+                RuntimeRequest(
+                    task_id=f"writer-pilot-{chapter_key}",
+                    context_id=context_id,
+                    capability="writing",
+                    domain="novel",
+                    model=str(getattr(client, "model", "unknown")),
+                    messages=tuple(messages),
+                    input_refs=(("chapter", chapter_key), ("context", context_id)),
+                    temperature=0.78,
+                    max_tokens=12000,
+                ),
+                client,
             )
-            normalized = _normalize_completion(completion, time.monotonic() - started_at)
-            final_text = normalized.content
-            elapsed_seconds += normalized.elapsed_seconds
-            usage = normalized.usage
+            final_text = runtime_result.output
+            elapsed_seconds += runtime_result.reported_elapsed_seconds
+            usage = runtime_result.usage
             final_issues = validate_llm_rewrite(payload, final_text)
             attempts[chapter_key] = attempt
             if not final_issues:

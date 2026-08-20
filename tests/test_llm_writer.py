@@ -26,6 +26,17 @@ def test_openai_compatible_client_reads_env(monkeypatch):
     assert client.base_url == "https://api.example.test/v1"
     assert client.api_key == "sk-test"
     assert client.model == "writer-model"
+    assert client.timeout_seconds == 300.0
+
+
+def test_openai_compatible_client_reads_configurable_timeout(monkeypatch):
+    monkeypatch.setenv("CREATIVE_OS_LLM_API_KEY", "sk-test")
+    monkeypatch.setenv("CREATIVE_OS_LLM_MODEL", "writer-model")
+    monkeypatch.setenv("CREATIVE_OS_LLM_TIMEOUT_SECONDS", "420")
+
+    client = OpenAICompatibleClient.from_env(None)
+
+    assert client.timeout_seconds == 420.0
 
 
 def test_openai_compatible_client_requires_api_key(monkeypatch):

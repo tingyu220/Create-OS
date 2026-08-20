@@ -1,5 +1,7 @@
 """Creative OS memory primitives."""
 
+from creative_os.memory.feedback import FeedbackOutcome, FeedbackRecord, FeedbackStore
+
 from creative_os.memory.model import (
     MemoryEvidence,
     MemoryItem,
@@ -14,4 +16,7 @@ __all__ = [
     "MemoryKind",
     "MemoryScope",
     "MemoryStatus",
+    "FeedbackOutcome",
+    "FeedbackRecord",
+    "FeedbackStore",
 ]

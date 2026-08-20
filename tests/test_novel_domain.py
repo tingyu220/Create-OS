@@ -84,3 +84,18 @@ def test_novel_workflow_matches_stage_four_plan_and_runs_engine_loop():
     assert output.task.status == TaskStatus.DONE
     assert output.next_task.kind == "review"
     assert any(item.source_task_id == task.id for item in store.items())
+
+
+def test_novel_domain_exposes_v15_production_workflow_and_narrative_rules():
+    domain = NovelDomainPackage()
+
+    assert "Location" in domain.schema
+    assert "Event" in domain.schema
+    assert "NarrativeDecision" in domain.schema
+    assert domain.production_workflow == [
+        "Idea", "Proposal", "Story Bible", "Outline", "Chapter Plan", "Scene Plan",
+        "Draft", "Review", "Compile", "Final",
+    ]
+    assert "scene-writing" in domain.skills
+    assert "reader_state_tracking" in domain.rules_for("review")
+    assert "protagonist_choice_required" in domain.rules_for("writing")
