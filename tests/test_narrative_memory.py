@@ -5,6 +5,7 @@ from creative_os.domains.narrative_decision import (
     NarrativeChangeRequest,
     NarrativeDecision,
     NarrativeProjectProfile,
+    NullablePlan,
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
@@ -27,6 +28,8 @@ from creative_os.memory.store import JsonMemoryStore
 
 def _decision(chapter: int = 7) -> NarrativeDecision:
     return NarrativeDecision(
+        contract_id=f"narrative-chapter-{chapter:03d}",
+        contract_version=1,
         chapter=chapter,
         profile_id="civilization-profile",
         volume_id="volume-1",
@@ -36,6 +39,7 @@ def _decision(chapter: int = 7) -> NarrativeDecision:
         inherited_pressure="林子轩发现自己可能被当作投递工具",
         future_pressures=("权限审查即将启动",),
         chapter_contract=ChapterContract(
+            chapter_id=f"chapter_{chapter:03d}",
             functions=("推进主线",),
             dramatic_question="林子轩是否主动调查第九区日志？",
             protagonist_choice=ProtagonistChoice(
@@ -46,12 +50,12 @@ def _decision(chapter: int = 7) -> NarrativeDecision:
                 consequence="进入权限审查名单",
             ),
             reader_change=ReaderChange(before="读者怀疑内部泄露", after="读者确认主角也在投递链路中"),
-            information=InformationPlan(reveal=("日志被覆盖",), withhold=("覆盖者身份",), misdirect=()),
+            information=InformationPlan(reveal=("日志被覆盖",), withhold=("覆盖者身份",), misdirect=NullablePlan(values=())),
             pressure_curve=PressureCurve(start="封控", turn="违令", end="审查启动"),
-            foreshadow_actions=("加深周远线索",),
+            foreshadow_actions=NullablePlan(values=("加深周远线索",)),
             ending_shift="主角成为被审查对象",
             target_chinese_chars=7000,
-            forbidden=("不得确认发送者",),
+            forbidden=NullablePlan(values=("不得确认发送者",)),
         ),
     )
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import Any, Iterator
+
+from creative_os.domains.narrative_evidence import EvidenceRef, EvidenceRole
 
 
 class NarrativeValidationError(ValueError):
@@ -30,6 +32,34 @@ class NarrativeChangeStatus(StrEnum):
     APPROVED = "approved"
     APPLIED = "applied"
     REJECTED = "rejected"
+
+
+class ChoiceStatus(StrEnum):
+    COMPLETE = "complete"
+    PARTIAL = "partial"
+    UNKNOWN = "unknown"
+
+
+class CandidateKind(StrEnum):
+    FORESHADOW_NEXT_ACTION = "foreshadow_next_action"
+    RELATIONSHIP_CHANGE = "relationship_change"
+    SCENE_TRANSITION = "scene_transition"
+
+
+class CandidateValueState(StrEnum):
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
+class CandidateImpact(StrEnum):
+    YES = "yes"
+    NO = "no"
+    UNDETERMINED = "undetermined"
+
+
+class CandidateDecisionBy(StrEnum):
+    RULE = "rule"
+    HUMAN = "human"
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,18 +164,151 @@ class NarrativeProjectProfile:
 
 @dataclass(frozen=True, slots=True)
 class ProtagonistChoice:
-    actor: str
-    action: str
+    actor: str | None
+    action: str | None
     alternatives: tuple[str, ...]
-    cost: str
-    consequence: str
+    cost: str | None
+    consequence: str | None
+    status: ChoiceStatus = ChoiceStatus.COMPLETE
+    missing_fields: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, ChoiceStatus):
+            object.__setattr__(self, "status", _require_enum_member(ChoiceStatus, self.status, "choice status"))
 
     def validate(self) -> None:
-        _require_text(self.actor, "protagonist choice actor")
-        _require_text(self.action, "protagonist choice action")
-        _require_items(self.alternatives, "protagonist choice alternatives")
-        _require_text(self.cost, "protagonist choice cost")
-        _require_text(self.consequence, "protagonist choice consequence")
+        if not isinstance(self.status, ChoiceStatus):
+            raise NarrativeValidationError(f"invalid choice status: {self.status}")
+        missing = tuple(
+            name
+            for name, value in (
+                ("actor", self.actor),
+                ("action", self.action),
+                ("alternatives", self.alternatives),
+                ("cost", self.cost),
+                ("consequence", self.consequence),
+            )
+            if not value or (isinstance(value, str) and not value.strip())
+        )
+        if self.status == ChoiceStatus.COMPLETE:
+            if missing or self.missing_fields:
+                raise NarrativeValidationError("complete protagonist choice cannot have missing fields")
+            _require_items(self.alternatives, "protagonist choice alternatives")
+            return
+        if self.status == ChoiceStatus.PARTIAL:
+            if not missing or self.missing_fields != missing:
+                raise NarrativeValidationError("partial protagonist choice must list every missing field")
+            return
+        expected = ("actor", "action", "alternatives", "cost", "consequence")
+        if missing != expected or self.missing_fields != expected:
+            raise NarrativeValidationError("unknown protagonist choice cannot carry speculative values")
+
+
+@dataclass(frozen=True, slots=True)
+class NullablePlan:
+    values: tuple[str, ...]
+    not_applicable_reason: str | None = None
+
+    def validate(self) -> None:
+        if any(not isinstance(value, str) or not value.strip() for value in self.values):
+            raise NarrativeValidationError("nullable plan values must be non-empty strings")
+        if self.not_applicable_reason is not None and not self.not_applicable_reason.strip():
+            raise NarrativeValidationError("not_applicable_reason must be non-empty when provided")
+        if self.values and self.not_applicable_reason is not None:
+            raise NarrativeValidationError("nullable plan values and not_applicable_reason are mutually exclusive")
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.values)
+
+    def __len__(self) -> int:
+        return len(self.values)
+
+    def __bool__(self) -> bool:
+        return bool(self.values)
+
+
+@dataclass(frozen=True, slots=True)
+class OptionalCandidateResolution:
+    candidate_id: str
+    kind: CandidateKind | str
+    value_state: CandidateValueState | str
+    proposed_value: str | None
+    dependency_inputs: tuple[str, ...]
+    affects_current_chapter: CandidateImpact | str
+    rationale: str
+    decided_by: CandidateDecisionBy | str
+    decision_ref: str
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "kind", _require_enum_member(CandidateKind, self.kind, "candidate kind"))
+        object.__setattr__(
+            self,
+            "value_state",
+            _require_enum_member(CandidateValueState, self.value_state, "candidate value_state"),
+        )
+        object.__setattr__(
+            self,
+            "affects_current_chapter",
+            _require_enum_member(CandidateImpact, self.affects_current_chapter, "candidate affects_current_chapter"),
+        )
+        object.__setattr__(
+            self,
+            "decided_by",
+            _require_enum_member(CandidateDecisionBy, self.decided_by, "candidate decided_by"),
+        )
+
+    def validate(self) -> None:
+        _require_text(self.candidate_id, "candidate_id")
+        _require_enum_member(CandidateKind, self.kind, "candidate kind")
+        value_state = _require_enum_member(CandidateValueState, self.value_state, "candidate value_state")
+        _require_items(self.dependency_inputs, "candidate dependency_inputs")
+        _require_enum_member(CandidateImpact, self.affects_current_chapter, "candidate affects_current_chapter")
+        _require_text(self.rationale, "candidate rationale")
+        _require_enum_member(CandidateDecisionBy, self.decided_by, "candidate decided_by")
+        _require_text(self.decision_ref, "candidate decision_ref")
+        if value_state == CandidateValueState.KNOWN:
+            _require_text(self.proposed_value, "candidate proposed_value")
+        elif self.proposed_value is not None:
+            raise NarrativeValidationError("unknown candidate cannot include proposed_value")
+
+
+@dataclass(frozen=True, slots=True)
+class FieldEvidenceBinding:
+    field_path: str
+    evidence: tuple[EvidenceRef, ...]
+
+    def validate(self, contract_id: str, contract_version: int) -> None:
+        _require_text(self.field_path, "evidence binding field_path")
+        if not self.evidence:
+            raise NarrativeValidationError("evidence binding requires evidence")
+        for ref in self.evidence:
+            if not isinstance(ref, EvidenceRef) or ref.is_legacy_replay_ref:
+                raise NarrativeValidationError("frozen contract requires field EvidenceRef")
+            try:
+                ref.validate()
+            except ValueError as error:
+                raise NarrativeValidationError(f"invalid evidence binding: {error}") from error
+            if ref.contract_id != contract_id or ref.contract_version != contract_version:
+                raise NarrativeValidationError("evidence binding contract identity mismatch")
+            if ref.field_path != self.field_path:
+                raise NarrativeValidationError("evidence binding field_path mismatch")
+            if ref.role not in (EvidenceRole.INTENT, EvidenceRole.NON_APPLICABILITY):
+                raise NarrativeValidationError("frozen contract evidence role must be intent or non_applicability")
+
+
+@dataclass(frozen=True, slots=True)
+class LegacyUnclassifiedEvidence:
+    source_type: str
+    source_ref: str
+    excerpt: str
+    classification: str = "legacy_unclassified"
+
+    def validate(self) -> None:
+        _require_text(self.source_type, "legacy evidence source_type")
+        _require_text(self.source_ref, "legacy evidence source_ref")
+        _require_text(self.excerpt, "legacy evidence excerpt")
+        if self.classification != "legacy_unclassified":
+            raise NarrativeValidationError("invalid legacy evidence classification")
 
 
 @dataclass(frozen=True, slots=True)
@@ -162,11 +325,18 @@ class ReaderChange:
 class InformationPlan:
     reveal: tuple[str, ...]
     withhold: tuple[str, ...]
-    misdirect: tuple[str, ...]
+    misdirect: NullablePlan | tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.misdirect, tuple):
+            object.__setattr__(self, "misdirect", NullablePlan(values=self.misdirect))
 
     def validate(self) -> None:
         _require_items(self.reveal, "information reveal")
         _require_items(self.withhold, "information withhold")
+        if not isinstance(self.misdirect, NullablePlan):
+            raise NarrativeValidationError("information misdirect must be a NullablePlan")
+        self.misdirect.validate()
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,23 +359,57 @@ class ChapterContract:
     reader_change: ReaderChange
     information: InformationPlan
     pressure_curve: PressureCurve
-    foreshadow_actions: tuple[str, ...]
+    foreshadow_actions: NullablePlan | tuple[str, ...]
     ending_shift: str
     target_chinese_chars: int
-    forbidden: tuple[str, ...]
+    forbidden: NullablePlan | tuple[str, ...]
+    chapter_id: str = ""
+    optional_candidates: tuple[OptionalCandidateResolution, ...] = ()
+    intent_evidence_bindings: tuple[FieldEvidenceBinding, ...] = ()
 
-    def validate(self) -> None:
+    def __post_init__(self) -> None:
+        if isinstance(self.foreshadow_actions, tuple):
+            object.__setattr__(self, "foreshadow_actions", NullablePlan(values=self.foreshadow_actions))
+        if isinstance(self.forbidden, tuple):
+            object.__setattr__(self, "forbidden", NullablePlan(values=self.forbidden))
+        object.__setattr__(
+            self,
+            "intent_evidence_bindings",
+            tuple(sorted(self.intent_evidence_bindings, key=lambda binding: binding.field_path)),
+        )
+
+    def validate(self, contract_id: str | None = None, contract_version: int | None = None) -> None:
+        _require_text(self.chapter_id, "chapter_id")
         _require_items(self.functions, "chapter functions")
         _require_text(self.dramatic_question, "chapter dramatic_question")
         self.protagonist_choice.validate()
         self.reader_change.validate()
         self.information.validate()
         self.pressure_curve.validate()
-        _require_items(self.foreshadow_actions, "chapter foreshadow_actions")
+        if not isinstance(self.foreshadow_actions, NullablePlan):
+            raise NarrativeValidationError("foreshadow_actions must be a NullablePlan")
+        self.foreshadow_actions.validate()
         _require_text(self.ending_shift, "chapter ending_shift")
         if self.target_chinese_chars <= 0:
             raise NarrativeValidationError("chapter target_chinese_chars must be positive")
-        _require_items(self.forbidden, "chapter forbidden")
+        if not isinstance(self.forbidden, NullablePlan):
+            raise NarrativeValidationError("forbidden must be a NullablePlan")
+        self.forbidden.validate()
+        for candidate in self.optional_candidates:
+            if not isinstance(candidate, OptionalCandidateResolution):
+                raise NarrativeValidationError("optional_candidates must contain resolutions")
+            candidate.validate()
+        if self.intent_evidence_bindings and (contract_id is None or contract_version is None):
+            raise NarrativeValidationError("contract identity is required to validate evidence bindings")
+        seen_paths: set[str] = set()
+        for binding in self.intent_evidence_bindings:
+            if not isinstance(binding, FieldEvidenceBinding):
+                raise NarrativeValidationError("intent_evidence_bindings must contain field bindings")
+            if binding.field_path in seen_paths:
+                raise NarrativeValidationError(f"duplicate evidence binding: {binding.field_path}")
+            seen_paths.add(binding.field_path)
+            assert contract_id is not None and contract_version is not None
+            binding.validate(contract_id, contract_version)
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,74 +423,75 @@ class NarrativeDecision:
     inherited_pressure: str
     future_pressures: tuple[str, ...]
     chapter_contract: ChapterContract
-    schema_version: int = 1
+    contract_id: str = ""
+    contract_version: int = 1
+    legacy_unclassified_evidence: tuple[LegacyUnclassifiedEvidence, ...] = ()
+    schema_version: int = 2
     kind: str = "narrative_decision"
+    _identity_was_derived: bool = field(default=False, compare=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.chapter > 0:
+            derive_identity = self._identity_was_derived or (
+                not self.contract_id and not self.chapter_contract.chapter_id
+            )
+            if derive_identity:
+                object.__setattr__(self, "contract_id", f"narrative-chapter-{self.chapter:03d}")
+                object.__setattr__(self, "_identity_was_derived", True)
+            if derive_identity or not self.chapter_contract.chapter_id:
+                object.__setattr__(
+                    self,
+                    "chapter_contract",
+                    ChapterContract(
+                        functions=self.chapter_contract.functions,
+                        dramatic_question=self.chapter_contract.dramatic_question,
+                        protagonist_choice=self.chapter_contract.protagonist_choice,
+                        reader_change=self.chapter_contract.reader_change,
+                        information=self.chapter_contract.information,
+                        pressure_curve=self.chapter_contract.pressure_curve,
+                        foreshadow_actions=self.chapter_contract.foreshadow_actions,
+                        ending_shift=self.chapter_contract.ending_shift,
+                        target_chinese_chars=self.chapter_contract.target_chinese_chars,
+                        forbidden=self.chapter_contract.forbidden,
+                        chapter_id=f"chapter_{self.chapter:03d}",
+                        optional_candidates=self.chapter_contract.optional_candidates,
+                        intent_evidence_bindings=self.chapter_contract.intent_evidence_bindings,
+                    ),
+                )
 
     def validate(self) -> None:
-        if self.schema_version != 1 or self.kind != "narrative_decision":
+        if self.schema_version != 2 or self.kind != "narrative_decision":
             raise NarrativeValidationError("unsupported narrative decision schema")
         if self.chapter < 1:
             raise NarrativeValidationError("decision chapter must be positive")
+        if self.contract_id != f"narrative-chapter-{self.chapter:03d}":
+            raise NarrativeValidationError("decision contract_id does not match chapter")
+        if isinstance(self.contract_version, bool) or not isinstance(self.contract_version, int) or self.contract_version < 1:
+            raise NarrativeValidationError("decision contract_version must be positive")
+        if self.chapter_contract.chapter_id != f"chapter_{self.chapter:03d}":
+            raise NarrativeValidationError("chapter_contract chapter_id does not match chapter")
         _require_text(self.profile_id, "decision profile_id")
         _require_text(self.volume_id, "decision volume_id")
         _require_text(self.arc_id, "decision arc_id")
         _require_text(self.arc_goal, "decision arc_goal")
         _require_text(self.inherited_pressure, "decision inherited_pressure")
         _require_items(self.future_pressures, "decision future_pressures")
-        self.chapter_contract.validate()
+        self.chapter_contract.validate(self.contract_id, self.contract_version)
+        for evidence in self.legacy_unclassified_evidence:
+            if not isinstance(evidence, LegacyUnclassifiedEvidence):
+                raise NarrativeValidationError("legacy_unclassified_evidence contains invalid item")
+            evidence.validate()
 
     def to_json(self) -> str:
-        self.validate()
-        return _to_json(self)
+        from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+
+        return NarrativeDecisionCodec.encode_v2(self)
 
     @classmethod
     def from_json(cls, content: str) -> "NarrativeDecision":
-        payload = _load_object(content)
-        contract = _object(payload.get("chapter_contract"), "chapter_contract")
-        choice = _object(contract.get("protagonist_choice"), "protagonist_choice")
-        reader = _object(contract.get("reader_change"), "reader_change")
-        information = _object(contract.get("information"), "information")
-        pressure = _object(contract.get("pressure_curve"), "pressure_curve")
-        decision = cls(
-            chapter=_integer(payload.get("chapter"), "chapter"),
-            profile_id=str(payload.get("profile_id", "")),
-            volume_id=str(payload.get("volume_id", "")),
-            arc_id=str(payload.get("arc_id", "")),
-            arc_phase=_enum(ArcPhase, payload.get("arc_phase"), "arc_phase"),
-            arc_goal=str(payload.get("arc_goal", "")),
-            inherited_pressure=str(payload.get("inherited_pressure", "")),
-            future_pressures=_string_tuple(payload.get("future_pressures")),
-            chapter_contract=ChapterContract(
-                functions=_string_tuple(contract.get("functions")),
-                dramatic_question=str(contract.get("dramatic_question", "")),
-                protagonist_choice=ProtagonistChoice(
-                    actor=str(choice.get("actor", "")),
-                    action=str(choice.get("action", "")),
-                    alternatives=_string_tuple(choice.get("alternatives")),
-                    cost=str(choice.get("cost", "")),
-                    consequence=str(choice.get("consequence", "")),
-                ),
-                reader_change=ReaderChange(before=str(reader.get("before", "")), after=str(reader.get("after", ""))),
-                information=InformationPlan(
-                    reveal=_string_tuple(information.get("reveal")),
-                    withhold=_string_tuple(information.get("withhold")),
-                    misdirect=_string_tuple(information.get("misdirect")),
-                ),
-                pressure_curve=PressureCurve(
-                    start=str(pressure.get("start", "")),
-                    turn=str(pressure.get("turn", "")),
-                    end=str(pressure.get("end", "")),
-                ),
-                foreshadow_actions=_string_tuple(contract.get("foreshadow_actions")),
-                ending_shift=str(contract.get("ending_shift", "")),
-                target_chinese_chars=_integer(contract.get("target_chinese_chars"), "target_chinese_chars"),
-                forbidden=_string_tuple(contract.get("forbidden")),
-            ),
-            schema_version=_integer(payload.get("schema_version", 1), "schema_version"),
-            kind=str(payload.get("kind", "")),
-        )
-        decision.validate()
-        return decision
+        from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+
+        return NarrativeDecisionCodec.decode(content)
 
 
 @dataclass(frozen=True, slots=True)
@@ -384,11 +589,18 @@ def _enum(enum_type: type[StrEnum], value: object, name: str) -> StrEnum:
         raise NarrativeValidationError(f"invalid {name}: {value}") from error
 
 
-def _require_text(value: str, name: str) -> None:
-    if not value.strip():
+def _require_text(value: str | None, name: str) -> None:
+    if not isinstance(value, str) or not value.strip():
         raise NarrativeValidationError(f"{name} is required")
 
 
 def _require_items(values: tuple[object, ...], name: str) -> None:
     if not values or any(not str(value).strip() for value in values):
         raise NarrativeValidationError(f"{name} requires non-empty items")
+
+
+def _require_enum_member(enum_type: type[StrEnum], value: object, name: str) -> StrEnum:
+    try:
+        return enum_type(value)
+    except (TypeError, ValueError) as error:
+        raise NarrativeValidationError(f"invalid {name}: {value}") from error

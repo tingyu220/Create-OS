@@ -7,6 +7,7 @@ from creative_os.domains.narrative_decision import (
     InformationPlan,
     NarrativeDecision,
     NarrativeProjectProfile,
+    NullablePlan,
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
@@ -28,6 +29,8 @@ def _profile() -> NarrativeProjectProfile:
 
 def _decision(chapter: int = 7) -> NarrativeDecision:
     return NarrativeDecision(
+        contract_id=f"narrative-chapter-{chapter:03d}",
+        contract_version=1,
         chapter=chapter,
         profile_id="civilization-profile",
         volume_id="volume-1",
@@ -37,16 +40,17 @@ def _decision(chapter: int = 7) -> NarrativeDecision:
         inherited_pressure="上一章的压力",
         future_pressures=("下一章压力",),
         chapter_contract=ChapterContract(
+            chapter_id=f"chapter_{chapter:03d}",
             functions=("推进主线",),
             dramatic_question="主角是否主动调查？",
             protagonist_choice=ProtagonistChoice("林子轩", "调查日志", ("等待",), "关系受损", "进入审查"),
             reader_change=ReaderChange("读者怀疑", "读者确认风险"),
-            information=InformationPlan(("日志被覆盖",), ("覆盖者身份",), ()),
+            information=InformationPlan(("日志被覆盖",), ("覆盖者身份",), NullablePlan(values=())),
             pressure_curve=PressureCurve("封控", "违令", "审查"),
-            foreshadow_actions=("加深钥匙线索",),
+            foreshadow_actions=NullablePlan(values=("加深钥匙线索",)),
             ending_shift="主角成为审查对象",
             target_chinese_chars=7000,
-            forbidden=("不得确认发送者",),
+            forbidden=NullablePlan(values=("不得确认发送者",)),
         ),
     )
 
@@ -69,6 +73,8 @@ def test_director_accepts_a_contract_aligned_with_profile_and_facts():
     decision = NarrativeDirector().propose(_input(), _decision())
 
     assert decision == _decision()
+    assert decision.contract_id == "narrative-chapter-007"
+    assert decision.chapter_contract.chapter_id == "chapter_007"
     assert decision.chapter_contract.target_chinese_chars == 7000
     assert not hasattr(decision, "manuscript")
 
