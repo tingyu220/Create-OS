@@ -70,7 +70,6 @@ class CausalDependencyAnalyzer:
         try:
             if not isinstance(candidate, NarrativeDecision):
                 raise TypeError("candidate must be a NarrativeDecision")
-            candidate.validate()
             self._validate_inputs(profile, fact_snapshots, previous_chapter, change_requests)
             resolutions = candidate.chapter_contract.optional_candidates
             issues = tuple(
@@ -114,34 +113,44 @@ class CausalDependencyAnalyzer:
         resolution: OptionalCandidateResolution,
     ) -> tuple[ContractIssue, ...]:
         path = f"chapter_contract.optional_candidates[{resolution.candidate_id}]"
+        if not self._has_resolvable_concrete_dependencies(candidate, resolution):
+            return (_issue("unresolved_causal_candidate", path, "候选依赖必须使用存在的正式因果字段或稳定数组索引。"),)
         if resolution.affects_current_chapter == CandidateImpact.UNDETERMINED:
             return (_issue("unresolved_causal_candidate", path, "由规则或人工明确裁决候选是否影响本章。"),)
         if resolution.affects_current_chapter == CandidateImpact.NO:
-            if self._has_valid_decision(resolution):
+            if self._has_valid_decision(candidate, resolution):
                 return ()
             return (_issue("unresolved_causal_candidate", path, "为不纳入本章的候选保留有效规则或人工裁决。"),)
         if resolution.value_state != CandidateValueState.KNOWN:
             return (_issue("unresolved_causal_candidate", path, "影响本章的候选必须给出确定值。"),)
-        if not self._has_valid_decision(resolution):
+        if not self._has_valid_decision(candidate, resolution):
             return (_issue("unresolved_causal_candidate", path, "为候选提供可追溯的规则或人工裁决。"),)
         if not self._is_formally_included(candidate, resolution):
             return (_issue("unresolved_causal_candidate", path, "将影响本章的候选值纳入其直接引用的正式因果字段。"),)
         return ()
 
     @staticmethod
-    def _has_valid_decision(resolution: OptionalCandidateResolution) -> bool:
+    def _has_valid_decision(candidate: NarrativeDecision, resolution: OptionalCandidateResolution) -> bool:
         if resolution.decided_by == CandidateDecisionBy.HUMAN:
             return bool(resolution.decision_ref.strip())
         return (
             resolution.decided_by == CandidateDecisionBy.RULE
             and resolution.decision_ref == CAUSAL_RULESET_VERSION_V1
-            and CausalDependencyAnalyzer._is_explicit_direct_reference(resolution)
+            and CausalDependencyAnalyzer._is_explicit_direct_reference(candidate, resolution)
         )
 
     @staticmethod
-    def _is_explicit_direct_reference(resolution: OptionalCandidateResolution) -> bool:
+    def _is_explicit_direct_reference(candidate: NarrativeDecision, resolution: OptionalCandidateResolution) -> bool:
+        return CausalDependencyAnalyzer._has_resolvable_concrete_dependencies(candidate, resolution)
+
+    @staticmethod
+    def _has_resolvable_concrete_dependencies(
+        candidate: NarrativeDecision,
+        resolution: OptionalCandidateResolution,
+    ) -> bool:
         return bool(resolution.dependency_inputs) and all(
-            _is_causal_field_path(path) for path in resolution.dependency_inputs
+            _is_concrete_causal_field_path(path) and _can_read_field(candidate, path)
+            for path in resolution.dependency_inputs
         )
 
     @staticmethod
@@ -149,12 +158,16 @@ class CausalDependencyAnalyzer:
         if resolution.proposed_value is None:
             return False
         return any(
-            _is_causal_field_path(path) and _read_field(candidate, path) == resolution.proposed_value
+            _is_concrete_causal_field_path(path)
+            and _can_read_field(candidate, path)
+            and _read_field(candidate, path) == resolution.proposed_value
             for path in resolution.dependency_inputs
         )
 
 
-def _is_causal_field_path(path: str) -> bool:
+def _is_concrete_causal_field_path(path: object) -> bool:
+    if not isinstance(path, str) or "[*]" in path:
+        return False
     if path in CAUSAL_FIELD_PATHS_V1:
         return True
     for stable_path in CAUSAL_FIELD_PATHS_V1:
@@ -165,6 +178,14 @@ def _is_causal_field_path(path: str) -> bool:
         if fullmatch(r"\[0\]|\[[1-9][0-9]*\]", index):
             return True
     return False
+
+
+def _can_read_field(value: object, path: str) -> bool:
+    try:
+        _read_field(value, path)
+    except (AttributeError, IndexError, TypeError, ValueError):
+        return False
+    return True
 
 
 def _read_field(value: object, path: str) -> object:

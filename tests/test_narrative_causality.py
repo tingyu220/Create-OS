@@ -1,5 +1,7 @@
 from dataclasses import replace
 
+import pytest
+
 from creative_os.domains.narrative_causality import (
     CAUSAL_FIELD_PATHS_V1,
     CausalDependencyAnalyzer,
@@ -72,6 +74,13 @@ def _candidate(
     )
 
 
+def _with_resolution(decision: NarrativeDecision, resolution: OptionalCandidateResolution) -> NarrativeDecision:
+    return replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, optional_candidates=(resolution,)),
+    )
+
+
 def test_causal_field_paths_cover_outer_arc_pressure_and_all_stable_array_paths():
     assert CAUSAL_FIELD_PATHS_V1 == EXPECTED_CAUSAL_FIELD_PATHS
 
@@ -122,8 +131,92 @@ def test_no_candidate_requires_a_rule_or_human_decision_record():
     )
     human_resolution = replace(rule_resolution, decided_by="human", decision_ref="approval-2026-08-20")
 
-    assert _analyze(replace(decision, chapter_contract=replace(decision.chapter_contract, optional_candidates=(rule_resolution,)))).issues == ()
-    assert _analyze(replace(decision, chapter_contract=replace(decision.chapter_contract, optional_candidates=(human_resolution,)))).issues == ()
+    assert _analyze(_with_resolution(decision, rule_resolution)).issues == ()
+    assert _analyze(_with_resolution(decision, human_resolution)).issues == ()
+
+
+def test_rule_no_accepts_a_resolvable_stable_array_index():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[0]",),
+    )
+
+    assert _analyze(_with_resolution(decision, resolution)).issues == ()
+
+
+def test_rule_no_rejects_array_wildcard_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[*]",),
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+def test_human_no_also_rejects_array_wildcard_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[*]",),
+        decided_by="human",
+        decision_ref="approval-2026-08-20",
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+def test_rule_no_rejects_out_of_range_array_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[1]",),
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+@pytest.mark.parametrize(
+    ("resolution", "reason"),
+    [
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="",
+            ),
+            "empty decision record",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="causal-rules-v2",
+            ),
+            "wrong ruleset",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=("chapter_contract.target_chinese_chars",),
+            ),
+            "non causal field",
+        ),
+    ],
+)
+def test_rule_no_rejects_invalid_decision_record_or_non_causal_dependency(resolution, reason):
+    result = _analyze(_with_resolution(_v2_decision(), resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate", reason
+    assert result.issues[0].blocking is True
 
 
 def test_undetermined_candidate_fails_closed_even_when_its_value_is_known():
