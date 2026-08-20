@@ -2,7 +2,15 @@ import json
 
 import pytest
 
-from creative_os.domains.narrative_evidence import load_chapter_evidence
+from creative_os.domains.narrative_evidence import (
+    EvidenceIntegrityValidator,
+    EvidenceLocator,
+    EvidenceRef,
+    EvidenceRole,
+    ResolvedEvidenceSource,
+    deduplicate_evidence_refs,
+    load_chapter_evidence,
+)
 
 
 def _seed_chapter_artifacts(root, chapter_number=1):
@@ -48,3 +56,93 @@ def test_load_chapter_evidence_reports_invalid_json_path(tmp_path):
 
     with pytest.raises(ValueError, match=r"contexts[\\/]a\.json"):
         load_chapter_evidence(root, 1)
+
+
+def _evidence_ref(*, field_path="chapter_contract.functions[0]", **changes):
+    values = {
+        "evidence_id": "ev-001",
+        "contract_id": "narrative-chapter-007",
+        "contract_version": 2,
+        "field_path": field_path,
+        "role": EvidenceRole.INTENT,
+        "source_id": "production/chapter_007/contexts/director.json",
+        "source_version": "v1",
+        "source_content_hash": "a" * 64,
+        "locator": EvidenceLocator(kind="json_pointer", value="/functions/0"),
+        "excerpt": "本章用于升级冲突。",
+        "assertion": "该字段定义本章叙事功能。",
+    }
+    values.update(changes)
+    return EvidenceRef(**values)
+
+
+def _resolved_source(**changes):
+    values = {
+        "source_id": "production/chapter_007/contexts/director.json",
+        "source_version": "v1",
+        "source_content_hash": "a" * 64,
+        "located_excerpts": ((EvidenceLocator(kind="json_pointer", value="/functions/0"), "本章用于升级冲突。"),),
+        "assertions_by_field_path": (("chapter_contract.functions[0]", ("该字段定义本章叙事功能。",)),),
+    }
+    values.update(changes)
+    return ResolvedEvidenceSource(**values)
+
+
+def test_evidence_roles_are_limited_to_the_five_contract_roles():
+    assert {role.value for role in EvidenceRole} == {
+        "intent",
+        "verification",
+        "realization",
+        "non_applicability",
+        "decision",
+    }
+
+
+def test_evidence_locator_only_accepts_design_kinds():
+    with pytest.raises(ValueError, match="kind"):
+        EvidenceLocator(kind="page", value="1")
+
+
+def test_evidence_deduplication_uses_contract_eight_tuple_not_excerpt():
+    original = _evidence_ref()
+    same_binding = _evidence_ref(evidence_id="ev-002", excerpt="相同绑定的不同摘录")
+    another_field = _evidence_ref(
+        evidence_id="ev-003",
+        field_path="chapter_contract.functions[1]",
+        excerpt=original.excerpt,
+    )
+
+    assert deduplicate_evidence_refs((original, same_binding, another_field)) == (original, another_field)
+
+
+@pytest.mark.parametrize(
+    ("ref_changes", "source_changes", "expected_code"),
+    [
+        ({}, {"source_content_hash": "b" * 64}, "evidence_hash_mismatch"),
+        ({}, {"source_version": "v2"}, "evidence_version_mismatch"),
+        ({}, {"located_excerpts": ()}, "evidence_locator_unresolved"),
+        ({}, {"assertions_by_field_path": ()}, "evidence_assertion_mismatch"),
+    ],
+)
+def test_integrity_validator_reports_source_drift(ref_changes, source_changes, expected_code):
+    ref = _evidence_ref(**ref_changes)
+    source = _resolved_source(**source_changes)
+
+    issues = EvidenceIntegrityValidator(lambda source_id: source).validate(ref, ref.field_path)
+
+    assert [issue.code for issue in issues] == [expected_code]
+    assert all(issue.blocking for issue in issues)
+    assert all(issue.field_path == ref.field_path for issue in issues)
+
+
+def test_integrity_validator_rejects_memory_evidence_as_field_evidence():
+    from creative_os.memory.model import MemoryEvidence
+
+    validator = EvidenceIntegrityValidator(lambda source_id: _resolved_source())
+
+    issues = validator.validate(
+        MemoryEvidence(source_type="review", source_id="run-12"),
+        "chapter_contract.functions[0]",
+    )
+
+    assert [issue.code for issue in issues] == ["evidence_ref_required"]
