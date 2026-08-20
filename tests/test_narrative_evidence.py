@@ -5,10 +5,12 @@ from pathlib import Path
 import pytest
 
 from creative_os.domains.narrative_evidence import (
+    EvidenceAssertion,
     EvidenceIntegrityValidator,
     EvidenceLocator,
     EvidenceRef,
     EvidenceRole,
+    EvidenceSourceKind,
     ResolvedEvidenceSource,
     deduplicate_evidence_refs,
     load_chapter_evidence,
@@ -74,6 +76,7 @@ def _evidence_ref(*, field_path="chapter_contract.functions[0]", **changes):
         "locator": EvidenceLocator(kind="json_pointer", value="/functions/0"),
         "excerpt": "本章用于升级冲突。",
         "assertion": "该字段定义本章叙事功能。",
+        "asserted_value": "推进主线",
     }
     values.update(changes)
     return EvidenceRef(**values)
@@ -84,8 +87,10 @@ def _resolved_source(**changes):
         "source_id": "production/chapter_007/contexts/director.json",
         "source_version": "v1",
         "source_content_hash": "a" * 64,
+        "source_kind": EvidenceSourceKind.DIRECTOR,
         "located_excerpts": ((EvidenceLocator(kind="json_pointer", value="/functions/0"), "本章用于升级冲突。"),),
         "assertions_by_field_path": (("chapter_contract.functions[0]", ("该字段定义本章叙事功能。",)),),
+        "asserted_values": (EvidenceAssertion("chapter_contract.functions[0]", "推进主线"),),
     }
     values.update(changes)
     return ResolvedEvidenceSource(**values)
@@ -151,6 +156,64 @@ def test_integrity_validator_reports_source_drift(ref_changes, source_changes, e
     assert all(issue.field_path == ref.field_path for issue in issues)
 
 
+def test_integrity_validator_binds_authoritative_excerpt_and_structured_value_to_candidate_value():
+    ref = _evidence_ref()
+    validator = EvidenceIntegrityValidator(lambda source_id: _resolved_source())
+
+    assert validator.validate(ref, ref.field_path, expected_value="推进主线", require_source_kind=True) == ()
+
+    excerpt_issues = validator.validate(
+        _evidence_ref(excerpt="伪造摘录"),
+        ref.field_path,
+        expected_value="推进主线",
+        require_source_kind=True,
+    )
+    ref_value_issues = validator.validate(
+        _evidence_ref(asserted_value="改变人物关系"),
+        ref.field_path,
+        expected_value="推进主线",
+        require_source_kind=True,
+    )
+    source_value_issues = EvidenceIntegrityValidator(
+        lambda source_id: _resolved_source(
+            asserted_values=(EvidenceAssertion(ref.field_path, "改变人物关系"),)
+        )
+    ).validate(ref, ref.field_path, expected_value="推进主线", require_source_kind=True)
+
+    assert [issue.code for issue in excerpt_issues] == ["evidence_excerpt_mismatch"]
+    assert [issue.code for issue in ref_value_issues] == ["evidence_asserted_value_mismatch"]
+    assert [issue.code for issue in source_value_issues] == ["evidence_asserted_value_mismatch"]
+
+
+def test_integrity_validator_requires_strict_authoritative_source_kind_for_admission():
+    source = _resolved_source(source_kind=None)
+
+    result = EvidenceIntegrityValidator(lambda source_id: source).validate(
+        _evidence_ref(),
+        "chapter_contract.functions[0]",
+        expected_value="推进主线",
+        require_source_kind=True,
+    )
+
+    assert [issue.code for issue in result] == ["evidence_source_kind_missing"]
+
+
+def test_structured_asserted_value_comparison_preserves_scalar_type():
+    ref = _evidence_ref(asserted_value=True)
+    source = _resolved_source(
+        asserted_values=(EvidenceAssertion("chapter_contract.functions[0]", True),)
+    )
+
+    result = EvidenceIntegrityValidator(lambda source_id: source).validate(
+        ref,
+        "chapter_contract.functions[0]",
+        expected_value=1,
+        require_source_kind=True,
+    )
+
+    assert [issue.code for issue in result] == ["evidence_asserted_value_mismatch"]
+
+
 def test_integrity_validator_rejects_memory_evidence_as_field_evidence():
     from creative_os.memory.model import MemoryEvidence
 
@@ -184,6 +247,7 @@ def test_replay_evidence_ref_is_the_single_public_evidence_ref_type():
         {"located_excerpts": ([EvidenceLocator(kind="json_pointer", value="/functions/0"), "文本"],)},
         {"assertions_by_field_path": []},
         {"assertions_by_field_path": (("chapter_contract.functions[0]", ["断言"]),)},
+        {"asserted_values": []},
     ],
 )
 def test_resolved_evidence_source_rejects_mutable_nested_containers(changes):

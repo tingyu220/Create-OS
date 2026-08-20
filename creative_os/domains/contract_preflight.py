@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from re import fullmatch
-from typing import Callable
-
 from creative_os.domains.contract_issue import ContractIssue, EvidenceCheck
-from creative_os.domains.narrative_causality import CAUSAL_FIELD_PATHS_V1, CausalAnalysisResult
+from creative_os.domains.narrative_causality import (
+    CAUSAL_FIELD_PATHS_V1,
+    CausalAnalysisResult,
+    CausalDependencyAnalyzer,
+)
 from creative_os.domains.narrative_decision import (
     ArcPhase,
-    CandidateImpact,
-    CandidateValueState,
     ChoiceStatus,
     NarrativeDecision,
     NullablePlan,
@@ -18,7 +18,9 @@ from creative_os.domains.narrative_evidence import (
     EvidenceIntegrityValidator,
     EvidenceRef,
     EvidenceRole,
-    ResolvedEvidenceSource,
+    EvidenceSourceKind,
+    EvidenceValue,
+    SourceResolver,
 )
 
 
@@ -70,7 +72,7 @@ class ContractPreflightValidator:
     def validate(
         self,
         candidate: object,
-        sources: object,
+        sources: SourceResolver,
         causal_result: object,
     ) -> PreflightResult:
         if not isinstance(candidate, NarrativeDecision):
@@ -130,8 +132,8 @@ class ContractPreflightValidator:
 
 def _required_evidence_roles(
     candidate: NarrativeDecision,
-) -> tuple[dict[str, EvidenceRole], tuple[ContractIssue, ...]]:
-    required: dict[str, EvidenceRole] = {}
+) -> tuple[dict[str, tuple[EvidenceRole, object]], tuple[ContractIssue, ...]]:
+    required: dict[str, tuple[EvidenceRole, object]] = {}
     issues: list[ContractIssue] = []
 
     for path in _CONTROL_FIELDS:
@@ -145,12 +147,12 @@ def _required_evidence_roles(
 
     for stable_path in CAUSAL_FIELD_PATHS_V1:
         if not stable_path.endswith("[*]"):
-            required[stable_path] = EvidenceRole.INTENT
             try:
                 value = _read_field(candidate, stable_path)
             except Exception:
                 issues.append(_issue("incomplete_contract", stable_path, "补全因果字段。"))
                 continue
+            required[stable_path] = (EvidenceRole.INTENT, _evidence_value(value))
             if _invalid_intent_value(stable_path, value):
                 issues.append(_issue("incomplete_contract", stable_path, "将 unknown 字段补充为确定值。"))
             continue
@@ -168,7 +170,7 @@ def _required_evidence_roles(
             issues.append(_issue("incomplete_contract", parent_path, "补全至少一个数组元素。"))
         for index, value in enumerate(values):
             concrete_path = f"{parent_path}[{index}]"
-            required[concrete_path] = EvidenceRole.INTENT
+            required[concrete_path] = (EvidenceRole.INTENT, _evidence_value(value))
             if _invalid_intent_value(concrete_path, value):
                 issues.append(_issue("incomplete_contract", concrete_path, "将 unknown 数组元素补充为确定值。"))
 
@@ -187,7 +189,7 @@ def _required_evidence_roles(
     else:
         for index, missing_field in enumerate(choice.missing_fields):
             path = f"chapter_contract.protagonist_choice.missing_fields[{index}]"
-            required[path] = EvidenceRole.INTENT
+            required[path] = (EvidenceRole.INTENT, _evidence_value(missing_field))
             issues.append(_issue("incomplete_contract", path, f"补全人物选择字段 {missing_field}。"))
 
     for plan_path, reason_path in _NULLABLE_PLANS:
@@ -219,14 +221,14 @@ def _required_evidence_roles(
                 )
             )
             continue
-        required[reason_path] = EvidenceRole.NON_APPLICABILITY
+        required[reason_path] = (EvidenceRole.NON_APPLICABILITY, reason)
 
     return required, tuple(issues)
 
 
 def _validate_evidence(
     candidate: NarrativeDecision,
-    required_roles: dict[str, EvidenceRole],
+    required_roles: dict[str, tuple[EvidenceRole, object]],
     integrity_validator: EvidenceIntegrityValidator | None,
 ) -> tuple[ContractIssue, ...]:
     issues: list[ContractIssue] = []
@@ -257,12 +259,32 @@ def _validate_evidence(
         for ref in evidence:
             if isinstance(ref, EvidenceRef):
                 by_path.setdefault(path, []).append(ref)
-            if integrity_validator is not None:
+            if integrity_validator is not None and path not in required_roles:
                 issues.extend(integrity_validator.validate(ref, path))
 
-    for path, expected_role in required_roles.items():
+    for path, (expected_role, expected_value) in required_roles.items():
         refs = by_path.get(path, [])
         matching = tuple(ref for ref in refs if ref.role == expected_role)
+        authoritative_intents: list[tuple[EvidenceSourceKind, EvidenceValue]] = []
+        if integrity_validator is not None:
+            for ref in refs:
+                validation = integrity_validator.validate_resolved(
+                    ref,
+                    path,
+                    expected_value=expected_value,
+                    require_source_kind=True,
+                )
+                issues.extend(validation.issues)
+                source = validation.source
+                if (
+                    expected_role == EvidenceRole.INTENT
+                    and ref.role == EvidenceRole.INTENT
+                    and source is not None
+                    and isinstance(source.source_kind, EvidenceSourceKind)
+                ):
+                    asserted_value = source.asserted_value_at(path)
+                    if asserted_value is not None:
+                        authoritative_intents.append((source.source_kind, asserted_value))
         if any(ref.role != expected_role for ref in refs):
             code = (
                 "invalid_not_applicable_reason"
@@ -279,8 +301,11 @@ def _validate_evidence(
             issues.append(_issue(code, path, f"为字段提供 {expected_role.value} EvidenceRef。"))
             continue
         if expected_role == EvidenceRole.INTENT:
-            intent_values = {ref.excerpt.strip() for ref in matching if isinstance(ref.excerpt, str)}
-            if len(intent_values) > 1:
+            values_by_kind: dict[EvidenceSourceKind, set[tuple[type, EvidenceValue]]] = {}
+            for source_kind, asserted_value in authoritative_intents:
+                values_by_kind.setdefault(source_kind, set()).add((type(asserted_value), asserted_value))
+            all_values = {value for values in values_by_kind.values() for value in values}
+            if len(values_by_kind) > 1 and len(all_values) > 1:
                 issues.append(
                     _issue(
                         "conflicting_intent_evidence",
@@ -296,51 +321,13 @@ def _validate_causality(
     candidate: NarrativeDecision,
     causal_result: object,
 ) -> tuple[ContractIssue, ...]:
-    path = "chapter_contract.optional_candidates"
-    if not isinstance(causal_result, CausalAnalysisResult):
-        return (_issue("causal_analysis_failed", path, "重新执行完整因果分析。"),)
-    if not isinstance(causal_result.issues, tuple) or not all(
-        isinstance(issue, ContractIssue) for issue in causal_result.issues
-    ):
-        return (_issue("causal_analysis_failed", path, "恢复结构有效的因果分析结果。"),)
-    issues = list(causal_result.issues)
-    if causal_result.resolutions != candidate.chapter_contract.optional_candidates:
-        issues.insert(0, _issue("causal_analysis_failed", path, "因果结果必须绑定当前候选。"))
-        return tuple(issues)
-    if causal_result.field_paths != CAUSAL_FIELD_PATHS_V1:
-        issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用完整的版本化字段闭包。"))
-    for index, resolution in enumerate(candidate.chapter_contract.optional_candidates):
-        candidate_id = getattr(resolution, "candidate_id", None)
-        resolution_path = (
-            f"{path}[{candidate_id}]"
-            if isinstance(candidate_id, str) and candidate_id.strip()
-            else f"{path}[{index}]"
-        )
-        if resolution.affects_current_chapter == CandidateImpact.UNDETERMINED:
-            issues.append(_issue("unresolved_causal_candidate", resolution_path, "明确裁决候选是否影响本章。"))
-        elif (
-            resolution.affects_current_chapter == CandidateImpact.YES
-            and resolution.value_state != CandidateValueState.KNOWN
-        ):
-            issues.append(_issue("unresolved_causal_candidate", resolution_path, "影响本章的候选必须给出确定值。"))
-    return tuple(issues)
+    return CausalDependencyAnalyzer().validate_result(candidate, causal_result)
 
 
 def _integrity_validator(sources: object) -> EvidenceIntegrityValidator:
-    if isinstance(sources, EvidenceIntegrityValidator):
-        return sources
-    if callable(sources):
-        return EvidenceIntegrityValidator(sources)
-    if not isinstance(sources, tuple):
-        raise TypeError("sources must be an immutable tuple, resolver, or validator")
-    by_id: dict[str, ResolvedEvidenceSource] = {}
-    for source in sources:
-        if not isinstance(source, ResolvedEvidenceSource) or source.source_id in by_id:
-            raise ValueError("sources must contain unique ResolvedEvidenceSource values")
-        by_id[source.source_id] = source
-
-    resolver: Callable[[str], ResolvedEvidenceSource | None] = by_id.get
-    return EvidenceIntegrityValidator(resolver)
+    if not callable(sources):
+        raise TypeError("sources must be an authoritative resolver callable")
+    return EvidenceIntegrityValidator(sources)
 
 
 def _invalid_control(path: str, value: object, candidate: NarrativeDecision) -> bool:
@@ -369,6 +356,10 @@ def _invalid_intent_value(path: str, value: object) -> bool:
 
 def _is_unknown(value: object) -> bool:
     return value is None or isinstance(value, str) and not value.strip()
+
+
+def _evidence_value(value: object) -> object:
+    return value.value if hasattr(value, "value") else value
 
 
 def _read_field(value: object, path: str) -> object:

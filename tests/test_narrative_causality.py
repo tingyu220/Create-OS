@@ -4,8 +4,10 @@ import pytest
 
 from creative_os.domains.narrative_causality import (
     CAUSAL_FIELD_PATHS_V1,
+    CausalAnalysisResult,
     CausalDependencyAnalyzer,
 )
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import (
     ArcPhase,
     CandidateImpact,
@@ -85,6 +87,10 @@ def test_causal_field_paths_cover_outer_arc_pressure_and_all_stable_array_paths(
     assert CAUSAL_FIELD_PATHS_V1 == EXPECTED_CAUSAL_FIELD_PATHS
 
 
+def test_unbound_causal_result_never_reports_resolved():
+    assert CausalAnalysisResult(resolutions=(), issues=()).is_resolved is False
+
+
 def test_yes_known_direct_candidate_must_be_present_in_a_formal_causal_field():
     decision = _v2_decision()
     resolution = _candidate(
@@ -102,6 +108,39 @@ def test_yes_known_direct_candidate_must_be_present_in_a_formal_causal_field():
     assert result.issues == ()
     assert result.resolutions == (resolution,)
     assert result.ruleset_version == "causal-rules-v1"
+    assert result.candidate_content_hash == NarrativeDecisionCodec.content_hash(candidate)
+
+
+def test_causal_result_validation_rejects_stale_candidate_and_wrong_ruleset():
+    candidate = replace(_v2_decision(), chapter_contract=replace(_v2_decision().chapter_contract, optional_candidates=()))
+    analyzer = CausalDependencyAnalyzer()
+    result = _analyze(candidate)
+    stale_candidate = replace(candidate, arc_goal="改变后的剧情段目标")
+
+    stale_issues = analyzer.validate_result(stale_candidate, result)
+    wrong_ruleset_issues = analyzer.validate_result(candidate, replace(result, ruleset_version="causal-rules-v2"))
+
+    assert any(issue.code == "causal_analysis_failed" for issue in stale_issues)
+    assert any(issue.code == "causal_analysis_failed" for issue in wrong_ruleset_issues)
+
+
+def test_causal_result_validation_recomputes_forged_yes_semantics():
+    decision = _v2_decision()
+    resolution = _candidate(
+        impact=CandidateImpact.YES,
+        value_state=CandidateValueState.KNOWN,
+        proposed_value="没有进入正式字段的伪造值",
+    )
+    candidate = _with_resolution(decision, resolution)
+    forged = CausalAnalysisResult(
+        resolutions=(resolution,),
+        issues=(),
+        candidate_content_hash=NarrativeDecisionCodec.content_hash(candidate),
+    )
+
+    issues = CausalDependencyAnalyzer().validate_result(candidate, forged)
+
+    assert any(issue.code == "unresolved_causal_candidate" for issue in issues)
 
 
 def test_yes_candidate_is_blocked_when_known_value_is_not_in_formal_field():

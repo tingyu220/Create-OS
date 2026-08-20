@@ -176,6 +176,21 @@ def test_v2_round_trip_closes_over_strict_evidence_binding_version():
     assert decoded == decision
     assert type(evidence.contract_version) is int
     assert evidence.contract_version == decision.contract_version
+    assert evidence.asserted_value == "推进主线"
+
+
+def test_v2_evidence_asserted_value_is_optional_for_legacy_payload_but_strict_when_present():
+    payload = json.loads(NarrativeDecisionCodec.encode_v2(_v2_decision()))
+    evidence = payload["chapter_contract"]["intent_evidence_bindings"]["chapter_contract.functions[0]"][0]
+    evidence.pop("asserted_value")
+
+    decoded = NarrativeDecisionCodec.decode_v2(json.dumps(payload, ensure_ascii=False))
+
+    assert decoded.chapter_contract.intent_evidence_bindings[0].evidence[0].asserted_value is None
+
+    evidence["asserted_value"] = None
+    with pytest.raises(NarrativeValidationError, match="asserted_value"):
+        NarrativeDecisionCodec.decode_v2(json.dumps(payload, ensure_ascii=False))
 
 
 @pytest.mark.parametrize(

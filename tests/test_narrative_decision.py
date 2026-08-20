@@ -95,6 +95,7 @@ def _evidence(field_path: str, role: EvidenceRole = EvidenceRole.INTENT) -> Evid
         locator=EvidenceLocator(kind="json_pointer", value="/chapter_contract"),
         excerpt="第七章推进主动调查。",
         assertion=f"该来源约束 {field_path}",
+        asserted_value="推进主线",
     )
 
 

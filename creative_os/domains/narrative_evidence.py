@@ -17,12 +17,37 @@ class EvidenceRole(StrEnum):
     DECISION = "decision"
 
 
+class EvidenceSourceKind(StrEnum):
+    TASK = "task"
+    DIRECTOR = "director"
+    PROFILE = "profile"
+    FACT_SNAPSHOT = "fact_snapshot"
+    PREVIOUS_CHAPTER = "previous_chapter"
+    OUTLINE_CHANGE = "outline_change"
+
+
+EvidenceValue = str | int | bool
+
+
 _LOCATOR_KINDS = frozenset({"json_pointer", "line_range", "text_anchor", "record_id"})
 
 
 def _require_text(value: str, name: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{name} is required")
+
+
+def _require_evidence_value(value: object, name: str) -> None:
+    if isinstance(value, str):
+        _require_text(value, name)
+        return
+    if type(value) in (int, bool):
+        return
+    raise ValueError(f"{name} must be a scalar evidence value")
+
+
+def _same_evidence_value(left: object, right: object) -> bool:
+    return type(left) is type(right) and left == right
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +59,16 @@ class EvidenceLocator:
         if self.kind not in _LOCATOR_KINDS:
             raise ValueError(f"unsupported evidence locator kind: {self.kind}")
         _require_text(self.value, "locator value")
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceAssertion:
+    field_path: str
+    value: EvidenceValue
+
+    def __post_init__(self) -> None:
+        _require_text(self.field_path, "assertion field_path")
+        _require_evidence_value(self.value, "asserted value")
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -53,6 +88,7 @@ class EvidenceRef:
     source_content_hash: str | None
     locator: EvidenceLocator | None
     assertion: str | None
+    asserted_value: EvidenceValue | None
 
     def __init__(
         self,
@@ -70,6 +106,7 @@ class EvidenceRef:
         source_content_hash: str | None = None,
         locator: EvidenceLocator | None = None,
         assertion: str | None = None,
+        asserted_value: EvidenceValue | None = None,
     ) -> None:
         legacy_values = (source_type, source_ref)
         field_values = (
@@ -83,6 +120,7 @@ class EvidenceRef:
             source_content_hash,
             locator,
             assertion,
+            asserted_value,
         )
         if any(value is not None for value in legacy_values):
             if any(value is not None for value in field_values):
@@ -104,6 +142,7 @@ class EvidenceRef:
                 "source_content_hash",
                 "locator",
                 "assertion",
+                "asserted_value",
             ):
                 object.__setattr__(self, name, None)
             return
@@ -125,6 +164,8 @@ class EvidenceRef:
             raise ValueError("role must be an EvidenceRole")
         if not isinstance(locator, EvidenceLocator):
             raise ValueError("locator must be an EvidenceLocator")
+        if asserted_value is not None:
+            _require_evidence_value(asserted_value, "asserted_value")
         object.__setattr__(self, "source_type", None)
         object.__setattr__(self, "source_ref", None)
         object.__setattr__(self, "excerpt", excerpt)
@@ -138,6 +179,7 @@ class EvidenceRef:
         object.__setattr__(self, "source_content_hash", source_content_hash)
         object.__setattr__(self, "locator", locator)
         object.__setattr__(self, "assertion", assertion)
+        object.__setattr__(self, "asserted_value", asserted_value)
 
     @property
     def is_legacy_replay_ref(self) -> bool:
@@ -166,6 +208,8 @@ class EvidenceRef:
             raise ValueError("role must be an EvidenceRole")
         if not isinstance(self.locator, EvidenceLocator):
             raise ValueError("locator must be an EvidenceLocator")
+        if self.asserted_value is not None:
+            _require_evidence_value(self.asserted_value, "asserted_value")
 
     @property
     def deduplication_key(self) -> tuple[str, int, str, EvidenceRole, str, str, EvidenceLocator, str]:
@@ -214,12 +258,20 @@ class ResolvedEvidenceSource:
     source_content_hash: str
     located_excerpts: tuple[tuple[EvidenceLocator, str], ...]
     assertions_by_field_path: tuple[tuple[str, tuple[str, ...]], ...]
+    source_kind: EvidenceSourceKind | None = None
+    asserted_values: tuple[EvidenceAssertion, ...] = ()
 
     def __post_init__(self) -> None:
         _require_text(self.source_id, "source_id")
         _require_text(self.source_version, "source_version")
         _require_text(self.source_content_hash, "source_content_hash")
-        if not isinstance(self.located_excerpts, tuple) or not isinstance(self.assertions_by_field_path, tuple):
+        if self.source_kind is not None and not isinstance(self.source_kind, EvidenceSourceKind):
+            raise ValueError("source_kind must be an EvidenceSourceKind")
+        if (
+            not isinstance(self.located_excerpts, tuple)
+            or not isinstance(self.assertions_by_field_path, tuple)
+            or not isinstance(self.asserted_values, tuple)
+        ):
             raise ValueError("resolved evidence source collections must be tuples")
         for item in self.located_excerpts:
             if not isinstance(item, tuple) or len(item) != 2:
@@ -237,6 +289,13 @@ class ResolvedEvidenceSource:
                 raise ValueError("assertions must be tuples")
             if not assertions or any(not isinstance(value, str) or not value.strip() for value in assertions):
                 raise ValueError("assertions must contain non-empty values")
+        seen_asserted_paths: set[str] = set()
+        for assertion in self.asserted_values:
+            if not isinstance(assertion, EvidenceAssertion):
+                raise ValueError("asserted_values must contain EvidenceAssertion values")
+            if assertion.field_path in seen_asserted_paths:
+                raise ValueError("asserted_values field paths must be unique")
+            seen_asserted_paths.add(assertion.field_path)
 
     def excerpt_at(self, locator: EvidenceLocator) -> str | None:
         for candidate, excerpt in self.located_excerpts:
@@ -247,8 +306,23 @@ class ResolvedEvidenceSource:
     def supports_assertion(self, field_path: str, assertion: str) -> bool:
         return any(path == field_path and assertion in assertions for path, assertions in self.assertions_by_field_path)
 
+    def asserted_value_at(self, field_path: str) -> EvidenceValue | None:
+        for assertion in self.asserted_values:
+            if assertion.field_path == field_path:
+                return assertion.value
+        return None
+
 
 SourceResolver = Callable[[str], ResolvedEvidenceSource | None]
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceValidationResult:
+    source: ResolvedEvidenceSource | None
+    issues: tuple[ContractIssue, ...]
+
+
+_EXPECTED_VALUE_UNSET = object()
 
 
 class EvidenceIntegrityValidator:
@@ -257,28 +331,104 @@ class EvidenceIntegrityValidator:
     def __init__(self, source_resolver: SourceResolver) -> None:
         self._source_resolver = source_resolver
 
-    def validate(self, ref: object, expected_field_path: str) -> tuple[ContractIssue, ...]:
+    def validate(
+        self,
+        ref: object,
+        expected_field_path: str,
+        *,
+        expected_value: object = _EXPECTED_VALUE_UNSET,
+        require_source_kind: bool = False,
+    ) -> tuple[ContractIssue, ...]:
+        return self.validate_resolved(
+            ref,
+            expected_field_path,
+            expected_value=expected_value,
+            require_source_kind=require_source_kind,
+        ).issues
+
+    def validate_resolved(
+        self,
+        ref: object,
+        expected_field_path: str,
+        *,
+        expected_value: object = _EXPECTED_VALUE_UNSET,
+        require_source_kind: bool = False,
+    ) -> EvidenceValidationResult:
         if not isinstance(ref, EvidenceRef):
-            return (self._issue("evidence_ref_required", expected_field_path, "请提供字段级 EvidenceRef，而不是存储信封证据。"),)
+            return EvidenceValidationResult(
+                None,
+                (self._issue("evidence_ref_required", expected_field_path, "请提供字段级 EvidenceRef，而不是存储信封证据。"),),
+            )
         if ref.is_legacy_replay_ref or ref.field_path != expected_field_path:
-            return (self._issue("evidence_field_path_mismatch", expected_field_path, "将证据绑定到当前字段路径。"),)
+            return EvidenceValidationResult(
+                None,
+                (self._issue("evidence_field_path_mismatch", expected_field_path, "将证据绑定到当前字段路径。"),),
+            )
         try:
             source = self._source_resolver(ref.source_id)
             if source is None:
-                return (self._issue("evidence_source_missing", ref.field_path, "恢复来源或重新绑定证据。"),)
+                return EvidenceValidationResult(
+                    None,
+                    (self._issue("evidence_source_missing", ref.field_path, "恢复来源或重新绑定证据。"),),
+                )
             if source.source_id != ref.source_id:
-                return (self._issue("evidence_source_mismatch", ref.field_path, "重新绑定正确的来源。"),)
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_source_mismatch", ref.field_path, "重新绑定正确的来源。"),),
+                )
             if source.source_version != ref.source_version:
-                return (self._issue("evidence_version_mismatch", ref.field_path, "更新为来源的当前版本。"),)
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_version_mismatch", ref.field_path, "更新为来源的当前版本。"),),
+                )
             if source.source_content_hash != ref.source_content_hash:
-                return (self._issue("evidence_hash_mismatch", ref.field_path, "更新为来源的当前内容哈希。"),)
-            if source.excerpt_at(ref.locator) is None:
-                return (self._issue("evidence_locator_unresolved", ref.field_path, "使用当前来源中可定位的位置。"),)
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_hash_mismatch", ref.field_path, "更新为来源的当前内容哈希。"),),
+                )
+            if require_source_kind and not isinstance(source.source_kind, EvidenceSourceKind):
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_source_kind_missing", ref.field_path, "为权威来源声明严格 producer kind。"),),
+                )
+            authoritative_excerpt = source.excerpt_at(ref.locator)
+            if authoritative_excerpt is None:
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_locator_unresolved", ref.field_path, "使用当前来源中可定位的位置。"),),
+                )
+            if authoritative_excerpt != ref.excerpt:
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_excerpt_mismatch", ref.field_path, "使用 locator 返回的权威内容。"),),
+                )
             if not source.supports_assertion(ref.field_path, ref.assertion):
-                return (self._issue("evidence_assertion_mismatch", ref.field_path, "为该字段提供可验证的断言。"),)
+                return EvidenceValidationResult(
+                    source,
+                    (self._issue("evidence_assertion_mismatch", ref.field_path, "为该字段提供可验证的断言。"),),
+                )
+            if expected_value is not _EXPECTED_VALUE_UNSET:
+                authoritative_value = source.asserted_value_at(ref.field_path)
+                if not _same_evidence_value(
+                    ref.asserted_value,
+                    expected_value,
+                ) or not _same_evidence_value(authoritative_value, expected_value):
+                    return EvidenceValidationResult(
+                        source,
+                        (
+                            self._issue(
+                                "evidence_asserted_value_mismatch",
+                                ref.field_path,
+                                "将结构化断言值绑定到候选的实际字段值。",
+                            ),
+                        ),
+                    )
         except Exception:
-            return (self._issue("evidence_source_unavailable", ref.field_path, "恢复可读取的权威来源后重新校验。"),)
-        return ()
+            return EvidenceValidationResult(
+                None,
+                (self._issue("evidence_source_unavailable", ref.field_path, "恢复可读取的权威来源后重新校验。"),),
+            )
+        return EvidenceValidationResult(source, ())
 
     @staticmethod
     def _issue(code: str, field_path: str, repair_hint: str) -> ContractIssue:

@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from re import fullmatch
 
 from creative_os.domains.contract_issue import ContractIssue, EvidenceCheck
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import (
     CandidateDecisionBy,
     CandidateImpact,
@@ -48,12 +49,18 @@ class CausalAnalysisResult:
 
     resolutions: tuple[OptionalCandidateResolution, ...]
     issues: tuple[ContractIssue, ...]
+    candidate_content_hash: str = ""
     field_paths: tuple[str, ...] = CAUSAL_FIELD_PATHS_V1
     ruleset_version: str = CAUSAL_RULESET_VERSION_V1
 
     @property
     def is_resolved(self) -> bool:
-        return not self.issues
+        return (
+            not self.issues
+            and fullmatch(r"[0-9a-f]{64}", self.candidate_content_hash) is not None
+            and self.field_paths == CAUSAL_FIELD_PATHS_V1
+            and self.ruleset_version == CAUSAL_RULESET_VERSION_V1
+        )
 
 
 class CausalDependencyAnalyzer:
@@ -75,12 +82,17 @@ class CausalDependencyAnalyzer:
             if validation_issues:
                 return CausalAnalysisResult(resolutions=resolutions, issues=validation_issues)
             candidate.validate()
+            candidate_content_hash = NarrativeDecisionCodec.content_hash(candidate)
             issues = tuple(
                 issue
                 for resolution in resolutions
                 for issue in self._analyze_resolution(candidate, resolution)
             )
-            return CausalAnalysisResult(resolutions=resolutions, issues=issues)
+            return CausalAnalysisResult(
+                resolutions=resolutions,
+                issues=issues,
+                candidate_content_hash=candidate_content_hash,
+            )
         except Exception:
             return CausalAnalysisResult(
                 resolutions=(),
@@ -92,6 +104,44 @@ class CausalDependencyAnalyzer:
                     ),
                 ),
             )
+
+    def validate_result(
+        self,
+        candidate: object,
+        result: object,
+    ) -> tuple[ContractIssue, ...]:
+        path = "chapter_contract.optional_candidates"
+        try:
+            if not isinstance(candidate, NarrativeDecision) or not isinstance(result, CausalAnalysisResult):
+                raise TypeError("candidate and result types are required")
+            candidate.validate()
+            expected_hash = NarrativeDecisionCodec.content_hash(candidate)
+            if not isinstance(result.issues, tuple) or not all(
+                isinstance(issue, ContractIssue) for issue in result.issues
+            ):
+                raise TypeError("causal issues must be ContractIssue tuple")
+
+            issues = list(result.issues)
+            if result.candidate_content_hash != expected_hash:
+                issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选内容哈希。"))
+            if result.ruleset_version != CAUSAL_RULESET_VERSION_V1:
+                issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用当前规则版本。"))
+            if result.field_paths != CAUSAL_FIELD_PATHS_V1:
+                issues.append(_issue("causal_analysis_failed", path, "因果结果必须使用完整字段闭包。"))
+
+            resolutions, validation_issues = self._validate_candidate(candidate)
+            issues.extend(validation_issues)
+            if result.resolutions != resolutions:
+                issues.append(_issue("causal_analysis_failed", path, "因果结果必须绑定当前候选的完整裁决集合。"))
+            elif not validation_issues:
+                issues.extend(
+                    issue
+                    for resolution in resolutions
+                    for issue in self._analyze_resolution(candidate, resolution)
+                )
+            return _deduplicate_issues(issues)
+        except Exception:
+            return (_issue("causal_analysis_failed", path, "恢复完整候选与因果结果后重新分析。"),)
 
     @staticmethod
     def _validate_candidate(
@@ -273,3 +323,13 @@ def _issue(code: str, field_path: str, repair_hint: str) -> ContractIssue:
         evidence_checks=(EvidenceCheck(code=code, passed=False, detail=repair_hint),),
         repair_hint=repair_hint,
     )
+
+
+def _deduplicate_issues(issues: list[ContractIssue]) -> tuple[ContractIssue, ...]:
+    result: list[ContractIssue] = []
+    seen: set[ContractIssue] = set()
+    for issue in issues:
+        if issue not in seen:
+            seen.add(issue)
+            result.append(issue)
+    return tuple(result)

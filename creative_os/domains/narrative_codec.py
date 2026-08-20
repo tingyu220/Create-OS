@@ -328,7 +328,7 @@ class NarrativeDecisionCodec:
     @staticmethod
     def _encode_evidence(ref: EvidenceRef) -> dict[str, Any]:
         assert ref.role is not None and ref.locator is not None
-        return {
+        payload = {
             "evidence_id": ref.evidence_id,
             "contract_id": ref.contract_id,
             "contract_version": ref.contract_version,
@@ -341,6 +341,9 @@ class NarrativeDecisionCodec:
             "excerpt": ref.excerpt,
             "assertion": ref.assertion,
         }
+        if ref.asserted_value is not None:
+            payload["asserted_value"] = ref.asserted_value
+        return payload
 
     @classmethod
     def _decode_v1_choice(cls, payload: Mapping[str, Any]) -> ProtagonistChoice:
@@ -437,23 +440,28 @@ class NarrativeDecisionCodec:
 
     @classmethod
     def _decode_evidence(cls, payload: Mapping[str, Any]) -> EvidenceRef:
-        cls._require_fields(
-            payload,
-            {
-                "evidence_id",
-                "contract_id",
-                "contract_version",
-                "field_path",
-                "role",
-                "source_id",
-                "source_version",
-                "source_content_hash",
-                "locator",
-                "excerpt",
-                "assertion",
-            },
-            "evidence",
-        )
+        required_fields = {
+            "evidence_id",
+            "contract_id",
+            "contract_version",
+            "field_path",
+            "role",
+            "source_id",
+            "source_version",
+            "source_content_hash",
+            "locator",
+            "excerpt",
+            "assertion",
+        }
+        actual_fields = set(payload)
+        missing = required_fields - actual_fields
+        unexpected = actual_fields - required_fields - {"asserted_value"}
+        if missing:
+            raise NarrativeValidationError(f"evidence missing field: {sorted(missing)[0]}")
+        if unexpected:
+            raise NarrativeValidationError(f"evidence unexpected field: {sorted(unexpected)[0]}")
+        if "asserted_value" in payload and payload["asserted_value"] is None:
+            raise NarrativeValidationError("evidence asserted_value must be a scalar when present")
         locator = cls._object(payload["locator"], "evidence.locator")
         cls._require_fields(locator, {"kind", "value"}, "evidence.locator")
         try:
@@ -472,6 +480,7 @@ class NarrativeDecisionCodec:
                 ),
                 excerpt=cls._text(payload["excerpt"], "evidence excerpt"),
                 assertion=cls._text(payload["assertion"], "evidence assertion"),
+                asserted_value=payload.get("asserted_value"),
             )
         except ValueError as error:
             raise NarrativeValidationError(f"invalid evidence: {error}") from error

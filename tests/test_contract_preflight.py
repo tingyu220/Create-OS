@@ -5,6 +5,7 @@ import pytest
 from creative_os.domains.contract_issue import ContractIssue, EvidenceCheck
 from creative_os.domains.contract_preflight import ContractPreflightValidator
 from creative_os.domains.narrative_causality import CausalAnalysisResult, CausalDependencyAnalyzer
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import (
     ArcPhase,
     CandidateImpact,
@@ -21,15 +22,45 @@ from creative_os.domains.narrative_decision import (
     ReaderChange,
 )
 from creative_os.domains.narrative_evidence import (
+    EvidenceAssertion,
+    EvidenceIntegrityValidator,
     EvidenceLocator,
     EvidenceRef,
     EvidenceRole,
+    EvidenceSourceKind,
     ResolvedEvidenceSource,
 )
 from tests.test_narrative_decision import _profile
 
 
 INTENT_VALUES = {
+    "arc_phase": "escalation",
+    "arc_goal": "将短信疑点转化为主动调查",
+    "inherited_pressure": "主角可能是投递工具",
+    "future_pressures[0]": "第九区权限将被收紧",
+    "chapter_contract.functions[0]": "推进主线",
+    "chapter_contract.functions[1]": "改变人物关系",
+    "chapter_contract.dramatic_question": "主角是否追查短信？",
+    "chapter_contract.protagonist_choice.status": "complete",
+    "chapter_contract.protagonist_choice.actor": "林子轩",
+    "chapter_contract.protagonist_choice.action": "查看日志",
+    "chapter_contract.protagonist_choice.alternatives[0]": "继续等待",
+    "chapter_contract.protagonist_choice.cost": "失去父亲信任",
+    "chapter_contract.protagonist_choice.consequence": "进入审查名单",
+    "chapter_contract.reader_change.before": "怀疑内部泄露",
+    "chapter_contract.reader_change.after": "确认主角也在链路中",
+    "chapter_contract.information.reveal[0]": "日志被覆盖",
+    "chapter_contract.information.withhold[0]": "覆盖者身份",
+    "chapter_contract.information.misdirect.values[0]": "嫌疑指向周远",
+    "chapter_contract.pressure_curve.start": "封控",
+    "chapter_contract.pressure_curve.turn": "违令",
+    "chapter_contract.pressure_curve.end": "启动审查",
+    "chapter_contract.foreshadow_actions.values[0]": "加深钥匙线索",
+    "chapter_contract.ending_shift": "主角成为审查对象",
+    "chapter_contract.forbidden.values[0]": "不得确认发送者",
+}
+
+AUTHORITATIVE_VALUES = {
     "arc_phase": "escalation",
     "arc_goal": "将短信疑点转化为主动调查",
     "inherited_pressure": "主角可能是投递工具",
@@ -69,19 +100,38 @@ def _ref(field_path: str, value: str, *, source_id: str = "director/chapter-007"
         source_content_hash="a" * 64,
         locator=EvidenceLocator(kind="record_id", value=field_path),
         excerpt=value,
-        assertion=value,
+        assertion=f"权威来源约束 {field_path}",
+        asserted_value=value,
     )
 
 
-def _source(refs: tuple[EvidenceRef, ...], source_id: str = "director/chapter-007"):
-    selected = tuple(ref for ref in refs if ref.source_id == source_id)
+def _source(
+    values: dict[str, str],
+    *,
+    source_id: str = "director/chapter-007",
+    source_kind: EvidenceSourceKind = EvidenceSourceKind.DIRECTOR,
+    source_content_hash: str = "a" * 64,
+):
     return ResolvedEvidenceSource(
         source_id=source_id,
         source_version="v1",
-        source_content_hash="a" * 64,
-        located_excerpts=tuple((ref.locator, ref.excerpt) for ref in selected),
-        assertions_by_field_path=tuple((ref.field_path, (ref.assertion,)) for ref in selected),
+        source_content_hash=source_content_hash,
+        source_kind=source_kind,
+        located_excerpts=tuple(
+            (EvidenceLocator(kind="record_id", value=path), value)
+            for path, value in values.items()
+        ),
+        assertions_by_field_path=tuple(
+            (path, (f"权威来源约束 {path}", "Task 明确要求本章推进主线"))
+            for path in values
+        ),
+        asserted_values=tuple(EvidenceAssertion(path, value) for path, value in values.items()),
     )
+
+
+def _resolver(*sources: ResolvedEvidenceSource):
+    by_id = {source.source_id: source for source in sources}
+    return by_id.get
 
 
 def _candidate(*, bindings: tuple[FieldEvidenceBinding, ...] | None = None) -> NarrativeDecision:
@@ -140,16 +190,6 @@ def _candidate(*, bindings: tuple[FieldEvidenceBinding, ...] | None = None) -> N
     )
 
 
-def _sources(candidate: NarrativeDecision) -> tuple[ResolvedEvidenceSource, ...]:
-    refs = tuple(
-        ref
-        for binding in candidate.chapter_contract.intent_evidence_bindings
-        for ref in binding.evidence
-    )
-    source_ids = tuple(dict.fromkeys(ref.source_id for ref in refs))
-    return tuple(_source(refs, source_id) for source_id in source_ids)
-
-
 def _causal(candidate: NarrativeDecision) -> CausalAnalysisResult:
     return CausalDependencyAnalyzer().analyze(candidate, _profile(), (), None, ())
 
@@ -157,7 +197,7 @@ def _causal(candidate: NarrativeDecision) -> CausalAnalysisResult:
 def _validate(candidate: NarrativeDecision, sources=None, causal_result=None):
     return ContractPreflightValidator().validate(
         candidate,
-        _sources(candidate) if sources is None else sources,
+        _resolver(_source(AUTHORITATIVE_VALUES)) if sources is None else sources,
         _causal(candidate) if causal_result is None else causal_result,
     )
 
@@ -299,7 +339,10 @@ def test_empty_nullable_array_accepts_reason_with_valid_non_applicability_eviden
         ),
     )
 
-    result = _validate(candidate)
+    authoritative_values = dict(AUTHORITATIVE_VALUES)
+    authoritative_values.pop("chapter_contract.foreshadow_actions.values[0]")
+    authoritative_values[path] = reason
+    result = _validate(candidate, sources=_resolver(_source(authoritative_values)))
 
     assert result.issues == ()
 
@@ -346,9 +389,17 @@ def test_same_task_and_director_intent_value_is_accepted_but_conflict_is_blockin
             ),
         ),
     )
-    assert _validate(candidate_same).issues == ()
+    same_sources = _resolver(
+        _source(AUTHORITATIVE_VALUES),
+        _source(
+            {path: INTENT_VALUES[path]},
+            source_id="task/chapter-007",
+            source_kind=EvidenceSourceKind.TASK,
+        ),
+    )
+    assert _validate(candidate_same, sources=same_sources).issues == ()
 
-    conflict = replace(same, excerpt="改为只推进支线", assertion="改为只推进支线")
+    conflict = replace(same, excerpt=INTENT_VALUES[path], asserted_value=INTENT_VALUES[path])
     candidate_conflict = replace(
         candidate_same,
         chapter_contract=replace(
@@ -362,7 +413,15 @@ def test_same_task_and_director_intent_value_is_accepted_but_conflict_is_blockin
         ),
     )
 
-    result = _validate(candidate_conflict)
+    conflict_sources = _resolver(
+        _source(AUTHORITATIVE_VALUES),
+        _source(
+            {path: "改为只推进支线"},
+            source_id="task/chapter-007",
+            source_kind=EvidenceSourceKind.TASK,
+        ),
+    )
+    result = _validate(candidate_conflict, sources=conflict_sources)
 
     assert any(
         issue.code == "conflicting_intent_evidence" and issue.field_path == path and issue.blocking
@@ -439,7 +498,11 @@ def test_causal_undetermined_and_analysis_failure_are_blocking_and_aggregated_wi
         evidence_checks=(EvidenceCheck("unresolved_causal_candidate", False, "待裁决"),),
         repair_hint="完成裁决",
     )
-    causal_result = CausalAnalysisResult(resolutions=(), issues=(causal_issue,))
+    causal_result = CausalAnalysisResult(
+        resolutions=(),
+        issues=(causal_issue,),
+        candidate_content_hash=NarrativeDecisionCodec.content_hash(candidate),
+    )
 
     result = _validate(candidate, causal_result=causal_result)
 
@@ -469,7 +532,11 @@ def test_forged_issue_free_undetermined_causal_result_still_fails_closed():
         candidate,
         chapter_contract=replace(candidate.chapter_contract, optional_candidates=(resolution,)),
     )
-    forged = CausalAnalysisResult(resolutions=(resolution,), issues=())
+    forged = CausalAnalysisResult(
+        resolutions=(resolution,),
+        issues=(),
+        candidate_content_hash=NarrativeDecisionCodec.content_hash(candidate),
+    )
 
     result = _validate(candidate, causal_result=forged)
 
@@ -483,10 +550,9 @@ def test_forged_issue_free_undetermined_causal_result_still_fails_closed():
 
 def test_evidence_integrity_failures_are_preserved_at_the_exact_field_path():
     candidate = _candidate()
-    sources = list(_sources(candidate))
-    sources[0] = replace(sources[0], source_content_hash="b" * 64)
+    source = _source(AUTHORITATIVE_VALUES, source_content_hash="b" * 64)
 
-    result = _validate(candidate, sources=tuple(sources))
+    result = _validate(candidate, sources=_resolver(source))
 
     assert any(
         issue.code == "evidence_hash_mismatch"
@@ -495,8 +561,84 @@ def test_evidence_integrity_failures_are_preserved_at_the_exact_field_path():
     )
 
 
+def test_public_sources_boundary_rejects_tuple_and_prebuilt_validator_shortcuts():
+    candidate = _candidate()
+
+    tuple_result = _validate(candidate, sources=(_source(AUTHORITATIVE_VALUES),))
+    validator_result = _validate(
+        candidate,
+        sources=EvidenceIntegrityValidator(_resolver(_source(AUTHORITATIVE_VALUES))),
+    )
+
+    assert any(issue.code == "evidence_source_unavailable" for issue in tuple_result.issues)
+    assert any(issue.code == "evidence_source_unavailable" for issue in validator_result.issues)
+
+
+def test_preflight_rejects_stale_candidate_hash_wrong_ruleset_and_forged_yes_result():
+    candidate = _candidate()
+    valid_result = _causal(candidate)
+    stale_candidate = replace(candidate, arc_goal="改变后的剧情段目标")
+
+    stale = _validate(stale_candidate, causal_result=valid_result)
+    wrong_ruleset = _validate(
+        candidate,
+        causal_result=replace(valid_result, ruleset_version="causal-rules-v2"),
+    )
+
+    resolution = OptionalCandidateResolution(
+        candidate_id="candidate-forged-yes",
+        kind="scene_transition",
+        value_state=CandidateValueState.KNOWN,
+        proposed_value="未纳入正式字段的值",
+        dependency_inputs=("chapter_contract.pressure_curve.end",),
+        affects_current_chapter=CandidateImpact.YES,
+        rationale="伪造无 issue 结果",
+        decided_by="rule",
+        decision_ref="causal-rules-v1",
+    )
+    forged_candidate = replace(
+        candidate,
+        chapter_contract=replace(candidate.chapter_contract, optional_candidates=(resolution,)),
+    )
+    forged_result = CausalAnalysisResult(
+        resolutions=(resolution,),
+        issues=(),
+        candidate_content_hash=NarrativeDecisionCodec.content_hash(forged_candidate),
+    )
+    forged = _validate(forged_candidate, causal_result=forged_result)
+
+    assert any(issue.code == "causal_analysis_failed" for issue in stale.issues)
+    assert any(issue.code == "causal_analysis_failed" for issue in wrong_ruleset.issues)
+    assert any(issue.code == "unresolved_causal_candidate" for issue in forged.issues)
+
+
+def test_candidate_value_cannot_be_satisfied_by_self_asserted_ref_or_forged_excerpt():
+    path = "chapter_contract.functions[0]"
+    candidate = _candidate()
+    binding = next(
+        binding for binding in candidate.chapter_contract.intent_evidence_bindings if binding.field_path == path
+    )
+    forged = replace(binding.evidence[0], excerpt="推进主线", asserted_value="推进主线")
+    candidate = replace(
+        candidate,
+        chapter_contract=replace(
+            candidate.chapter_contract,
+            intent_evidence_bindings=tuple(
+                replace(item, evidence=(forged,)) if item.field_path == path else item
+                for item in candidate.chapter_contract.intent_evidence_bindings
+            ),
+        ),
+    )
+    source = _source({**AUTHORITATIVE_VALUES, path: "改变人物关系"})
+
+    result = _validate(candidate, sources=_resolver(source))
+
+    codes = {issue.code for issue in result.issues if issue.field_path == path}
+    assert "evidence_excerpt_mismatch" in codes or "evidence_asserted_value_mismatch" in codes
+
+
 def test_internal_exceptions_become_blocking_contract_issues_without_fail_open():
-    result = ContractPreflightValidator().validate(object(), (), object())
+    result = ContractPreflightValidator().validate(object(), lambda source_id: None, object())
 
     assert result.is_ready is False
     assert result.issues
