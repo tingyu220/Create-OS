@@ -42,6 +42,13 @@ def _canonical_checks(value: object) -> tuple[EvidenceCheck, ...]:
         raise TypeError("review issue evidence_checks must be a tuple")
     if not value or not all(isinstance(check, EvidenceCheck) for check in value):
         raise ValueError("review issue evidence_checks must contain EvidenceCheck values")
+    for check in value:
+        if type(check.code) is not str or not check.code.strip():
+            raise ValueError("review issue evidence check code must be exact non-empty text")
+        if type(check.detail) is not str or not check.detail.strip():
+            raise ValueError("review issue evidence check detail must be exact non-empty text")
+        if type(check.passed) is not bool:
+            raise TypeError("review issue evidence check passed must be an exact bool")
     canonical = tuple(sorted(value, key=lambda check: (check.code, check.passed, check.detail)))
     if len(set(canonical)) != len(canonical):
         raise ValueError("review issue evidence_checks must not contain duplicates")
@@ -416,6 +423,7 @@ def _validate_issue_integrity(issue: ReviewIssue) -> None:
 
 def _result_is_current(result: PrewriteReviewerResult, **expected: object) -> bool:
     try:
+        _validate_expected_bindings(expected)
         canonical_assets = _canonical_asset_versions(expected["semantic_asset_versions"])
         result_assets = _canonical_asset_versions(result.semantic_asset_versions)
         canonical_issues = _canonical_issues(result.issues)
@@ -444,6 +452,28 @@ def _result_is_current(result: PrewriteReviewerResult, **expected: object) -> bo
         )
     except Exception:
         return False
+
+
+def _validate_expected_bindings(expected: dict[str, object]) -> None:
+    for name in ("contract_id", "ruleset_version"):
+        value = expected[name]
+        if type(value) is not str or not value.strip():
+            raise ValueError(f"expected {name} must be non-empty exact text")
+    if type(expected["contract_version"]) is not int or expected["contract_version"] < 1:
+        raise ValueError("expected contract_version must be an exact positive integer")
+    for name in ("contract_content_hash", "baseline_fingerprint"):
+        value = expected[name]
+        if type(value) is not str:
+            raise TypeError(f"expected {name} must be exact text")
+        _require_sha256(value, f"expected {name}")
+    assets = expected["semantic_asset_versions"]
+    if type(assets) is not tuple:
+        raise TypeError("expected semantic_asset_versions must be an exact tuple")
+    for item in assets:
+        if type(item) is not tuple or len(item) != 2:
+            raise ValueError("expected semantic_asset_versions entries must be exact pairs")
+        if any(type(value) is not str or not value.strip() for value in item):
+            raise ValueError("expected semantic asset names and versions must be exact text")
 
 
 def _validate_disposition(disposition: ReviewIssueDisposition, *, raise_on_error: bool) -> bool:

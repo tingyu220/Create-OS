@@ -31,3 +31,30 @@ def test_contract_issue_rejects_missing_required_values():
             evidence_checks=(),
             repair_hint="修复。",
         )
+
+
+@pytest.mark.parametrize("passed", (1, 0))
+def test_evidence_check_rejects_integer_passed_values(passed: int):
+    with pytest.raises((TypeError, ValueError), match="passed"):
+        EvidenceCheck(code="source_hash_matches", passed=passed, detail="匹配当前来源")
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    (
+        {"code": 1},
+        {"detail": 1},
+        {"code": " "},
+        {"detail": " "},
+    ),
+)
+def test_evidence_check_requires_exact_non_empty_text(overrides: dict[str, object]):
+    values: dict[str, object] = {
+        "code": "source_hash_matches",
+        "passed": True,
+        "detail": "匹配当前来源",
+    }
+    values.update(overrides)
+
+    with pytest.raises((TypeError, ValueError)):
+        EvidenceCheck(**values)

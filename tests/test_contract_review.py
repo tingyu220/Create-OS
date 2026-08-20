@@ -109,6 +109,10 @@ def _disposition(
     return ReviewIssueDisposition(**values)
 
 
+class _TextSubclass(str):
+    pass
+
+
 def test_review_issue_hashes_cover_exact_canonical_fields_and_checks_are_order_independent():
     checks = _checks()
     issue = _issue(evidence_checks=checks)
@@ -141,6 +145,14 @@ def test_review_issue_hashes_cover_exact_canonical_fields_and_checks_are_order_i
         _issue(evidence_checks=_checks("另一个检查结果")),
     )
     assert all(candidate.canonical_issue_hash != issue.canonical_issue_hash for candidate in mutations)
+
+
+def test_review_issue_revalidates_tampered_evidence_check_scalar_types():
+    check = EvidenceCheck("field_found", False, "未找到字段证据")
+    object.__setattr__(check, "passed", 1)
+
+    with pytest.raises((TypeError, ValueError), match="passed"):
+        _issue(evidence_checks=(check,))
 
 
 def test_result_hash_covers_every_binding_and_full_canonical_issue_in_stable_order():
@@ -198,6 +210,34 @@ def test_gate_blocks_missing_result_and_every_stale_binding():
 
     object.__setattr__(result, "result_hash", "f" * 64)
     assert _gate(result).issue_codes == ("stale_prewrite_review",)
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    (
+        {"contract_version": True},
+        {"contract_version": "1"},
+        {"contract_version": 0},
+        {"contract_id": _TextSubclass("narrative-chapter-007")},
+        {"contract_content_hash": _TextSubclass("a" * 64)},
+        {"baseline_fingerprint": _TextSubclass("b" * 64)},
+        {"ruleset_version": _TextSubclass("prewrite-review-v1")},
+        {
+            "semantic_asset_versions": (
+                (_TextSubclass("entity_slots"), "v1"),
+                ("function_semantics", "v1"),
+            )
+        },
+    ),
+)
+def test_gate_rejects_non_exact_expected_binding_types(overrides: dict[str, object]):
+    result = _result(contract_version=1)
+    expected = {"contract_version": 1, **overrides}
+
+    gate = _gate(result, **expected)
+
+    assert not gate.is_ready
+    assert gate.issue_codes == ("stale_prewrite_review",)
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,7 @@
 from dataclasses import replace
 
+import pytest
+
 from creative_os.domains.narrative_decision import (
     ArcPhase,
     ChapterContract,
@@ -94,6 +96,58 @@ def test_formal_reviewer_splits_partial_choice_into_exact_field_issues():
     assert by_code["missing_choice_alternatives"].evidence.endswith(".alternatives")
     assert by_code["missing_choice_cost"].evidence.endswith(".cost")
     assert by_code["missing_choice_consequence"].evidence.endswith(".consequence")
+
+
+def test_formal_partial_choice_binds_each_actual_missing_field_separately():
+    original = _decision()
+    partial_choice = ProtagonistChoice(
+        None,
+        None,
+        ("等待",),
+        "关系受损",
+        "进入审查",
+        status=ChoiceStatus.PARTIAL,
+        missing_fields=("actor", "action"),
+    )
+    contract = replace(
+        original,
+        chapter_contract=replace(original.chapter_contract, protagonist_choice=partial_choice),
+    )
+
+    issues = review_narrative(contract, recent_contracts=[], text="林子轩继续调查。")
+    partial_issues = tuple(issue for issue in issues if issue.code == "partial_protagonist_choice")
+
+    assert tuple(issue.evidence for issue in partial_issues) == (
+        "chapter_contract.protagonist_choice.actor",
+        "chapter_contract.protagonist_choice.action",
+    )
+    assert len({issue.evidence for issue in partial_issues}) == 2
+
+
+@pytest.mark.parametrize(
+    ("alternatives", "expected_path"),
+    (
+        (("unknown",), "chapter_contract.protagonist_choice.alternatives[0]"),
+        (("等待", "  "), "chapter_contract.protagonist_choice.alternatives[1]"),
+    ),
+)
+def test_formal_reviewer_reports_each_unknown_or_blank_complete_choice_alternative(
+    alternatives: tuple[str, ...],
+    expected_path: str,
+):
+    original = _decision()
+    choice = replace(original.chapter_contract.protagonist_choice, alternatives=alternatives)
+    contract = replace(
+        original,
+        chapter_contract=replace(original.chapter_contract, protagonist_choice=choice),
+    )
+
+    issues = review_narrative(contract, recent_contracts=[], text="林子轩继续调查。")
+    alternative_issues = tuple(issue for issue in issues if issue.code == "missing_choice_alternatives")
+
+    assert len(alternative_issues) == 1
+    assert alternative_issues[0].severity == "high"
+    assert alternative_issues[0].evidence == expected_path
 
 
 def _replayed_contract(

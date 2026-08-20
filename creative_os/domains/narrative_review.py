@@ -204,13 +204,30 @@ def _review_choice(choice: object) -> tuple[NarrativeIssue, ...]:
     issues: list[NarrativeIssue] = []
     missing_fields = set(getattr(choice, "missing_fields", ()))
     if status == ChoiceStatus.PARTIAL:
+        issues.extend(
+            NarrativeIssue(
+                "partial_protagonist_choice",
+                "high",
+                f"chapter_contract.protagonist_choice.{name}",
+            )
+            for name in getattr(choice, "missing_fields", ())
+        )
+    alternatives = getattr(choice, "alternatives", ())
+    if "alternatives" in missing_fields or not alternatives:
         issues.append(NarrativeIssue(
-            "partial_protagonist_choice",
+            "missing_choice_alternatives",
             "high",
-            "chapter_contract.protagonist_choice.missing_fields",
+            "chapter_contract.protagonist_choice.alternatives",
         ))
+    else:
+        for index, alternative in enumerate(alternatives):
+            if not isinstance(alternative, str) or not alternative.strip() or alternative == UNKNOWN:
+                issues.append(NarrativeIssue(
+                    "missing_choice_alternatives",
+                    "high",
+                    f"chapter_contract.protagonist_choice.alternatives[{index}]",
+                ))
     for name, code in (
-        ("alternatives", "missing_choice_alternatives"),
         ("cost", "missing_choice_cost"),
         ("consequence", "missing_choice_consequence"),
     ):

@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-def _required(value: str, name: str) -> None:
+def _required(value: object, name: str) -> None:
+    if type(value) is not str:
+        raise TypeError(f"{name} must be exact text")
     if not value.strip():
         raise ValueError(f"{name} is required")
 
@@ -19,6 +21,8 @@ class EvidenceCheck:
     def __post_init__(self) -> None:
         _required(self.code, "code")
         _required(self.detail, "detail")
+        if type(self.passed) is not bool:
+            raise TypeError("passed must be an exact bool")
 
 
 @dataclass(frozen=True, slots=True)
