@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from re import fullmatch
 
 from creative_os.domains.contract_issue import ContractIssue, EvidenceCheck
@@ -71,7 +71,10 @@ class CausalDependencyAnalyzer:
             if not isinstance(candidate, NarrativeDecision):
                 raise TypeError("candidate must be a NarrativeDecision")
             self._validate_inputs(profile, fact_snapshots, previous_chapter, change_requests)
-            resolutions = candidate.chapter_contract.optional_candidates
+            resolutions, validation_issues = self._validate_candidate(candidate)
+            if validation_issues:
+                return CausalAnalysisResult(resolutions=resolutions, issues=validation_issues)
+            candidate.validate()
             issues = tuple(
                 issue
                 for resolution in resolutions
@@ -89,6 +92,67 @@ class CausalDependencyAnalyzer:
                     ),
                 ),
             )
+
+    @staticmethod
+    def _validate_candidate(
+        candidate: NarrativeDecision,
+    ) -> tuple[tuple[OptionalCandidateResolution, ...], tuple[ContractIssue, ...]]:
+        raw_resolutions = candidate.chapter_contract.optional_candidates
+        if not isinstance(raw_resolutions, tuple):
+            return (), (
+                _issue(
+                    "invalid_causal_candidate",
+                    "chapter_contract.optional_candidates",
+                    "可选候选必须是不可变 tuple。",
+                ),
+            )
+        try:
+            replace(
+                candidate,
+                chapter_contract=replace(candidate.chapter_contract, optional_candidates=()),
+            ).validate()
+        except Exception:
+            return (), (
+                _issue(
+                    "causal_analysis_failed",
+                    "chapter_contract",
+                    "恢复完整章节合同后重新执行因果分析。",
+                ),
+            )
+
+        resolutions = tuple(
+            resolution for resolution in raw_resolutions if isinstance(resolution, OptionalCandidateResolution)
+        )
+        issues: list[ContractIssue] = []
+        for index, resolution in enumerate(raw_resolutions):
+            field_path = CausalDependencyAnalyzer._resolution_path(resolution, index)
+            if not isinstance(resolution, OptionalCandidateResolution):
+                issues.append(
+                    _issue(
+                        "invalid_causal_candidate",
+                        field_path,
+                        "可选候选必须使用 OptionalCandidateResolution。",
+                    )
+                )
+                continue
+            try:
+                resolution.validate()
+            except Exception:
+                issues.append(
+                    _issue(
+                        "invalid_causal_candidate",
+                        field_path,
+                        "修复可选候选的完整模型字段后重新分析。",
+                    )
+                )
+        return resolutions, tuple(issues)
+
+    @staticmethod
+    def _resolution_path(resolution: object, index: int) -> str:
+        candidate_id = getattr(resolution, "candidate_id", None)
+        if isinstance(candidate_id, str) and candidate_id.strip():
+            return f"chapter_contract.optional_candidates[{candidate_id}]"
+        return f"chapter_contract.optional_candidates[{index}]"
 
     @staticmethod
     def _validate_inputs(
@@ -112,7 +176,7 @@ class CausalDependencyAnalyzer:
         candidate: NarrativeDecision,
         resolution: OptionalCandidateResolution,
     ) -> tuple[ContractIssue, ...]:
-        path = f"chapter_contract.optional_candidates[{resolution.candidate_id}]"
+        path = self._resolution_path(resolution, 0)
         if not self._has_resolvable_concrete_dependencies(candidate, resolution):
             return (_issue("unresolved_causal_candidate", path, "候选依赖必须使用存在的正式因果字段或稳定数组索引。"),)
         if resolution.affects_current_chapter == CandidateImpact.UNDETERMINED:

@@ -187,7 +187,7 @@ def test_rule_no_rejects_out_of_range_array_dependency_bypass():
 
 
 @pytest.mark.parametrize(
-    ("resolution", "reason"),
+    ("resolution", "reason", "expected_code"),
     [
         (
             replace(
@@ -195,6 +195,7 @@ def test_rule_no_rejects_out_of_range_array_dependency_bypass():
                 decision_ref="",
             ),
             "empty decision record",
+            "invalid_causal_candidate",
         ),
         (
             replace(
@@ -202,6 +203,7 @@ def test_rule_no_rejects_out_of_range_array_dependency_bypass():
                 decision_ref="causal-rules-v2",
             ),
             "wrong ruleset",
+            "unresolved_causal_candidate",
         ),
         (
             replace(
@@ -209,14 +211,86 @@ def test_rule_no_rejects_out_of_range_array_dependency_bypass():
                 dependency_inputs=("chapter_contract.target_chinese_chars",),
             ),
             "non causal field",
+            "unresolved_causal_candidate",
         ),
     ],
 )
-def test_rule_no_rejects_invalid_decision_record_or_non_causal_dependency(resolution, reason):
+def test_rule_no_rejects_invalid_decision_record_or_non_causal_dependency(resolution, reason, expected_code):
     result = _analyze(_with_resolution(_v2_decision(), resolution))
 
-    assert result.issues[0].code == "unresolved_causal_candidate", reason
+    assert result.issues[0].code == expected_code, reason
     assert result.issues[0].blocking is True
+
+
+def _corrupt_resolution(resolution: OptionalCandidateResolution, field: str, value: object) -> OptionalCandidateResolution:
+    object.__setattr__(resolution, field, value)
+    return resolution
+
+
+@pytest.mark.parametrize(
+    ("resolution", "reason"),
+    [
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                rationale="",
+            ),
+            "empty rationale",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "decided_by",
+                "automated",
+            ),
+            "invalid decided_by",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "value_state",
+                "guessed",
+            ),
+            "invalid value_state",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "affects_current_chapter",
+                "maybe",
+            ),
+            "invalid affects_current_chapter",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="",
+            ),
+            "empty decision_ref",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=["future_pressures[0]"],
+            ),
+            "mutable dependency container",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=(1,),
+            ),
+            "invalid dependency element",
+        ),
+    ],
+)
+def test_model_invalid_optional_candidate_is_a_blocking_issue_not_an_allowed_no(resolution, reason):
+    result = _analyze(_with_resolution(_v2_decision(), resolution))
+
+    assert result.issues, reason
+    assert result.issues[0].code == "invalid_causal_candidate", reason
+    assert result.issues[0].blocking is True, reason
+    assert result.issues[0].field_path == "chapter_contract.optional_candidates[candidate-scene-transition]", reason
 
 
 def test_undetermined_candidate_fails_closed_even_when_its_value_is_known():
