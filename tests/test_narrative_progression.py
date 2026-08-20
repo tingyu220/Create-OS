@@ -6,8 +6,8 @@ from tests.test_narrative_review import _decision
 
 
 def test_progression_detects_phase_regression_and_flat_pressure():
-    previous = replace(_decision(), chapter=6, arc_phase=ArcPhase.TURN)
-    current = replace(_decision(), chapter=7, arc_phase=ArcPhase.ESCALATION)
+    previous = replace(_decision().with_chapter(6), arc_phase=ArcPhase.TURN)
+    current = replace(_decision().with_chapter(7), arc_phase=ArcPhase.ESCALATION)
 
     report = evaluate_progression(current, [previous])
 
@@ -17,8 +17,8 @@ def test_progression_detects_phase_regression_and_flat_pressure():
 
 
 def test_progression_detects_repeated_choice_and_unchanged_foreshadowing():
-    previous = replace(_decision(), chapter=6)
-    current = replace(_decision(), chapter=7)
+    previous = _decision().with_chapter(6)
+    current = _decision().with_chapter(7)
 
     report = evaluate_progression(current, [previous])
 
@@ -27,8 +27,8 @@ def test_progression_detects_repeated_choice_and_unchanged_foreshadowing():
 
 
 def test_progression_does_not_compare_different_arcs():
-    previous = replace(_decision(), chapter=6, arc_id="arc-other")
-    current = replace(_decision(), chapter=7)
+    previous = replace(_decision().with_chapter(6), arc_id="arc-other")
+    current = _decision().with_chapter(7)
 
     report = evaluate_progression(current, [previous])
 

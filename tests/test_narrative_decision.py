@@ -352,6 +352,35 @@ def test_v2_decision_requires_coherent_contract_chapter_identity_and_positive_ve
             invalid.validate()
 
 
+def test_explicit_identity_mismatch_on_derived_legacy_value_is_never_overwritten():
+    decision = _decision()
+
+    invalid = replace(decision, contract_id="narrative-chapter-008")
+
+    assert invalid.contract_id == "narrative-chapter-008"
+    with pytest.raises(NarrativeValidationError, match="contract_id"):
+        invalid.validate()
+
+
+def test_with_chapter_explicitly_synchronizes_chapter_and_both_ids():
+    decision = _decision()
+    with_chapter = getattr(decision, "with_chapter", None)
+    assert with_chapter is not None
+
+    updated = with_chapter(
+        8,
+        chapter_contract=replace(
+            decision.chapter_contract,
+            foreshadow_actions=NullablePlan(values=("第九区发送者",)),
+        ),
+    )
+
+    assert updated.chapter == 8
+    assert updated.contract_id == "narrative-chapter-008"
+    assert updated.chapter_contract.chapter_id == "chapter_008"
+    updated.validate()
+
+
 @pytest.mark.parametrize("role", [EvidenceRole.INTENT, EvidenceRole.NON_APPLICABILITY])
 def test_frozen_contract_accepts_only_prewrite_evidence_roles(role):
     _v2_decision(evidence_role=role).validate()
@@ -381,3 +410,91 @@ def test_v2_uses_only_reader_change_and_pressure_curve_field_names():
     }
     assert "reader_before" not in content
     assert "pressure_start" not in content
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda decision: replace(decision, chapter="7"),
+        lambda decision: replace(decision, schema_version=2.0),
+        lambda decision: replace(decision, arc_phase="escalation"),
+        lambda decision: replace(decision, chapter_contract=object()),
+        lambda decision: replace(decision, future_pressures=(7,)),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(decision.chapter_contract, functions=(7,)),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(decision.chapter_contract, target_chinese_chars=True),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                protagonist_choice=replace(decision.chapter_contract.protagonist_choice, actor=7),
+            ),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                protagonist_choice=replace(decision.chapter_contract.protagonist_choice, alternatives=(7,)),
+            ),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                information=replace(decision.chapter_contract.information, reveal=(7,)),
+            ),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                foreshadow_actions=NullablePlan(values=(), not_applicable_reason=7),
+            ),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                optional_candidates=(
+                    replace(decision.chapter_contract.optional_candidates[0], dependency_inputs=(7,)),
+                ),
+            ),
+        ),
+        lambda decision: replace(
+            decision,
+            chapter_contract=replace(
+                decision.chapter_contract,
+                intent_evidence_bindings=(
+                    replace(
+                        decision.chapter_contract.intent_evidence_bindings[0],
+                        evidence=list(decision.chapter_contract.intent_evidence_bindings[0].evidence),
+                    ),
+                ),
+            ),
+        ),
+    ],
+    ids=[
+        "chapter-string",
+        "schema-float",
+        "arc-phase-string",
+        "chapter-contract-object",
+        "future-pressure-int",
+        "function-int",
+        "target-bool",
+        "choice-actor-int",
+        "choice-alternative-int",
+        "reveal-int",
+        "not-applicable-reason-int",
+        "candidate-dependency-int",
+        "binding-evidence-list",
+    ],
+)
+def test_model_validation_rejects_values_that_v2_codec_cannot_decode(mutation):
+    with pytest.raises(NarrativeValidationError):
+        invalid = mutation(_v2_decision())
+        invalid.validate()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, replace
 from enum import StrEnum
 from typing import Any, Iterator
 
@@ -111,8 +111,8 @@ class NarrativeProjectProfile:
     def validate(self) -> None:
         _require_text(self.id, "profile id")
         self.story_contract.validate()
-        _require_items(self.volumes, "profile volumes")
-        _require_items(self.arcs, "profile arcs")
+        _require_non_empty_tuple(self.volumes, "profile volumes")
+        _require_non_empty_tuple(self.arcs, "profile arcs")
         volume_ids: set[str] = set()
         for volume in self.volumes:
             volume.validate()
@@ -179,6 +179,16 @@ class ProtagonistChoice:
     def validate(self) -> None:
         if not isinstance(self.status, ChoiceStatus):
             raise NarrativeValidationError(f"invalid choice status: {self.status}")
+        for name, value in (
+            ("actor", self.actor),
+            ("action", self.action),
+            ("cost", self.cost),
+            ("consequence", self.consequence),
+        ):
+            if value is not None and not isinstance(value, str):
+                raise NarrativeValidationError(f"protagonist choice {name} must be text or null")
+        _require_string_tuple(self.alternatives, "protagonist choice alternatives", allow_empty=True)
+        _require_string_tuple(self.missing_fields, "protagonist choice missing_fields", allow_empty=True)
         missing = tuple(
             name
             for name, value in (
@@ -210,10 +220,9 @@ class NullablePlan:
     not_applicable_reason: str | None = None
 
     def validate(self) -> None:
-        if any(not isinstance(value, str) or not value.strip() for value in self.values):
-            raise NarrativeValidationError("nullable plan values must be non-empty strings")
-        if self.not_applicable_reason is not None and not self.not_applicable_reason.strip():
-            raise NarrativeValidationError("not_applicable_reason must be non-empty when provided")
+        _require_string_tuple(self.values, "nullable plan values", allow_empty=True)
+        if self.not_applicable_reason is not None:
+            _require_text(self.not_applicable_reason, "not_applicable_reason")
         if self.values and self.not_applicable_reason is not None:
             raise NarrativeValidationError("nullable plan values and not_applicable_reason are mutually exclusive")
 
@@ -279,8 +288,8 @@ class FieldEvidenceBinding:
 
     def validate(self, contract_id: str, contract_version: int) -> None:
         _require_text(self.field_path, "evidence binding field_path")
-        if not self.evidence:
-            raise NarrativeValidationError("evidence binding requires evidence")
+        if not isinstance(self.evidence, tuple) or not self.evidence:
+            raise NarrativeValidationError("evidence binding requires a non-empty evidence tuple")
         for ref in self.evidence:
             if not isinstance(ref, EvidenceRef) or ref.is_legacy_replay_ref:
                 raise NarrativeValidationError("frozen contract requires field EvidenceRef")
@@ -372,33 +381,47 @@ class ChapterContract:
             object.__setattr__(self, "foreshadow_actions", NullablePlan(values=self.foreshadow_actions))
         if isinstance(self.forbidden, tuple):
             object.__setattr__(self, "forbidden", NullablePlan(values=self.forbidden))
-        object.__setattr__(
-            self,
-            "intent_evidence_bindings",
-            tuple(sorted(self.intent_evidence_bindings, key=lambda binding: binding.field_path)),
-        )
+        if isinstance(self.intent_evidence_bindings, tuple) and all(
+            isinstance(binding, FieldEvidenceBinding) for binding in self.intent_evidence_bindings
+        ):
+            object.__setattr__(
+                self,
+                "intent_evidence_bindings",
+                tuple(sorted(self.intent_evidence_bindings, key=lambda binding: binding.field_path)),
+            )
 
     def validate(self, contract_id: str | None = None, contract_version: int | None = None) -> None:
         _require_text(self.chapter_id, "chapter_id")
         _require_items(self.functions, "chapter functions")
         _require_text(self.dramatic_question, "chapter dramatic_question")
+        if not isinstance(self.protagonist_choice, ProtagonistChoice):
+            raise NarrativeValidationError("protagonist_choice must be a ProtagonistChoice")
         self.protagonist_choice.validate()
+        if not isinstance(self.reader_change, ReaderChange):
+            raise NarrativeValidationError("reader_change must be a ReaderChange")
         self.reader_change.validate()
+        if not isinstance(self.information, InformationPlan):
+            raise NarrativeValidationError("information must be an InformationPlan")
         self.information.validate()
+        if not isinstance(self.pressure_curve, PressureCurve):
+            raise NarrativeValidationError("pressure_curve must be a PressureCurve")
         self.pressure_curve.validate()
         if not isinstance(self.foreshadow_actions, NullablePlan):
             raise NarrativeValidationError("foreshadow_actions must be a NullablePlan")
         self.foreshadow_actions.validate()
         _require_text(self.ending_shift, "chapter ending_shift")
-        if self.target_chinese_chars <= 0:
-            raise NarrativeValidationError("chapter target_chinese_chars must be positive")
+        _require_positive_integer(self.target_chinese_chars, "chapter target_chinese_chars")
         if not isinstance(self.forbidden, NullablePlan):
             raise NarrativeValidationError("forbidden must be a NullablePlan")
         self.forbidden.validate()
+        if not isinstance(self.optional_candidates, tuple):
+            raise NarrativeValidationError("optional_candidates must be a tuple")
         for candidate in self.optional_candidates:
             if not isinstance(candidate, OptionalCandidateResolution):
                 raise NarrativeValidationError("optional_candidates must contain resolutions")
             candidate.validate()
+        if not isinstance(self.intent_evidence_bindings, tuple):
+            raise NarrativeValidationError("intent_evidence_bindings must be a tuple")
         if self.intent_evidence_bindings and (contract_id is None or contract_version is None):
             raise NarrativeValidationError("contract identity is required to validate evidence bindings")
         seen_paths: set[str] = set()
@@ -428,17 +451,11 @@ class NarrativeDecision:
     legacy_unclassified_evidence: tuple[LegacyUnclassifiedEvidence, ...] = ()
     schema_version: int = 2
     kind: str = "narrative_decision"
-    _identity_was_derived: bool = field(default=False, compare=False, repr=False)
 
     def __post_init__(self) -> None:
-        if self.chapter > 0:
-            derive_identity = self._identity_was_derived or (
-                not self.contract_id and not self.chapter_contract.chapter_id
-            )
-            if derive_identity:
+        if _is_positive_integer(self.chapter):
+            if not self.contract_id and not self.chapter_contract.chapter_id:
                 object.__setattr__(self, "contract_id", f"narrative-chapter-{self.chapter:03d}")
-                object.__setattr__(self, "_identity_was_derived", True)
-            if derive_identity or not self.chapter_contract.chapter_id:
                 object.__setattr__(
                     self,
                     "chapter_contract",
@@ -459,17 +476,35 @@ class NarrativeDecision:
                     ),
                 )
 
+    def with_chapter(
+        self,
+        chapter: int,
+        *,
+        chapter_contract: ChapterContract | None = None,
+    ) -> "NarrativeDecision":
+        if isinstance(chapter, bool) or not isinstance(chapter, int) or chapter < 1:
+            raise NarrativeValidationError("decision chapter must be a positive integer")
+        contract = chapter_contract or self.chapter_contract
+        return replace(
+            self,
+            chapter=chapter,
+            contract_id=f"narrative-chapter-{chapter:03d}",
+            chapter_contract=replace(contract, chapter_id=f"chapter_{chapter:03d}"),
+        )
+
     def validate(self) -> None:
-        if self.schema_version != 2 or self.kind != "narrative_decision":
+        if type(self.schema_version) is not int or self.schema_version != 2 or self.kind != "narrative_decision":
             raise NarrativeValidationError("unsupported narrative decision schema")
-        if self.chapter < 1:
-            raise NarrativeValidationError("decision chapter must be positive")
+        _require_positive_integer(self.chapter, "decision chapter")
         if self.contract_id != f"narrative-chapter-{self.chapter:03d}":
             raise NarrativeValidationError("decision contract_id does not match chapter")
-        if isinstance(self.contract_version, bool) or not isinstance(self.contract_version, int) or self.contract_version < 1:
-            raise NarrativeValidationError("decision contract_version must be positive")
+        _require_positive_integer(self.contract_version, "decision contract_version")
+        if not isinstance(self.chapter_contract, ChapterContract):
+            raise NarrativeValidationError("chapter_contract must be a ChapterContract")
         if self.chapter_contract.chapter_id != f"chapter_{self.chapter:03d}":
             raise NarrativeValidationError("chapter_contract chapter_id does not match chapter")
+        if not isinstance(self.arc_phase, ArcPhase):
+            raise NarrativeValidationError("decision arc_phase must be an ArcPhase")
         _require_text(self.profile_id, "decision profile_id")
         _require_text(self.volume_id, "decision volume_id")
         _require_text(self.arc_id, "decision arc_id")
@@ -477,6 +512,8 @@ class NarrativeDecision:
         _require_text(self.inherited_pressure, "decision inherited_pressure")
         _require_items(self.future_pressures, "decision future_pressures")
         self.chapter_contract.validate(self.contract_id, self.contract_version)
+        if not isinstance(self.legacy_unclassified_evidence, tuple):
+            raise NarrativeValidationError("legacy_unclassified_evidence must be a tuple")
         for evidence in self.legacy_unclassified_evidence:
             if not isinstance(evidence, LegacyUnclassifiedEvidence):
                 raise NarrativeValidationError("legacy_unclassified_evidence contains invalid item")
@@ -595,8 +632,30 @@ def _require_text(value: str | None, name: str) -> None:
 
 
 def _require_items(values: tuple[object, ...], name: str) -> None:
-    if not values or any(not str(value).strip() for value in values):
+    _require_string_tuple(values, name)
+
+
+def _require_non_empty_tuple(values: object, name: str) -> None:
+    if not isinstance(values, tuple) or not values:
+        raise NarrativeValidationError(f"{name} requires a non-empty tuple")
+
+
+def _require_string_tuple(values: object, name: str, *, allow_empty: bool = False) -> None:
+    if not isinstance(values, tuple):
+        raise NarrativeValidationError(f"{name} must be a tuple")
+    if not allow_empty and not values:
         raise NarrativeValidationError(f"{name} requires non-empty items")
+    if any(not isinstance(value, str) or not value.strip() for value in values):
+        raise NarrativeValidationError(f"{name} must contain non-empty strings")
+
+
+def _is_positive_integer(value: object) -> bool:
+    return type(value) is int and value > 0
+
+
+def _require_positive_integer(value: object, name: str) -> None:
+    if not _is_positive_integer(value):
+        raise NarrativeValidationError(f"{name} must be a positive integer")
 
 
 def _require_enum_member(enum_type: type[StrEnum], value: object, name: str) -> StrEnum:

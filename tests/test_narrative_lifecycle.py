@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from creative_os.domains.narrative_decision import ReaderChange
@@ -47,26 +49,11 @@ def test_emotional_history_requires_structured_character_state():
 def test_reader_expectation_history_requires_continuous_transition():
     first = _decision()
     second = _decision()
-    second = second.__class__(
-        chapter=8,
-        profile_id=second.profile_id,
-        volume_id=second.volume_id,
-        arc_id=second.arc_id,
-        arc_phase=second.arc_phase,
-        arc_goal=second.arc_goal,
-        inherited_pressure=second.inherited_pressure,
-        future_pressures=second.future_pressures,
-        chapter_contract=second.chapter_contract.__class__(
-            functions=second.chapter_contract.functions,
-            dramatic_question=second.chapter_contract.dramatic_question,
-            protagonist_choice=second.chapter_contract.protagonist_choice,
+    second = second.with_chapter(
+        8,
+        chapter_contract=replace(
+            second.chapter_contract,
             reader_change=ReaderChange("完全不同的预期", "新的判断"),
-            information=second.chapter_contract.information,
-            pressure_curve=second.chapter_contract.pressure_curve,
-            foreshadow_actions=second.chapter_contract.foreshadow_actions,
-            ending_shift=second.chapter_contract.ending_shift,
-            target_chinese_chars=second.chapter_contract.target_chinese_chars,
-            forbidden=second.chapter_contract.forbidden,
         ),
     )
 

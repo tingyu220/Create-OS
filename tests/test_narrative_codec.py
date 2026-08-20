@@ -1,9 +1,11 @@
 import json
+from dataclasses import replace
 
 import pytest
 
 from creative_os.domains.narrative_codec import NarrativeDecisionCodec
-from creative_os.domains.narrative_decision import ChoiceStatus, NarrativeValidationError
+from creative_os.domains.narrative_decision import ChoiceStatus, NarrativeValidationError, ProtagonistChoice
+from tests.test_narrative_decision import _v2_decision
 
 
 def _legacy_v1_payload() -> dict[str, object]:
@@ -66,6 +68,80 @@ def test_v2_codec_round_trip_preserves_normalized_legacy_loss_marker():
 
     assert NarrativeDecisionCodec.decode_v2(json.loads(encoded)) == normalized
     assert encoded == normalized.to_json()
+
+
+def test_missing_schema_version_is_inferred_only_for_exact_legacy_shape():
+    payload = _legacy_v1_payload()
+    payload.pop("schema_version")
+
+    decision = NarrativeDecisionCodec.decode(json.dumps(payload, ensure_ascii=False))
+
+    assert decision.schema_version == 2
+    assert decision.contract_id == "narrative-chapter-007"
+
+
+@pytest.mark.parametrize(
+    ("scope", "field", "value"),
+    [
+        ("root", "contract_id", "narrative-chapter-007"),
+        ("root", "contract_version", 2),
+        ("chapter_contract", "chapter_id", "chapter_007"),
+        ("chapter_contract", "optional_candidates", []),
+        ("chapter_contract", "intent_evidence_bindings", {}),
+    ],
+)
+def test_missing_schema_version_rejects_hybrid_v2_discriminators(scope, field, value):
+    payload = _legacy_v1_payload()
+    payload.pop("schema_version")
+    target = payload if scope == "root" else payload["chapter_contract"]
+    target[field] = value
+
+    with pytest.raises(NarrativeValidationError, match="schema_version"):
+        NarrativeDecisionCodec.decode(json.dumps(payload, ensure_ascii=False))
+
+
+@pytest.mark.parametrize(
+    "choice",
+    [
+        ProtagonistChoice(
+            actor="林子轩",
+            action="调查日志",
+            alternatives=("等待",),
+            cost="关系受损",
+            consequence="进入审查",
+            status=ChoiceStatus.COMPLETE,
+        ),
+        ProtagonistChoice(
+            actor="林子轩",
+            action=None,
+            alternatives=(),
+            cost="关系受损",
+            consequence=None,
+            status=ChoiceStatus.PARTIAL,
+            missing_fields=("action", "alternatives", "consequence"),
+        ),
+        ProtagonistChoice(
+            actor=None,
+            action=None,
+            alternatives=(),
+            cost=None,
+            consequence=None,
+            status=ChoiceStatus.UNKNOWN,
+            missing_fields=("actor", "action", "alternatives", "cost", "consequence"),
+        ),
+    ],
+)
+def test_validate_and_encode_success_round_trips_for_real_v2_choice_states(choice):
+    decision = _v2_decision()
+    decision = replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, protagonist_choice=choice),
+    )
+
+    decision.validate()
+    encoded = NarrativeDecisionCodec.encode_v2(decision)
+
+    assert NarrativeDecisionCodec.decode_v2(encoded) == decision
 
 
 @pytest.mark.parametrize(

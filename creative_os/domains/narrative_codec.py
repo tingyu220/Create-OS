@@ -33,8 +33,14 @@ class NarrativeDecisionCodec:
     @classmethod
     def decode(cls, content: str | bytes | Mapping[str, Any]) -> NarrativeDecision:
         payload = cls._payload(content)
-        version = cls._integer(payload.get("schema_version", 1), "schema_version")
+        if "schema_version" not in payload:
+            if not cls._is_exact_v1_shape(payload):
+                raise NarrativeValidationError("schema_version is required for non-legacy narrative decision")
+            return cls.decode_v1(payload)
+        version = cls._integer(payload["schema_version"], "schema_version")
         if version == 1:
+            if not cls._is_exact_v1_shape(payload):
+                raise NarrativeValidationError("schema_version=2 is required for v2 narrative fields")
             return cls.decode_v1(payload)
         if version == 2:
             return cls.decode_v2(payload)
@@ -357,7 +363,7 @@ class NarrativeDecisionCodec:
         choice = ProtagonistChoice(
             actor=cls._optional_text(payload["actor"]),
             action=cls._optional_text(payload["action"]),
-            alternatives=cls._strings(payload["alternatives"], "alternatives"),
+            alternatives=cls._strings(payload["alternatives"], "alternatives", allow_empty=True),
             cost=cls._optional_text(payload["cost"]),
             consequence=cls._optional_text(payload["consequence"]),
             status=cls._enum(ChoiceStatus, payload["status"], "choice status"),
@@ -517,6 +523,55 @@ class NarrativeDecisionCodec:
             )
             if not value
         )
+
+    @staticmethod
+    def _is_exact_v1_shape(payload: Mapping[str, Any]) -> bool:
+        root_required = {
+            "kind",
+            "chapter",
+            "profile_id",
+            "volume_id",
+            "arc_id",
+            "arc_phase",
+            "arc_goal",
+            "inherited_pressure",
+            "future_pressures",
+            "chapter_contract",
+        }
+        root_allowed = root_required | {"schema_version", "evidence"}
+        if not root_required <= set(payload) <= root_allowed:
+            return False
+        contract = payload.get("chapter_contract")
+        if not isinstance(contract, dict):
+            return False
+        contract_required = {
+            "functions",
+            "dramatic_question",
+            "protagonist_choice",
+            "reader_change",
+            "information",
+            "pressure_curve",
+            "foreshadow_actions",
+            "ending_shift",
+            "target_chinese_chars",
+            "forbidden",
+        }
+        if not contract_required <= set(contract) <= contract_required | {"evidence"}:
+            return False
+        exact_nested_fields = {
+            "protagonist_choice": {"actor", "action", "alternatives", "cost", "consequence"},
+            "reader_change": {"before", "after"},
+            "information": {"reveal", "withhold", "misdirect"},
+            "pressure_curve": {"start", "turn", "end"},
+        }
+        for field_name, expected in exact_nested_fields.items():
+            nested = contract.get(field_name)
+            if not isinstance(nested, dict) or set(nested) != expected:
+                return False
+        return all(
+            isinstance(contract.get(field_name), list)
+            for field_name in ("foreshadow_actions", "forbidden")
+        ) and isinstance(contract["information"].get("misdirect"), list)
 
     @staticmethod
     def _payload(content: str | bytes | Mapping[str, Any]) -> dict[str, Any]:

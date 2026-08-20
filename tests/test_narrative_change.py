@@ -25,9 +25,8 @@ def _request() -> NarrativeChangeRequest:
 def test_change_impact_generates_written_future_and_state_tasks_without_applying():
     request = _request()
     base = _decision()
-    future = replace(
-        base,
-        chapter=8,
+    future = base.with_chapter(
+        8,
         chapter_contract=replace(base.chapter_contract, foreshadow_actions=("第九区发送者",)),
     )
 
