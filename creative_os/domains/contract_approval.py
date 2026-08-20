@@ -18,6 +18,7 @@ class ApprovalStatus(StrEnum):
 
 
 FULL_CONTRACT = "full_contract"
+_BASELINE_FINGERPRINT_PATH = "BaselineManifest.fingerprint"
 SPECIAL_APPROVAL_ITEMS = (
     "major_choice_and_cost",
     "information_reveal_and_misdirect",
@@ -142,7 +143,7 @@ class ContractApprovalRecord:
 
 
 _COVERED_PATHS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    (FULL_CONTRACT, ("NarrativeDecision.*", "BaselineManifest.fingerprint")),
+    (FULL_CONTRACT, ("NarrativeDecision.*", _BASELINE_FINGERPRINT_PATH)),
     (
         "major_choice_and_cost",
         (
@@ -342,10 +343,17 @@ class ContractApprovalPolicy:
             raise ValueError("approval record candidate binding mismatch")
         candidate_leaves = _candidate_path_index(candidate).leaves
         for item_name, item in record.approvals:
-            if any(evidence.field_path not in candidate_leaves for evidence in item.decision_evidence):
-                raise ValueError(
-                    f"approval {item_name} decision evidence is not a canonical candidate leaf"
-                )
+            for evidence in item.decision_evidence:
+                if item_name == FULL_CONTRACT and evidence.field_path == _BASELINE_FINGERPRINT_PATH:
+                    if evidence.source_content_hash != record.baseline_manifest.fingerprint:
+                        raise ValueError(
+                            "approval full_contract decision evidence does not bind current "
+                            "baseline fingerprint"
+                        )
+                elif evidence.field_path not in candidate_leaves:
+                    raise ValueError(
+                        f"approval {item_name} decision evidence is not a canonical candidate leaf"
+                    )
         for item_name in cls.required_items(candidate, context):
             if item_name != FULL_CONTRACT and record.item(item_name).status == ApprovalStatus.NOT_APPLICABLE:
                 raise ValueError(f"invalid_approval_not_applicable: {item_name}")

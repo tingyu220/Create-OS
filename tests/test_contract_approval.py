@@ -143,6 +143,7 @@ def _decision_evidence(
     role: EvidenceRole = EvidenceRole.DECISION,
     *,
     field_path: str = "chapter_contract.protagonist_choice.cost",
+    source_content_hash: str = "e" * 64,
 ) -> EvidenceRef:
     return EvidenceRef(
         evidence_id="approval-evidence-1",
@@ -152,7 +153,7 @@ def _decision_evidence(
         role=role,
         source_id="approval-session-1",
         source_version="1",
-        source_content_hash="e" * 64,
+        source_content_hash=source_content_hash,
         locator=EvidenceLocator(kind="record_id", value="decision-1"),
         excerpt="编辑确认代价足以支撑不可逆选择。",
         assertion="批准重大选择与代价。",
@@ -286,6 +287,7 @@ def test_record_rejects_wrong_identity_hash_type_and_decision_evidence_binding()
     ("item_name", "wrong_path"),
     [
         ("major_choice_and_cost", "arc_goal"),
+        ("major_choice_and_cost", "BaselineManifest.fingerprint"),
         ("information_reveal_and_misdirect", "chapter_contract.protagonist_choice.cost"),
         ("outline_change", "chapter_contract.information.reveal[0]"),
     ],
@@ -321,6 +323,48 @@ def test_full_contract_decision_evidence_rejects_a_concrete_but_unrelated_domain
     record = replace(_record(), full_contract=full_item)
 
     with pytest.raises(ValueError, match="canonical candidate leaf"):
+        ContractApprovalPolicy.validate(record, _candidate(), _context())
+
+
+def test_full_contract_decision_evidence_accepts_the_current_baseline_fingerprint():
+    baseline = _baseline()
+    full_item = replace(
+        _item(),
+        decision_evidence=(
+            _decision_evidence(
+                field_path="BaselineManifest.fingerprint",
+                source_content_hash=baseline.fingerprint,
+            ),
+        ),
+    )
+    record = replace(
+        _record(),
+        baseline_manifest=baseline,
+        full_contract=full_item,
+    )
+
+    ContractApprovalPolicy.validate(record, _candidate(), _context())
+
+
+def test_full_contract_baseline_evidence_rejects_a_different_fingerprint_value():
+    baseline = _baseline()
+    wrong_fingerprint = "0" * 64 if baseline.fingerprint != "0" * 64 else "1" * 64
+    full_item = replace(
+        _item(),
+        decision_evidence=(
+            _decision_evidence(
+                field_path="BaselineManifest.fingerprint",
+                source_content_hash=wrong_fingerprint,
+            ),
+        ),
+    )
+    record = replace(
+        _record(),
+        baseline_manifest=baseline,
+        full_contract=full_item,
+    )
+
+    with pytest.raises(ValueError, match="baseline fingerprint"):
         ContractApprovalPolicy.validate(record, _candidate(), _context())
 
 
@@ -673,6 +717,8 @@ def test_decision_evidence_rejects_patterns_and_policy_rejects_non_candidate_eve
     ("item_name", "field_path"),
     [
         ("full_contract", "NarrativeDecision.nonexistent"),
+        ("full_contract", "BaselineManifest.entries"),
+        ("full_contract", "BaselineManifest.nonexistent"),
         ("major_choice_and_cost", "chapter_contract.protagonist_choice.nonexistent"),
         ("information_reveal_and_misdirect", "chapter_contract.information"),
         ("information_reveal_and_misdirect", "chapter_contract.information.reveal[1]"),
