@@ -1,4 +1,7 @@
+import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from threading import Barrier
 
 import pytest
 
@@ -77,3 +80,66 @@ def test_immutable_add_is_idempotent_only_for_the_equal_item(tmp_path):
         store.add_immutable(replace(original, content="不能覆盖的另一份内容"))
 
     assert store.get(original.id) == original
+
+
+def _race_immutable_adds(root, items):
+    stores = tuple(JsonMemoryStore(root) for _ in items)
+    barrier = Barrier(len(items))
+
+    def add(index):
+        barrier.wait()
+        try:
+            return stores[index].add_immutable(items[index])
+        except Exception as error:  # The assertion below verifies the public error boundary.
+            return error
+
+    with ThreadPoolExecutor(max_workers=len(items)) as executor:
+        return tuple(executor.map(add, range(len(items))))
+
+
+def test_concurrent_equal_immutable_writes_are_all_idempotent_without_temp_residue(tmp_path):
+    item = _candidate("contract-physical-v0001")
+
+    for round_number in range(12):
+        root = tmp_path / f"equal-{round_number}"
+        results = _race_immutable_adds(root, (item,) * 8)
+
+        assert results == (item,) * 8
+        assert JsonMemoryStore(root).get(item.id) == item
+        assert list((root / "items").glob("*.tmp")) == []
+
+
+def test_concurrent_different_immutable_writes_have_one_winner_and_public_conflicts(tmp_path):
+    first = _candidate("contract-physical-v0001")
+    second = replace(first, content="同一物理键的冲突内容")
+
+    for round_number in range(12):
+        root = tmp_path / f"different-{round_number}"
+        items = tuple(first if index % 2 == 0 else second for index in range(8))
+        results = _race_immutable_adds(root, items)
+        successes = tuple(result for result in results if isinstance(result, MemoryItem))
+        errors = tuple(result for result in results if isinstance(result, Exception))
+
+        assert len(successes) == 4
+        assert len(errors) == 4
+        assert len(set(successes)) == 1
+        assert all(isinstance(error, MemoryStoreError) for error in errors)
+        assert all("immutable memory conflict" in str(error) for error in errors)
+        assert JsonMemoryStore(root).get(first.id) == successes[0]
+        assert list((root / "items").glob("*.tmp")) == []
+
+
+def test_strict_get_rejects_extensions_without_changing_legacy_get(tmp_path):
+    store = JsonMemoryStore(tmp_path / "memory")
+    item = _candidate()
+    store.add_candidate(item)
+    path = store.items_dir / f"{item.id}.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["legacy_extension"] = {"kept_for_legacy_get": True}
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert store.get(item.id) == item
+    with pytest.raises(MemoryStoreError, match="invalid strict memory envelope"):
+        store.get_strict(item.id)
+    with pytest.raises(MemoryStoreError, match="immutable memory conflict"):
+        store.add_immutable(item)

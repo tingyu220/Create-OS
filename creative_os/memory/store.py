@@ -1,16 +1,51 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+if os.name == "nt":
+    import msvcrt
+else:
+    import fcntl
 
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope, MemoryStatus
 
 
 class MemoryStoreError(ValueError):
     pass
+
+
+_LOCAL_LOCKS: dict[str, threading.Lock] = {}
+_LOCAL_LOCKS_GUARD = threading.Lock()
+_ITEM_FIELDS = frozenset(
+    {
+        "id",
+        "kind",
+        "scope",
+        "scope_id",
+        "title",
+        "content",
+        "applicability",
+        "exceptions",
+        "tags",
+        "evidence",
+        "status",
+        "confidence",
+        "version",
+        "created_at",
+        "updated_at",
+        "approved_by",
+    }
+)
+_EVIDENCE_FIELDS = frozenset({"source_type", "source_id", "note"})
 
 
 class JsonMemoryStore:
@@ -34,19 +69,30 @@ class JsonMemoryStore:
     def add_immutable(self, item: MemoryItem) -> MemoryItem:
         """Create an item once; an exact repeated write is idempotent."""
         path = self._item_path(item.id)
-        if path.exists():
-            existing = self._read_item(path)
-            if existing != item:
-                raise MemoryStoreError(f"immutable memory conflict: {item.id}")
-            return existing
-        self._write_item(path, item)
-        return item
+        with _exclusive_store_lock(self.root / ".immutable.lock"):
+            if path.exists():
+                try:
+                    existing = self._read_item_strict(path, expected_id=item.id)
+                except MemoryStoreError as error:
+                    raise MemoryStoreError(f"immutable memory conflict: {item.id}") from error
+                if existing != item:
+                    raise MemoryStoreError(f"immutable memory conflict: {item.id}")
+                return existing
+            self._write_item(path, item)
+            return item
 
     def get(self, item_id: str) -> MemoryItem:
         path = self._item_path(item_id)
         if not path.exists():
             raise KeyError(item_id)
         return self._read_item(path)
+
+    def get_strict(self, item_id: str) -> MemoryItem:
+        """Read an exact, typed envelope without changing legacy get coercions."""
+        path = self._item_path(item_id)
+        if not path.exists():
+            raise KeyError(item_id)
+        return self._read_item_strict(path, expected_id=item_id)
 
     def list(self) -> list[MemoryItem]:
         return [self._read_item(path) for path in sorted(self.items_dir.glob("*.json"))]
@@ -109,12 +155,32 @@ class JsonMemoryStore:
 
     def _write_item(self, path: Path, item: MemoryItem) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = path.with_suffix(path.suffix + ".tmp")
-        temporary.write_text(
-            json.dumps(_item_to_dict(item), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        temporary.replace(path)
+        serialized = json.dumps(_item_to_dict(item), ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        temporary: Path | None = None
+        write_error: OSError | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                newline="\n",
+                dir=path.parent,
+                prefix=f".{path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as stream:
+                stream.write(serialized)
+                temporary = Path(stream.name)
+            temporary.replace(path)
+        except OSError as error:
+            write_error = error
+        finally:
+            if temporary is not None and temporary.exists():
+                try:
+                    temporary.unlink()
+                except OSError as error:
+                    raise MemoryStoreError(f"temporary memory cleanup failed: {path}") from error
+        if write_error is not None:
+            raise MemoryStoreError(f"memory write failed: {path}") from write_error
 
     def _read_item(self, path: Path) -> MemoryItem:
         try:
@@ -122,6 +188,14 @@ class JsonMemoryStore:
             return _item_from_dict(payload)
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             raise MemoryStoreError(f"invalid memory file: {path}") from exc
+
+    def _read_item_strict(self, path: Path, *, expected_id: str) -> MemoryItem:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            _validate_strict_payload(payload, expected_id=expected_id)
+            return _item_from_dict(payload)
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError) as exc:
+            raise MemoryStoreError(f"invalid strict memory envelope: {path}") from exc
 
 
 def _item_to_dict(item: MemoryItem) -> dict[str, Any]:
@@ -167,3 +241,91 @@ def _item_from_dict(payload: dict[str, Any]) -> MemoryItem:
         updated_at=str(payload["updated_at"]),
         approved_by=payload.get("approved_by"),
     )
+
+
+def _validate_strict_payload(payload: object, *, expected_id: str) -> None:
+    if type(payload) is not dict or set(payload) != _ITEM_FIELDS:
+        raise ValueError("memory envelope fields must be exact")
+
+    text_fields = (
+        "id",
+        "kind",
+        "scope",
+        "scope_id",
+        "title",
+        "content",
+        "status",
+        "created_at",
+        "updated_at",
+    )
+    if any(type(payload[field]) is not str for field in text_fields):
+        raise TypeError("memory envelope text fields must be strings")
+    if payload["id"] != expected_id:
+        raise ValueError("memory envelope id does not match its physical path")
+
+    for field in ("applicability", "exceptions", "tags"):
+        values = payload[field]
+        if type(values) is not list or any(type(value) is not str for value in values):
+            raise TypeError(f"memory envelope {field} must be a string list")
+    if payload["tags"] != sorted(set(payload["tags"])):
+        raise ValueError("memory envelope tags must be canonical and unique")
+
+    evidence = payload["evidence"]
+    if type(evidence) is not list:
+        raise TypeError("memory envelope evidence must be a list")
+    for entry in evidence:
+        if type(entry) is not dict or set(entry) != _EVIDENCE_FIELDS:
+            raise ValueError("memory evidence fields must be exact")
+        if any(type(entry[field]) is not str for field in _EVIDENCE_FIELDS):
+            raise TypeError("memory evidence fields must be strings")
+
+    if type(payload["confidence"]) is not float:
+        raise TypeError("memory envelope confidence must be a float")
+    if type(payload["version"]) is not int:
+        raise TypeError("memory envelope version must be an integer")
+    if payload["approved_by"] is not None and type(payload["approved_by"]) is not str:
+        raise TypeError("memory envelope approved_by must be text or null")
+
+
+@contextmanager
+def _exclusive_store_lock(path: Path) -> Iterator[None]:
+    try:
+        local_lock = _local_lock(path)
+        with local_lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a+b") as stream:
+                stream.seek(0, os.SEEK_END)
+                if stream.tell() == 0:
+                    stream.write(b"\0")
+                    stream.flush()
+                _lock_stream(stream)
+                try:
+                    yield
+                finally:
+                    _unlock_stream(stream)
+    except MemoryStoreError:
+        raise
+    except OSError as error:
+        raise MemoryStoreError(f"immutable memory lock failed: {path}") from error
+
+
+def _local_lock(path: Path) -> threading.Lock:
+    key = str(path.resolve())
+    with _LOCAL_LOCKS_GUARD:
+        return _LOCAL_LOCKS.setdefault(key, threading.Lock())
+
+
+def _lock_stream(stream: Any) -> None:
+    stream.seek(0)
+    if os.name == "nt":
+        msvcrt.locking(stream.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        fcntl.flock(stream.fileno(), fcntl.LOCK_EX)
+
+
+def _unlock_stream(stream: Any) -> None:
+    stream.seek(0)
+    if os.name == "nt":
+        msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        fcntl.flock(stream.fileno(), fcntl.LOCK_UN)

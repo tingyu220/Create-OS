@@ -219,3 +219,78 @@ def test_pointer_document_rejects_extra_fields_before_loading_target(tmp_path):
 
     with pytest.raises(ContractStorageError, match="invalid_contract_pointer"):
         lifecycle.read_pointer("narrative-chapter-007")
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "unknown_envelope_field",
+        "boolean_version",
+        "string_version",
+        "missing_title",
+        "non_string_content",
+        "non_string_status",
+        "unknown_evidence_field",
+        "non_string_evidence_field",
+    ],
+)
+def test_pointer_target_requires_an_exact_typed_raw_envelope(tmp_path, mutation):
+    lifecycle, project = _lifecycle(tmp_path)
+    decision = _decision()
+    candidate = lifecycle.create_initial_candidate(decision, evidence=_evidence())
+    store = JsonMemoryStore(project / ".creative_os" / "memory")
+    store.replace(candidate.activate(actor="测试审批人"))
+    pointer = ContractPointer(
+        physical_key=candidate.id,
+        contract_version=1,
+        content_hash=NarrativeDecisionCodec.content_hash(decision),
+    )
+    lifecycle.write_pointer(pointer)
+    item_path = store.items_dir / f"{candidate.id}.json"
+    payload = json.loads(item_path.read_text(encoding="utf-8"))
+
+    if mutation == "unknown_envelope_field":
+        payload["audit"] = []
+    elif mutation == "boolean_version":
+        payload["version"] = True
+    elif mutation == "string_version":
+        payload["version"] = "1"
+    elif mutation == "missing_title":
+        payload.pop("title")
+    elif mutation == "non_string_content":
+        payload["content"] = {"schema_version": 2}
+    elif mutation == "non_string_status":
+        payload["status"] = True
+    elif mutation == "unknown_evidence_field":
+        payload["evidence"][0]["audit"] = "unexpected"
+    elif mutation == "non_string_evidence_field":
+        payload["evidence"][0]["source_id"] = 7
+
+    item_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    with pytest.raises(ContractStorageError, match="invalid_contract_envelope"):
+        lifecycle.read_pointer(decision.contract_id)
+
+
+def test_pointer_target_rejects_unknown_contract_content_fields(tmp_path):
+    lifecycle, project = _lifecycle(tmp_path)
+    decision = _decision()
+    candidate = lifecycle.create_initial_candidate(decision, evidence=_evidence())
+    store = JsonMemoryStore(project / ".creative_os" / "memory")
+    store.replace(candidate.activate(actor="测试审批人"))
+    lifecycle.write_pointer(
+        ContractPointer(
+            physical_key=candidate.id,
+            contract_version=1,
+            content_hash=NarrativeDecisionCodec.content_hash(decision),
+        )
+    )
+    item_path = store.items_dir / f"{candidate.id}.json"
+    payload = json.loads(item_path.read_text(encoding="utf-8"))
+    content = json.loads(payload["content"])
+    content["audit"] = []
+    payload["content"] = json.dumps(content, ensure_ascii=False)
+    item_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    with pytest.raises(ContractStorageError, match="invalid_contract_content"):
+        lifecycle.load_current(decision.contract_id)

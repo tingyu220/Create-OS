@@ -87,9 +87,11 @@ class ContractLifecycleCoordinator:
         item_id = physical_key(decision.contract_id, decision.contract_version)
         canonical_content = NarrativeDecisionCodec.encode_v2(decision)
         try:
-            existing = self.store.get(item_id)
+            existing = self.store.get_strict(item_id)
         except KeyError:
             existing = None
+        except MemoryStoreError as error:
+            raise ContractStorageError("invalid_contract_envelope") from error
 
         if existing is not None:
             existing_decision = self._validate_contract_item(
@@ -113,9 +115,20 @@ class ContractLifecycleCoordinator:
             item_id=item_id,
         )
         try:
-            return self.store.add_immutable(item)
+            self.store.add_immutable(item)
         except MemoryStoreError as error:
             raise ContractStorageError("immutable_contract_conflict") from error
+        try:
+            stored = self.store.get_strict(item_id)
+        except MemoryStoreError as error:
+            raise ContractStorageError("invalid_contract_envelope") from error
+        self._validate_contract_item(
+            stored,
+            expected_contract_id=decision.contract_id,
+            expected_version=1,
+            expected_status=MemoryStatus.CANDIDATE,
+        )
+        return stored
 
     def read_pointer(self, contract: str | int) -> ContractPointer | None:
         contract_id = _normalize_contract_id(contract)
@@ -164,9 +177,11 @@ class ContractLifecycleCoordinator:
         pointer: ContractPointer,
     ) -> NarrativeDecision:
         try:
-            item = self.store.get(pointer.physical_key)
+            item = self.store.get_strict(pointer.physical_key)
         except KeyError as error:
             raise ContractStorageError("missing_contract_pointer_target") from error
+        except MemoryStoreError as error:
+            raise ContractStorageError("invalid_contract_envelope") from error
         if item.status != MemoryStatus.ACTIVE:
             raise ContractStorageError("contract_pointer_target_not_active")
         decision = self._validate_contract_item(
