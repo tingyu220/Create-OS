@@ -183,9 +183,10 @@ def _read_json(path: Path) -> dict[str, object]:
 
 
 def _write_json(path: Path, payload: object) -> None:
-    _io_path(path).write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    _io_path(path).write_bytes(
+        (json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode(
+            "utf-8"
+        )
     )
 
 
@@ -754,17 +755,22 @@ def test_lock_file_reparse_detection_is_enforced_when_symlink_creation_is_unavai
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    import creative_os.domains.contract_record_store as record_store_module
+    if os.name != "nt":
+        pytest.skip("Windows reparse simulation")
+    import creative_os.domains.contract_record_filesystem as filesystem_module
 
     store = ContractRecordStore(tmp_path)
     lock_path = _record_root(tmp_path) / "journal" / ".contract-records.lock"
     lock_path.write_bytes(b"sentinel")
-    monkeypatch.setattr(
-        record_store_module,
-        "_path_is_link_or_reparse",
-        lambda path: Path(path).name == ".contract-records.lock",
-        raising=False,
-    )
+    original = filesystem_module._win_handle_information
+
+    def report_reparse(handle: int):
+        info = original(handle)
+        if not info.dwFileAttributes & 0x10 and info.nFileSizeLow == len(b"sentinel"):
+            info.dwFileAttributes |= 0x400
+        return info
+
+    monkeypatch.setattr(filesystem_module, "_win_handle_information", report_reparse)
 
     with pytest.raises(ContractRecordStoreError):
         store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
@@ -796,18 +802,33 @@ def test_every_store_ancestor_reparse_is_rejected_before_any_write(
     monkeypatch: pytest.MonkeyPatch,
     relative_ancestor: Path,
 ):
-    import creative_os.domains.contract_record_store as record_store_module
+    if os.name != "nt":
+        pytest.skip("Windows reparse simulation")
+    import creative_os.domains.contract_record_filesystem as filesystem_module
 
     store = ContractRecordStore(tmp_path)
     marked = (tmp_path / relative_ancestor).absolute()
     outside = tmp_path / "outside-sentinel"
     outside.write_bytes(b"unchanged")
-    original = record_store_module._path_is_link_or_reparse
+    marked_handle = store._filesystem._directory_handles[marked]
+    original = filesystem_module._win_handle_information
+    marked_info = original(marked_handle)
+    marked_identity = (
+        marked_info.dwVolumeSerialNumber,
+        (marked_info.nFileIndexHigh << 32) | marked_info.nFileIndexLow,
+    )
 
-    def report_reparse(path: Path) -> bool:
-        return Path(path).absolute() == marked or original(path)
+    def report_reparse(handle: int):
+        info = original(handle)
+        identity = (
+            info.dwVolumeSerialNumber,
+            (info.nFileIndexHigh << 32) | info.nFileIndexLow,
+        )
+        if identity == marked_identity:
+            info.dwFileAttributes |= 0x400
+        return info
 
-    monkeypatch.setattr(record_store_module, "_path_is_link_or_reparse", report_reparse)
+    monkeypatch.setattr(filesystem_module, "_win_handle_information", report_reparse)
 
     with pytest.raises(ContractRecordStoreError, match="link|reparse"):
         store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
@@ -822,6 +843,12 @@ def test_existing_store_fails_closed_when_a_parent_directory_is_replaced(tmp_pat
     store = ContractRecordStore(tmp_path)
     records = _record_root(tmp_path)
     backup = tmp_path / "contract-records-backup"
+    if os.name == "nt":
+        with pytest.raises(PermissionError):
+            records.replace(backup)
+        assert records.is_dir()
+        assert not backup.exists()
+        return
     records.replace(backup)
     for directory in ("baselines", "approvals", "reviews", "dispositions", "journal"):
         (records / directory).mkdir(parents=True, exist_ok=True)
@@ -841,6 +868,12 @@ def test_existing_store_rejects_an_actual_symlinked_store_ancestor_without_writi
     store = ContractRecordStore(tmp_path)
     memory = tmp_path / ".creative_os" / "memory"
     backup = tmp_path / "memory-backup"
+    if os.name == "nt":
+        with pytest.raises(PermissionError):
+            memory.replace(backup)
+        assert memory.is_dir()
+        assert not backup.exists()
+        return
     memory.replace(backup)
     outside = tmp_path / "outside-memory"
     outside.mkdir()
@@ -854,6 +887,159 @@ def test_existing_store_rejects_an_actual_symlinked_store_ancestor_without_writi
 
     assert tuple(outside.rglob("*")) == ()
     assert (backup / "contract_records" / "baselines").is_dir()
+
+
+def test_parent_replacement_injected_after_validation_never_redirects_a_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    journal = _record_root(tmp_path) / "journal"
+    backup = tmp_path / "journal-backup"
+    outside = tmp_path / "outside-journal"
+    outside.mkdir()
+    injected = False
+
+    def replace_parent(event: str, path: Path) -> None:
+        nonlocal injected
+        if injected or event != "before_temp_create" or path.parent != journal:
+            return
+        injected = True
+        journal.replace(backup)
+        journal.symlink_to(outside, target_is_directory=True)
+
+    monkeypatch.setattr(record_store_module, "_IO_TEST_HOOK", replace_parent, raising=False)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert injected
+    assert tuple(outside.iterdir()) == ()
+
+
+def test_file_replacement_injected_before_open_is_not_followed_or_accepted(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    record_id = store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    record_path = _record_path(tmp_path, "baselines", record_id)
+    backup = tmp_path / "baseline-record-backup.json"
+    outside = tmp_path / "outside-authority.json"
+    outside.write_bytes(record_path.read_bytes())
+    injected = False
+
+    def replace_file(event: str, path: Path) -> None:
+        nonlocal injected
+        if injected or event != "before_file_open" or path != record_path:
+            return
+        injected = True
+        path.replace(backup)
+        os.link(outside, path)
+
+    monkeypatch.setattr(record_store_module, "_IO_TEST_HOOK", replace_file, raising=False)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.load_baseline(record_id)
+
+    assert injected
+    assert outside.read_bytes() == backup.read_bytes()
+
+
+def test_journal_replacement_injected_before_commit_is_never_overwritten(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    record_id = f"baseline-{CONTRACT_ID}-v0002-{baseline.fingerprint}"
+    journal_path = _journal_path(tmp_path, "baseline", record_id)
+    backup = tmp_path / "prepared-journal-backup.json"
+    outside = tmp_path / "outside-journal.json"
+    injected = False
+
+    def replace_journal(event: str, path: Path) -> None:
+        nonlocal injected
+        if injected or event != "before_atomic_publish" or path != journal_path:
+            return
+        if not path.exists():
+            return
+        injected = True
+        outside.write_bytes(path.read_bytes())
+        path.replace(backup)
+        os.link(outside, path)
+
+    monkeypatch.setattr(record_store_module, "_IO_TEST_HOOK", replace_journal, raising=False)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+
+    assert injected
+    assert outside.read_bytes() == backup.read_bytes()
+
+
+def test_lock_replacement_injected_before_open_cannot_create_a_second_lock_inode(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    lock_path = _record_root(tmp_path) / "journal" / ".contract-records.lock"
+    outside = tmp_path / "outside-lock-sentinel"
+    outside.write_bytes(b"unchanged")
+    injected = False
+
+    def replace_lock(event: str, path: Path) -> None:
+        nonlocal injected
+        if injected or event != "before_lock_open" or path != lock_path:
+            return
+        injected = True
+        path.mkdir()
+
+    monkeypatch.setattr(record_store_module, "_IO_TEST_HOOK", replace_lock, raising=False)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert injected
+    assert outside.read_bytes() == b"unchanged"
+    assert tuple((_record_root(tmp_path) / "journal").glob("*.json")) == ()
+
+
+def test_scan_rejects_an_entry_injected_after_handle_based_enumeration(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    baselines = _record_root(tmp_path) / "baselines"
+    outside = tmp_path / "outside-scan-target"
+    outside.write_bytes(b"unchanged")
+    injected = False
+
+    def inject_entry(event: str, path: Path) -> None:
+        nonlocal injected
+        if injected or event != "after_scan" or path != baselines:
+            return
+        injected = True
+        os.link(outside, baselines / ".record-aaaaaaaa.tmp")
+
+    monkeypatch.setattr(record_store_module, "_IO_TEST_HOOK", inject_entry, raising=False)
+
+    with pytest.raises(ContractRecordStoreError, match="scan|changed"):
+        store.recover()
+
+    assert injected
+    assert outside.read_bytes() == b"unchanged"
 
 
 @pytest.mark.parametrize("malicious_kind", ("wrong-name", "directory", "symlink"))
@@ -896,17 +1082,22 @@ def test_recover_checks_reparse_type_before_ignoring_an_atomic_temp(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ):
-    import creative_os.domains.contract_record_store as record_store_module
+    if os.name != "nt":
+        pytest.skip("Windows reparse simulation")
+    import creative_os.domains.contract_record_filesystem as filesystem_module
 
     store = ContractRecordStore(tmp_path)
     temporary = _record_root(tmp_path) / "baselines" / ".record-aaaaaaaa.tmp"
     temporary.write_text("sentinel", encoding="utf-8")
-    monkeypatch.setattr(
-        record_store_module,
-        "_path_is_link_or_reparse",
-        lambda path: Path(path).name == temporary.name,
-        raising=False,
-    )
+    original = filesystem_module._win_handle_information
+
+    def report_reparse(handle: int):
+        info = original(handle)
+        if not info.dwFileAttributes & 0x10 and info.nFileSizeLow == len(b"sentinel"):
+            info.dwFileAttributes |= 0x400
+        return info
+
+    monkeypatch.setattr(filesystem_module, "_win_handle_information", report_reparse)
 
     with pytest.raises(ContractRecordStoreError):
         store.recover()
@@ -938,26 +1129,30 @@ def test_recover_has_a_deterministic_action_at_every_journal_fault_point(
     write_before_failure: bool,
     recovered: bool,
 ):
-    import creative_os.domains.contract_record_store as record_store_module
+    import creative_os.domains.contract_record_filesystem as filesystem_module
 
     store = ContractRecordStore(tmp_path)
     baseline = _baseline()
-    original = record_store_module._atomic_write_json
+    original = filesystem_module.TrustedStoreFilesystem.atomic_write_bytes
     calls = 0
 
-    def fail_once(path, payload):
+    def fail_once(filesystem, path, payload, *, expected):
         nonlocal calls
         calls += 1
         if calls == fail_call and not write_before_failure:
             raise OSError("simulated crash")
-        original(path, payload)
+        original(filesystem, path, payload, expected=expected)
         if calls == fail_call and write_before_failure:
             raise OSError("simulated crash")
 
-    monkeypatch.setattr(record_store_module, "_atomic_write_json", fail_once)
+    monkeypatch.setattr(filesystem_module.TrustedStoreFilesystem, "atomic_write_bytes", fail_once)
     with pytest.raises(ContractRecordStoreError):
         store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
-    monkeypatch.setattr(record_store_module, "_atomic_write_json", original)
+    monkeypatch.setattr(
+        filesystem_module.TrustedStoreFilesystem,
+        "atomic_write_bytes",
+        original,
+    )
 
     restarted = ContractRecordStore(tmp_path)
     restarted.recover()
@@ -970,26 +1165,34 @@ def test_recover_has_a_deterministic_action_at_every_journal_fault_point(
 
 
 def test_recover_never_overwrites_a_different_valid_envelope(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    import creative_os.domains.contract_record_store as record_store_module
+    import creative_os.domains.contract_record_filesystem as filesystem_module
 
     store = ContractRecordStore(tmp_path)
     baseline = _baseline()
     store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
     approval = _approval(baseline)
-    original = record_store_module._atomic_write_json
+    original = filesystem_module.TrustedStoreFilesystem.atomic_write_bytes
     calls = 0
 
-    def stop_before_record(path, payload):
+    def stop_before_record(filesystem, path, payload, *, expected):
         nonlocal calls
         calls += 1
         if calls == 2:
             raise OSError("simulated crash")
-        original(path, payload)
+        original(filesystem, path, payload, expected=expected)
 
-    monkeypatch.setattr(record_store_module, "_atomic_write_json", stop_before_record)
+    monkeypatch.setattr(
+        filesystem_module.TrustedStoreFilesystem,
+        "atomic_write_bytes",
+        stop_before_record,
+    )
     with pytest.raises(ContractRecordStoreError):
         store.save_approval(approval)
-    monkeypatch.setattr(record_store_module, "_atomic_write_json", original)
+    monkeypatch.setattr(
+        filesystem_module.TrustedStoreFilesystem,
+        "atomic_write_bytes",
+        original,
+    )
 
     other_root = tmp_path / "other"
     other = ContractRecordStore(other_root)
