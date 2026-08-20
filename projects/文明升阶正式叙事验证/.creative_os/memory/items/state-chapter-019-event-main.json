@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"垂直梯冷得咬手。方晴下到一半停住，低头看了一眼下方，说：“有风。”\", \"source_chapter\": \"production/final_chapters/chapter_019.md\"}], \"fields\": {\"outcome\": \"垂直梯冷得咬手。方晴下到一半停住，低头看了一眼下方，说：“有风。”\"}, \"id\": \"chapter-019-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第19章事件\"}",
+  "created_at": "2026-08-20T07:08:26.719849+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_019.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-019-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 19 章状态：event",
+  "updated_at": "2026-08-20T07:08:26.719849+00:00",
+  "version": 1
+}

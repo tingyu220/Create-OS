@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林子轩是在五秒之后才真正迈出脚的。 他盯着那扇门形接缝，雾气已经爬到距离他们不到两米的地方。地面上的水汽很薄，像刚从冰柜里拿出来的玻璃蒙了一层霜。林正弘走在最前面，速度快而稳，像在基地里走过无数次的人。陈景行断后，手里那支银色注射器始终没有收起来。方晴走在林子轩右前方，平板的屏幕已经被她关掉，暗下去的玻璃面映出走廊顶部一截断续的灯带，像一条被截成几段的蛇。 他没有回头。电梯继续往上，灯光雪白。体内的那股冲动涌到喉咙口，又被他生生咽了下去。他知道，只要还没到地面，就不能在这狭小空间里回应它。可他忽然记不清方晴最后的口型。 她说的是“别说话”，还是“别回头”？",
+  "created_at": "2026-08-18T19:41:08.778784+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_007.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-007-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_007",
+    "event",
+    "novel"
+  ],
+  "title": "第 7 章关键事件",
+  "updated_at": "2026-08-18T19:41:08.778784+00:00",
+  "version": 1
+}

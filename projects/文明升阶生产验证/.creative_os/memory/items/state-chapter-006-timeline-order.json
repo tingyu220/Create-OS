@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"观察室的门在身后合上，机械锁扣发出很轻的一声“嗒”。林子轩已经有些习惯龙渊的地下安静了。这里不像学校宿舍，没有走廊里拖鞋拍地的声音，没有赵磊半夜翻身时床板像要散架似的呻吟。这里只有头顶出风口不间断的气流，像有人藏在天花板后面，用极轻的呼吸提醒他：你还在几十米深的地下。他闭上眼，额头上还贴着入训时发的那片薄薄的电极贴。按理说，监测仪不应该再亮着，但它们像某种从土里钻出来的昆虫，只在夜里活动。\", \"source_chapter\": \"production/final_chapters/chapter_006.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第6章内\"}, \"id\": \"chapter-006-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第6章之后\"}",
+  "created_at": "2026-08-18T19:37:04.584548+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_006.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-006-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 6 章状态：timeline",
+  "updated_at": "2026-08-18T19:37:04.584548+00:00",
+  "version": 1
+}

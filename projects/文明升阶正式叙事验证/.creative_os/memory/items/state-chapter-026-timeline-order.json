@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"苏晚晴没有动，也没有催他。她站在六号房门口，后背抵着那扇被风吹得发白的铁门，灰绿色外套的下摆轻轻拍打膝盖。门里透出的灯光从她肩后照出来，把她的半边脸映成暖黄色，另半边沉在戈壁的暮色里。\", \"source_chapter\": \"production/final_chapters/chapter_026.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第26章内\"}, \"id\": \"chapter-026-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第26章之后\"}",
+  "created_at": "2026-08-20T07:51:23.072005+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_026.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-026-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 26 章状态：timeline",
+  "updated_at": "2026-08-20T07:51:23.072005+00:00",
+  "version": 1
+}

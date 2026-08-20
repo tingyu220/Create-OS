@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"维修层的空气像在管子里凝了太久，混着铁锈味和电气线路发热后的酸味。林子轩跟在方晴身后，两个人几乎贴在墙根走。头顶的桥架间隙漏下一线线冷白色的光，把脚下的网格板照成一道一道。远处东侧电梯的方向传来闷响，不是人声，是更重的东西——金属门被强行分开，或者某个推车撞在墙上。\", \"source_chapter\": \"production/final_chapters/chapter_022.md\"}], \"fields\": {\"outcome\": \"维修层的空气像在管子里凝了太久，混着铁锈味和电气线路发热后的酸味。林子轩跟在方晴身后，两个人几乎贴在墙根走。头顶的桥架间隙漏下一线线冷白色的光，把脚下的网格板照成一道一道。远处东侧电梯的方向传来闷响，不是人声，是更重的东西——金属门被强行分开，或者某个推车撞在墙上。\"}, \"id\": \"chapter-022-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第22章事件\"}",
+  "created_at": "2026-08-20T07:21:39.266392+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_022.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-022-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 22 章状态：event",
+  "updated_at": "2026-08-20T07:21:39.266392+00:00",
+  "version": 1
+}

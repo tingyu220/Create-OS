@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"escalation\", \"chapter\": 13, \"chapter_contract\": {\"dramatic_question\": \"林子轩能否在父母的隐瞒与文明方案之间保留自己的判断？\", \"ending_shift\": \"林子轩决定继续查记录而不是接受现成方案\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"旧方案来源\", \"父亲的隐瞒\"], \"functions\": [\"推进核聚变方案\", \"建立家庭与项目的双重压力\"], \"information\": {\"misdirect\": [\"暂不一次解释双重钥匙背后的全部真相\"], \"reveal\": [\"核聚变旧方案\"], \"withhold\": [\"删改者身份\"]}, \"pressure_curve\": {\"end\": \"家庭秘密重新变成现实风险\", \"start\": \"压迫\", \"turn\": \"旧记录与现行方案发生冲突\"}, \"protagonist_choice\": {\"action\": \"要求父亲交出旧方案的完整来源记录\", \"actor\": \"林子轩\", \"alternatives\": [\"暂缓行动\"], \"consequence\": \"旧方案出现被人为删改的段落\", \"cost\": \"被迫承认家庭秘密仍在影响项目\"}, \"reader_change\": {\"after\": \"读者开始怀疑删改来自项目内部\", \"before\": \"读者知道核聚变方案并非完整答案\"}, \"target_chinese_chars\": 9000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.231202+00:00",
+  "evidence": [
+    {
+      "note": "第13章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-013",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_013",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 13 章叙事合同",
+  "updated_at": "2026-08-19T17:41:05.241376+00:00",
+  "version": 1
+}

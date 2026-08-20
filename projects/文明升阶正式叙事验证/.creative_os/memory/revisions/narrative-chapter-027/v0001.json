@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"aftermath\", \"chapter\": 27, \"chapter_contract\": {\"dramatic_question\": \"普通人为什么愿意参与一场可能看不到结果的工程？\", \"ending_shift\": \"林子轩接受普通人的否决权\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"志愿者\", \"现场安全\"], \"functions\": [\"连接普通人\", \"建立生活视角\"], \"information\": {\"misdirect\": [\"暂不一次解释临时的志愿者背后的全部真相\"], \"reveal\": [\"志愿者方案\"], \"withhold\": [\"谁承担最终责任\"]}, \"pressure_curve\": {\"end\": \"工程获得更真实的支持\", \"start\": \"温度\", \"turn\": \"一名志愿者拒绝被宣传成英雄\"}, \"protagonist_choice\": {\"action\": \"亲自听取志愿者的条件并修改现场安排\", \"actor\": \"林子轩\", \"alternatives\": [\"只按技术计划推进\"], \"consequence\": \"志愿者提出一个被专家忽略的安全方案\", \"cost\": \"工程速度下降\"}, \"reader_change\": {\"after\": \"读者重新建立对集体行动的兴趣\", \"before\": \"读者看到参与者拥有判断而非只承担牺牲\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.401326+00:00",
+  "evidence": [
+    {
+      "note": "第27章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-027",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_027",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 27 章叙事合同",
+  "updated_at": "2026-08-19T17:41:05.410443+00:00",
+  "version": 1
+}

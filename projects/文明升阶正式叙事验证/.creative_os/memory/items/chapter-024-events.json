@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "黄色警示灯还在闪。灯的节奏不稳，有时快得连成一片，有时又像被风吹灭了一瞬。林子轩站在安全线外，看那些穿着灰绿色作业服的人在试验堆的观察平台上来回跑动。他们跑得并不慌张，但脚步极重，仿佛每一步都要把地面的热度踩实。对讲机里的声音被反复打断，只剩下断断续续的词：偏滤器、失压、泄放。 林正弘站在他左侧，没有动。苏晚晴在他身后，把水瓶的盖子一点一点拧回去。风把瓶身上的塑料标签吹得啪啪响，像某种不肯停下的节拍器。 他站住了。风从试验堆方向吹来，把地上的沙吹成一片很薄的金色。那四个字像从很远的地方丢过来的一颗石子，落在他已经装满数据和签名的脑子里。 他没有回复。也没有把手机放回口袋。屏幕在晨光里亮得发白，那行字映在他眼睛里，像极细的蓝。",
+  "created_at": "2026-08-20T07:37:09.278702+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_024.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-024-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_024",
+    "event",
+    "novel"
+  ],
+  "title": "第 24 章关键事件",
+  "updated_at": "2026-08-20T07:37:09.278702+00:00",
+  "version": 1
+}

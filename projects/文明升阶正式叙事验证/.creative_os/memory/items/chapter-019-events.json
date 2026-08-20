@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "垂直梯冷得咬手。方晴下到一半停住，低头看了一眼下方，说：“有风。” 林子轩踩在梯阶上，没有向下看。陈景行在头顶把盖板合拢，四周立刻像被抽成真空。方晴继续往下爬。最底下不是房间，而是一条横向的旧风道，管壁残留着薄薄的水珠，空气里除了灰还有极淡的铜锈味。林子轩落地时，鞋底在金属地面上蹭出一声轻响。 “那两个人是谁？”他问。 女人说：“一个是陈景行。一个是你。”",
+  "created_at": "2026-08-20T07:08:26.648295+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_019.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-019-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_019",
+    "event",
+    "novel"
+  ],
+  "title": "第 19 章关键事件",
+  "updated_at": "2026-08-20T07:08:26.648295+00:00",
+  "version": 1
+}

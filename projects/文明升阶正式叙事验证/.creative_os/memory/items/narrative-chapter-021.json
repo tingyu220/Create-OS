@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"aftermath\", \"chapter\": 21, \"chapter_contract\": {\"dramatic_question\": \"公开方案中存在缺口，林子轩是否应该承认它？\", \"ending_shift\": \"林子轩选择先守住可验证性\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"公开漏洞\", \"责任归属\"], \"functions\": [\"推进公共冲突\", \"让主角承担政治后果\"], \"information\": {\"misdirect\": [\"暂不一次解释公布的漏洞背后的全部真相\"], \"reveal\": [\"方案缺口\"], \"withhold\": [\"缺口能否补齐\"]}, \"pressure_curve\": {\"end\": \"项目失去部分政治保护\", \"start\": \"暴露\", \"turn\": \"质疑从技术层面转向责任层面\"}, \"protagonist_choice\": {\"action\": \"在发布会上主动说明方案缺少民用层验证\", \"actor\": \"林子轩\", \"alternatives\": [\"让团队先补齐数据\"], \"consequence\": \"公布方案被迫暂停一部分权限\", \"cost\": \"承担延迟行动和引发市场恐慌的责任\"}, \"reader_change\": {\"after\": \"读者开始关注谁能承担失败\", \"before\": \"读者看到真相公开不等于解决问题\"}, \"target_chinese_chars\": 10000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.328850+00:00",
+  "evidence": [
+    {
+      "note": "第21章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-021",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_021",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 21 章叙事合同",
+  "updated_at": "2026-08-19T18:20:01.921840+00:00",
+  "version": 2
+}

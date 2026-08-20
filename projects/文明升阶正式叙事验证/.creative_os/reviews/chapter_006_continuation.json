@@ -1,0 +1,15 @@
+{
+  "issues": [],
+  "narrative_issues": [],
+  "context": "872dff36af84d6c75ff9f4851cd3c458398a6a5aedad1cc0e9778b7a702b54e4",
+  "entity_warnings": [
+    {
+      "entity_type": "character",
+      "canonical": "林子轩",
+      "observed": "和子轩",
+      "position": 2862,
+      "excerpt": "景行去参加一个技术会，解码室只剩方晴和子轩。宇被切换到低负载维护状态，机柜上的",
+      "reason": "可能的实体名称漂移"
+    }
+  ]
+}

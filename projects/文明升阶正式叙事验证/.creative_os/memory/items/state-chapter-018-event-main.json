@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"宇的话像一根细针，把三个人钉在原地。门磁不是安全部取消的，而是周远的旧工号。那个早已被标记失踪的人，几十分钟前还站在这里，现在他的手正从另一个方向伸进来，重新打开这条检修通道。\", \"source_chapter\": \"production/final_chapters/chapter_018.md\"}], \"fields\": {\"outcome\": \"宇的话像一根细针，把三个人钉在原地。门磁不是安全部取消的，而是周远的旧工号。那个早已被标记失踪的人，几十分钟前还站在这里，现在他的手正从另一个方向伸进来，重新打开这条检修通道。\"}, \"id\": \"chapter-018-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第18章事件\"}",
+  "created_at": "2026-08-20T07:04:03.276144+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_018.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-018-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 18 章状态：event",
+  "updated_at": "2026-08-20T07:04:03.276144+00:00",
+  "version": 1
+}

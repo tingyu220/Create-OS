@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林正弘没有让他们坐。他走到桌边，把终端的屏幕转过来，蓝光映在他脸上，像一层霜。林子轩看见屏幕上显示的是一张工程剖面图，他认得，那是旧聚变方案的点火腔体。图上有几层被标成淡红色，其中一两处被反复圈画，线条已经有些毛边，显然不是今晚才打开的。 “你猜到了多少？”林正弘问。他的声音比在会议室里低得多，像怕把什么从墙上震下来。 林子轩没有再说话。他跟在方晴身后，手里攥着那根比真相还重的数据。备用回路的嗡鸣在他们身后慢慢沉下去，像一扇巨大的石头门在地底合上。 他知道，他们已经不在暗区了。",
+  "created_at": "2026-08-20T07:18:19.950527+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_021.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-021-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_021",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 21 章章节摘要",
+  "updated_at": "2026-08-20T07:18:19.950527+00:00",
+  "version": 1
+}

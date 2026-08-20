@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"林子轩是被一种持续的低频震动唤醒的。那种震动不像来自手机，也不像来自门板，而是整栋建筑都在极其细微地颤动，像有什么庞大的东西正从地底更深处缓缓驶过。他睁开眼睛时，天花板上的青白色灯管仍然亮着，光线比昨晚更硬，刺得眼皮一阵发酸。他没有立刻坐起来，后脑勺里有一片细密的胀痛，像有人用极细的针沿着神经末梢慢慢扎着。他偏过头，看见床头柜上的手机正亮着。屏幕朝下，光从边缘漏出来，把半只玻璃杯照成一团淡青色的晕。\", \"source_chapter\": \"production/final_chapters/chapter_011.md\"}], \"fields\": {\"outcome\": \"林子轩是被一种持续的低频震动唤醒的。那种震动不像来自手机，也不像来自门板，而是整栋建筑都在极其细微地颤动，像有什么庞大的东西正从地底更深处缓缓驶过。他睁开眼睛时，天花板上的青白色灯管仍然亮着，光线比昨晚更硬，刺得眼皮一阵发酸。他没有立刻坐起来，后脑勺里有一片细密的胀痛，像有人用极细的针沿着神经末梢慢慢扎着。他偏过头，看见床头柜上的手机正亮着。屏幕朝下，光从边缘漏出来，把半只玻璃杯照成一团淡青色的晕。\"}, \"id\": \"chapter-011-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第11章事件\"}",
+  "created_at": "2026-08-18T19:58:05.909827+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_011.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-011-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 11 章状态：event",
+  "updated_at": "2026-08-18T19:58:05.909827+00:00",
+  "version": 1
+}

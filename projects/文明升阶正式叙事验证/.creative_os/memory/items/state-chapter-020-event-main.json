@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“一个是陈景行。一个是你。”\", \"source_chapter\": \"production/final_chapters/chapter_020.md\"}], \"fields\": {\"outcome\": \"“一个是陈景行。一个是你。”\"}, \"id\": \"chapter-020-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第20章事件\"}",
+  "created_at": "2026-08-20T07:12:29.774948+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_020.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-020-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 20 章状态：event",
+  "updated_at": "2026-08-20T07:12:29.774948+00:00",
+  "version": 1
+}

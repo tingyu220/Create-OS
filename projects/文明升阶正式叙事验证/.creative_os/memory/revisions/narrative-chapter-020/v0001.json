@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"escalation\", \"chapter\": 20, \"chapter_contract\": {\"dramatic_question\": \"被遗弃的文明遗产是在等待人类，还是在筛选人类？\", \"ending_shift\": \"林子轩选择带走证据而不是保全仓库\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"建造者遗产\", \"自毁程序\"], \"functions\": [\"揭示建造者线索\", \"改变行动目标\"], \"information\": {\"misdirect\": [\"暂不一次解释遗产仓库背后的全部真相\"], \"reveal\": [\"遗产实物\"], \"withhold\": [\"建造者放弃路线的原因\"]}, \"pressure_curve\": {\"end\": \"证据被带回但坐标暴露\", \"start\": \"敬畏\", \"turn\": \"仓库启动自毁程序\"}, \"protagonist_choice\": {\"action\": \"进入遗产仓库并带回一件可验证的实物证据\", \"actor\": \"林子轩\", \"alternatives\": [\"暂缓行动\"], \"consequence\": \"证据证明建造者曾主动放弃一条逃生路线\", \"cost\": \"让龙渊暴露新的坐标\"}, \"reader_change\": {\"after\": \"读者开始把文明升级理解为选择而非升级竞赛\", \"before\": \"读者知道建造者并非只留下技术馈赠\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.312832+00:00",
+  "evidence": [
+    {
+      "note": "第20章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-020",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_020",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 20 章叙事合同",
+  "updated_at": "2026-08-19T17:41:05.326504+00:00",
+  "version": 1
+}

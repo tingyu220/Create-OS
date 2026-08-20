@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林子轩是被一种不属于房间的声音弄醒的。 很轻，像有人把纸页压平在门外那面墙上，然后沿着门缝慢慢抽走。他睁开眼，模拟屏里的夜晚还没有完全结束，路灯只剩一盏，在很远的街角一明一灭，像电子海面上最后一点浮标。他不知道自己睡过去多久。最后记得的画面，是玻璃后面那双合上的眼睛，仿佛隔着很多层屏幕，也在等下一段黑暗。 “接吧。”方晴轻声说，“这次不是逼你。是给你送明天的任务参数。” 林子轩没接。他按灭屏幕，把手机留在手心。远处，安全部的人已经让开一条路，走廊尽头的电梯门“叮”地一声开了。天还没全亮。玻璃墙外，海面一样的夜色正在退潮，露出一线灰白。他握着方晴的手，一步步朝电梯口走去。",
+  "created_at": "2026-08-18T20:33:53.219008+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_007.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-007-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_007",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 7 章章节摘要",
+  "updated_at": "2026-08-18T20:33:53.219008+00:00",
+  "version": 1
+}

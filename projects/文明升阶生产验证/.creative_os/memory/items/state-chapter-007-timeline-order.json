@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"林子轩是在五秒之后才真正迈出脚的。\", \"source_chapter\": \"production/final_chapters/chapter_007.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第7章内\"}, \"id\": \"chapter-007-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第7章之后\"}",
+  "created_at": "2026-08-18T19:41:08.838148+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_007.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-007-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 7 章状态：timeline",
+  "updated_at": "2026-08-18T19:41:08.838148+00:00",
+  "version": 1
+}

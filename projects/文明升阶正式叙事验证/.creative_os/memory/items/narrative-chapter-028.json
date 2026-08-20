@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"从聚变试验失败走到全球协作和一级文明门槛\", \"arc_id\": \"arc-fusion-construction\", \"arc_phase\": \"escalation\", \"chapter\": 28, \"chapter_contract\": {\"dramatic_question\": \"第二次点火成功之后，林子轩该相信数据还是相信身体的异常？\", \"ending_shift\": \"林子轩选择追查异常而不是享受胜利\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"点火成功\", \"声音靠近\"], \"functions\": [\"兑现阶段目标\", \"保留新的风险\"], \"information\": {\"misdirect\": [\"暂不一次解释第二次点火背后的全部真相\"], \"reveal\": [\"第二次点火\"], \"withhold\": [\"神经读数来源\"]}, \"pressure_curve\": {\"end\": \"成功与威胁同时成立\", \"start\": \"兴奋转冷\", \"turn\": \"欢呼声中出现只有林子轩听见的低语\"}, \"protagonist_choice\": {\"action\": \"在成功数据之外继续调查神经读数的异常\", \"actor\": \"林子轩\", \"alternatives\": [\"宣布成功后休息\"], \"consequence\": \"点火成功但神经读数显示声音正在靠近\", \"cost\": \"错过庆祝并引发团队不满\"}, \"reader_change\": {\"after\": \"读者知道胜利没有结束危险\", \"before\": \"读者获得阶段性胜利\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.411909+00:00",
+  "evidence": [
+    {
+      "note": "第28章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-028",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_028",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 28 章叙事合同",
+  "updated_at": "2026-08-20T07:30:15.281129+00:00",
+  "version": 2
+}

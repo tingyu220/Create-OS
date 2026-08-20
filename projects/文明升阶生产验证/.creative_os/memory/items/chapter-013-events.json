@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "“20030717。” 林子轩敲下这串数字的时候，指节像被什么东西轻轻硌了一下。不是电，是记忆。他很多年没有这样单独把自己的生日当成一组密码输入。小时候在父亲工厂外头的旧机修房里，他也曾把家门锁柜的密码设成这串数字，因为好记，也因为那会儿他觉得生日总能带来点运气。 “走吧。”他说。 （本章完）",
+  "created_at": "2026-08-18T20:11:13.451575+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_013.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-013-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_013",
+    "event",
+    "novel"
+  ],
+  "title": "第 13 章关键事件",
+  "updated_at": "2026-08-18T20:11:13.451575+00:00",
+  "version": 1
+}

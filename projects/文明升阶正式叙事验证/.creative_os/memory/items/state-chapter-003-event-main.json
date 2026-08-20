@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"警报声是从走廊最深处的扩音器里同时响起来的，那种声音不尖锐，但沉闷得让人胸口发紧，像是有很多人在同时用脚跺着金属板。陈景行没有跑，他侧着身子快步穿过警戒门，林子轩跟在他三步之后，每跑一步都能感觉到从核心室里溢出来的寒意，几秒前看到的那个黑色水池如果还在缓慢扩张，他们连撤离的余地可能都没有多少。方晴从另一条岔口追上来，平板电脑还捏在手里，指尖因为用力而发白。\", \"source_chapter\": \"production/final_chapters/chapter_003.md\"}], \"fields\": {\"outcome\": \"警报声是从走廊最深处的扩音器里同时响起来的，那种声音不尖锐，但沉闷得让人胸口发紧，像是有很多人在同时用脚跺着金属板。陈景行没有跑，他侧着身子快步穿过警戒门，林子轩跟在他三步之后，每跑一步都能感觉到从核心室里溢出来的寒意，几秒前看到的那个黑色水池如果还在缓慢扩张，他们连撤离的余地可能都没有多少。方晴从另一条岔口追上来，平板电脑还捏在手里，指尖因为用力而发白。\"}, \"id\": \"chapter-003-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第3章事件\"}",
+  "created_at": "2026-08-18T20:19:50.275534+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_003.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-003-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 3 章状态：event",
+  "updated_at": "2026-08-18T20:19:50.275534+00:00",
+  "version": 1
+}

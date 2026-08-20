@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"turn\", \"chapter\": 23, \"chapter_contract\": {\"dramatic_question\": \"第一座聚变堆点火前，谁来承担最先的风险？\", \"ending_shift\": \"林子轩留下参与复盘\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"第一座试验堆\", \"旧设计\"], \"functions\": [\"开启建设阶段\", \"让宏大目标落到现场\"], \"information\": {\"misdirect\": [\"暂不一次解释聚变堆的第一夜背后的全部真相\"], \"reveal\": [\"现场故障\"], \"withhold\": [\"旧设计责任人\"]}, \"pressure_curve\": {\"end\": \"计划第一次被现实打断\", \"start\": \"紧张\", \"turn\": \"调试失败迫使团队停机\"}, \"protagonist_choice\": {\"action\": \"亲自进入夜间调试现场而不是只看远程数据\", \"actor\": \"林子轩\", \"alternatives\": [\"暂缓行动\"], \"consequence\": \"他发现关键故障来自被忽略的旧设计\", \"cost\": \"暴露在设备故障和舆论压力中\"}, \"reader_change\": {\"after\": \"读者开始关心现场人员而非只有主角\", \"before\": \"读者看到文明工程由具体劳动组成\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.351267+00:00",
+  "evidence": [
+    {
+      "note": "第23章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-023",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_023",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 23 章叙事合同",
+  "updated_at": "2026-08-19T17:41:05.361304+00:00",
+  "version": 1
+}

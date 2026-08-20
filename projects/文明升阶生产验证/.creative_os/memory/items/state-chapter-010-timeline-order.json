@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"四号屏蔽室重新安静下来之后，空气里的滤网味变得更加明显。会议桌中央的全息投影已经关闭，只留下一个极淡的蓝色光点，像一只没有闭上的眼睛。电子屏上的蓝白色波纹重新浮现，发出很轻的“嗡”声，给整间屋子铺上一层细密的底噪。林子轩把酸奶盒放在笔记本旁边，没有打开。他知道现在如果打开，那股酸甜味会在这间屋子里显得过于突兀，像把食堂的烟火气硬塞进来。他只是用指尖慢慢转着盒底的圆角，等林正弘开口。\", \"source_chapter\": \"production/final_chapters/chapter_010.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第10章内\"}, \"id\": \"chapter-010-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第10章之后\"}",
+  "created_at": "2026-08-18T19:52:55.753481+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_010.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-010-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶生产验证",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 10 章状态：timeline",
+  "updated_at": "2026-08-18T19:52:55.753481+00:00",
+  "version": 1
+}

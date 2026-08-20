@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林正弘没有动。 他的后腰仍贴着那道黄黑相间的警示条，手机还拿在手里，屏幕上的日程变更像一小块不肯熄灭的余火。实验厅深处的滤层阵列已经完成第一圈自检，淡青色的光从观察窗里溢出来，把三个人的影子拉成细长的、朝着不同方向断裂的线条。 林子轩接过水，拧开，喝了一小口。水很凉，从喉咙一直凉进胃里。他抬头看向天。戈壁的天还是很蓝，高得让人觉得自己像被压在地表的一个小小刻度上。 警报声渐渐停了。风重新大起来。试验堆的黄色警示灯还在一闪一闪，每一闪都在提醒：第一座堆已经发出了它的第一声，而他们，都还没有真正听完。",
+  "created_at": "2026-08-20T07:34:05.687501+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_023.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-023-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_023",
+    "event",
+    "novel"
+  ],
+  "title": "第 23 章关键事件",
+  "updated_at": "2026-08-20T07:34:05.687501+00:00",
+  "version": 1
+}

@@ -1,0 +1,111 @@
+{
+  "issues": [],
+  "narrative_issues": [],
+  "context": "986e943b016acd1eb174c9ba753badd27a6126f5d3e0d880e3c103e0dca25d39",
+  "entity_warnings": [
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 4952,
+      "excerpt": "由你主持。”\n\n林默看向军方代表：“韩将军，你呢？”\n\n军方代表沉默了一会儿，",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 7836,
+      "excerpt": "林子轩看着她：“你留在这里。如果我在韩将军那里被扣住，陈景行需要一个能正常进出",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8240,
+      "excerpt": "门前，手里拿着一个加密通讯器。\n\n“韩将军同意见你。”林默说，语气不像商量，“",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8369,
+      "excerpt": "前在会议室里的那个人。然后他推开门。韩将军坐在长桌另一端，军装没脱，右手还握着",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8414,
+      "excerpt": "笔。他抬起头，眼神很沉。\n\n“说。”韩将军只给了一个字。\n\n林子轩把数据盘放在",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8438,
+      "excerpt": "一个字。\n\n林子轩把数据盘放在桌上。韩将军没有接。林默替他开口：“最新中微子计",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8539,
+      "excerpt": "公布，而是可能已经没有48小时。” 韩将军看向林子轩：“你确定？” 林子轩说：",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8583,
+      "excerpt": "如果我说不确定，那才是对你撒谎。” 韩将军沉默了几秒，手里的笔轻轻点着桌面。“",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8645,
+      "excerpt": "从军方紧急通道走，最快十二小时。” 韩将军：“但发布权不在军事通道。” 林默：",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8705,
+      "excerpt": "急状态。这样能绕过常规政治流程。” 韩将军不说话了。他看向林子轩：“这么做，如",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8803,
+      "excerpt": "告的形式发出去。政治责任，我来。” 韩将军：“你的名字不能出现。” 林：“可以",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8837,
+      "excerpt": "林：“可以。但科学界会知道来源。” 韩将军看着窗外，远处海面白得像一块被磨过的",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "王将军",
+      "observed": "韩将军",
+      "position": 8933,
+      "excerpt": "把太阳风险作为一个独立事实发布。” 韩将军把笔放下：“去准备。我派一队通讯兵跟",
+      "reason": "可能的实体名称漂移"
+    }
+  ]
+}

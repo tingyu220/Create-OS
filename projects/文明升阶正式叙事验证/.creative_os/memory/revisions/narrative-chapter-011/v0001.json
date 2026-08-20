@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"aftermath\", \"chapter\": 11, \"chapter_contract\": {\"dramatic_question\": \"公开真相之后，林子轩能否承受自己造成的连锁反应？\", \"ending_shift\": \"下一步必须进入具体建设而非继续演讲\", \"forbidden\": [\"不得让社会立即恢复秩序\"], \"foreshadow_actions\": [\"全球协作\"], \"functions\": [\"展示公开后果\", \"强化责任压力\"], \"information\": {\"misdirect\": [\"暂不一次解释余波背后的全部真相\"], \"reveal\": [\"全球恐慌扩散\", \"不同群体反应不一致\"], \"withhold\": [\"最终政治方案\"]}, \"pressure_curve\": {\"end\": \"林子轩开始把责任看成行动的一部分\", \"start\": \"失控\", \"turn\": \"普通人的反应与技术团队冲突\"}, \"protagonist_choice\": {\"action\": \"主动查看普通人的反馈而不是躲回实验室\", \"actor\": \"林子轩\", \"alternatives\": [\"只看技术数据\"], \"consequence\": \"他承认技术答案不能替代社会选择\", \"cost\": \"被恐慌和愤怒直接击中\"}, \"reader_change\": {\"after\": \"读者理解主角必须面对后果\", \"before\": \"读者看到公布带来的震动\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-18T20:16:48.138571+00:00",
+  "evidence": [
+    {
+      "note": "第11章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-011",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_011",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 11 章叙事合同",
+  "updated_at": "2026-08-18T20:16:48.149107+00:00",
+  "version": 1
+}

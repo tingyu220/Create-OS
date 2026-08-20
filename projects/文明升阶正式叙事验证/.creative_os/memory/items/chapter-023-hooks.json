@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "待人工确认本章新增伏笔。",
+  "created_at": "2026-08-20T07:34:05.688503+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_023.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-023-hooks",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_023",
+    "hook",
+    "novel"
+  ],
+  "title": "第 23 章伏笔与待续问题",
+  "updated_at": "2026-08-20T07:34:05.688503+00:00",
+  "version": 1
+}

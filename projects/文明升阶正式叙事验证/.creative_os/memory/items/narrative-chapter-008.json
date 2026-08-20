@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"escalation\", \"chapter\": 8, \"chapter_contract\": {\"dramatic_question\": \"个人发现是否应该变成全人类必须面对的事实？\", \"ending_shift\": \"决策从父母和组织转移到主角自己\", \"forbidden\": [\"不得让所有人无条件同意\"], \"foreshadow_actions\": [\"全球公布\", \"普通人反应\"], \"functions\": [\"扩大社会冲突\", \"让主角发声\"], \"information\": {\"misdirect\": [\"暂不一次解释联邦会议背后的全部真相\"], \"reveal\": [\"太阳风险将进入公共议程\", \"公布存在争议\"], \"withhold\": [\"全球反应细节\"]}, \"pressure_curve\": {\"end\": \"私人秘密变成公共危机\", \"start\": \"争论\", \"turn\": \"林子轩发言改变会议方向\"}, \"protagonist_choice\": {\"action\": \"在联邦会议上公开支持有限公布真相\", \"actor\": \"林子轩\", \"alternatives\": [\"保持沉默等待技术成熟\"], \"consequence\": \"公布方案进入公共决策流程\", \"cost\": \"承担引发恐慌的政治责任\"}, \"reader_change\": {\"after\": \"读者理解公开本身也是一次不可逆选择\", \"before\": \"读者看到秘密从家庭内部扩散\"}, \"target_chinese_chars\": 10000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-18T20:16:48.098826+00:00",
+  "evidence": [
+    {
+      "note": "第8章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-008",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_008",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 8 章叙事合同",
+  "updated_at": "2026-08-18T20:16:48.114099+00:00",
+  "version": 1
+}

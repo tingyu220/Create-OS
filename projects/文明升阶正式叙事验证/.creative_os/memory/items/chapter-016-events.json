@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林子轩没有抬头看那块模拟屏。 他低着头，扶着栏杆继续往上走。方晴跟在后面，鞋底一下一下蹭着台阶。楼道里只有他们两个人。安全指示灯把他们的影子拉长又压短，像有什么东西在拐角处反反复复地试探。宇没有再说话。它的沉默像耳机里被抽掉的电流声，反而让四周更空，也更近。 “你要筛谁？” 解码室安静下去。像整个基地都听见了这个问题。",
+  "created_at": "2026-08-19T18:31:15.396401+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_016.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-016-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "candidate",
+  "tags": [
+    "chapter_016",
+    "event",
+    "novel"
+  ],
+  "title": "第 16 章关键事件",
+  "updated_at": "2026-08-19T18:31:15.396401+00:00",
+  "version": 1
+}

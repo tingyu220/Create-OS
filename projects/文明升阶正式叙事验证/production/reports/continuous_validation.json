@@ -1,0 +1,60 @@
+{
+  "project_root": "projects\\文明升阶正式叙事验证",
+  "requested_chapters": 6,
+  "completed_chapters": 6,
+  "status": "pass",
+  "chapters": [
+    {
+      "chapter_number": 25,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_025.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_025.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    },
+    {
+      "chapter_number": 26,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_026.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_026.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    },
+    {
+      "chapter_number": 27,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_027.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_027.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    },
+    {
+      "chapter_number": 28,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_028.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_028.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    },
+    {
+      "chapter_number": 29,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_029.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_029.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    },
+    {
+      "chapter_number": 30,
+      "status": "pass",
+      "context_path": "projects\\文明升阶正式叙事验证\\.creative_os\\contexts\\compiled\\chapter_030.json",
+      "final_chapter_path": "projects\\文明升阶正式叙事验证\\production\\final_chapters\\chapter_030.md",
+      "issue_count": 0,
+      "entity_warning_count": 0
+    }
+  ],
+  "event_count": 361,
+  "recovery_ok": true,
+  "max_context_size_chars": 19085,
+  "entity_warning_count": 0
+}

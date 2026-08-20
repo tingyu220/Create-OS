@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"逐步确认信号、家庭秘密和文明计划的关系\", \"arc_id\": \"arc-key-and-cost\", \"arc_phase\": \"aftermath\", \"chapter\": 30, \"chapter_contract\": {\"dramatic_question\": \"达到一级文明指标后，人类是否真的获得了选择未来的自由？\", \"ending_shift\": \"林子轩选择继续成为调查者\", \"forbidden\": [\"不得提前解释全部文明真相\", \"不得让阶段性成功消除后续风险\"], \"foreshadow_actions\": [\"新坐标\", \"下一阶段文明\"], \"functions\": [\"完成生产验证阶段\", \"留下下一卷钩子\"], \"information\": {\"misdirect\": [\"暂不一次解释一盏新灯背后的全部真相\"], \"reveal\": [\"一级文明指标\"], \"withhold\": [\"新坐标指向的文明\"]}, \"pressure_curve\": {\"end\": \"第一卷阶段目标完成，远方威胁开启\", \"start\": \"胜利后的不安\", \"turn\": \"指标达到但宇拒绝解释新坐标\"}, \"protagonist_choice\": {\"action\": \"拒绝把一级指标当作终点，启动对声音来源的下一阶段调查\", \"actor\": \"林子轩\", \"alternatives\": [\"接受英雄身份并退出\"], \"consequence\": \"人类暂时跨过门槛，但声音发来新的坐标\", \"cost\": \"继续承担神经衰退与未知敌人的风险\"}, \"reader_change\": {\"after\": \"读者明确下一阶段会面对更大的文明冲突\", \"before\": \"读者获得阶段性闭合\"}, \"target_chinese_chars\": 8000}, \"future_pressures\": [\"神经干预代价将被具体揭示\", \"全球公布会把私人发现变成公共危机\"], \"inherited_pressure\": \"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 1, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-19T17:41:05.433214+00:00",
+  "evidence": [
+    {
+      "note": "第30章大纲与字数目标",
+      "source_id": "06_重构方案.md",
+      "source_type": "source"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-030",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶正式叙事验证",
+  "status": "active",
+  "tags": [
+    "chapter_030",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 30 章叙事合同",
+  "updated_at": "2026-08-19T17:41:05.443600+00:00",
+  "version": 1
+}
