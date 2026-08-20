@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import tempfile
 import threading
 from collections.abc import Iterator
@@ -76,10 +77,11 @@ _JOURNAL_FIELDS = frozenset(
     {"journal_version", "state", "record_type", "record_id", "envelope", "entry_hash"}
 )
 _JOURNAL_STATES = frozenset({"prepared", "committed"})
-# 52-character slugs keep the longest disposition key plus ``.json``
-# below the portable 255-byte filesystem component limit.
-_SLUG = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,51}")
+# Individual slugs are bounded independently; reviewer persistence also
+# verifies every future disposition's combined physical-key length.
+_SLUG = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 _RECORD_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,249}")
+_ATOMIC_TEMP_NAME = re.compile(r"\.record-[A-Za-z0-9_-]{8}\.tmp")
 _LOCAL_LOCKS: dict[str, threading.Lock] = {}
 _LOCAL_LOCKS_GUARD = threading.Lock()
 
@@ -96,7 +98,7 @@ class ContractRecordStore:
             for record_type, directory in _RECORD_DIRECTORIES.items()
         }
         for directory in (*self._directories.values(), self.journal_dir):
-            _io_path(directory).mkdir(parents=True, exist_ok=True)
+            _ensure_store_directory(directory)
         self._lock_path = self.journal_dir / ".contract-records.lock"
 
     def save_baseline(
@@ -116,6 +118,7 @@ class ContractRecordStore:
         return self._save("approval", _approval_to_payload(record))
 
     def save_reviewer_result(self, result: PrewriteReviewerResult) -> str:
+        _validate_reviewer_key_space(result)
         return self._save("reviewer_result", _review_to_payload(result))
 
     def save_disposition(self, disposition: ReviewIssueDisposition) -> str:
@@ -330,37 +333,51 @@ class ContractRecordStore:
         journal = self._read_journal(journal_path)
         if journal["state"] != "committed" or journal["envelope"] != envelope:
             raise ContractRecordConflictError("record and journal authority conflict")
-        return _decode_payload(record_type, envelope["payload"])
+        model = _decode_payload(record_type, envelope["payload"])
+        if record_type == "disposition":
+            self._validate_disposition_binding_locked(model)
+        return model
 
     def _recover_locked(self) -> None:
-        journals: dict[tuple[str, str], dict[str, Any]] = {}
+        journals: dict[tuple[str, str], tuple[Path, dict[str, Any]]] = {}
         for path in _strict_json_files(self.journal_dir, allow_lock=True):
             journal = self._read_journal(path)
             key = (journal["record_type"], journal["record_id"])
             if key in journals:
                 raise ContractRecordStoreError("duplicate contract record journal")
-            journals[key] = journal
-            record_type, record_id = key
-            target = self._record_path(record_type, record_id)
-            if _path_exists(target):
-                if self._read_record_file(record_type, record_id) != journal["envelope"]:
-                    raise ContractRecordConflictError("prepared record conflicts with journal")
-            elif journal["state"] == "prepared":
-                _atomic_write_json(target, journal["envelope"])
-            else:
-                raise ContractRecordStoreError("committed contract record is missing")
-            if journal["state"] == "prepared":
-                committed = _make_journal("committed", record_type, record_id, journal["envelope"])
-                _atomic_write_json(path, committed)
-                journals[key] = committed
+            journals[key] = (path, journal)
+
+        # Reviewer authority must be fully recovered before any disposition
+        # is allowed to materialize or commit.
+        for disposition_phase in (False, True):
+            for key, (path, journal) in tuple(journals.items()):
+                record_type, record_id = key
+                if (record_type == "disposition") is not disposition_phase:
+                    continue
+                if record_type == "disposition":
+                    disposition = _decode_payload(record_type, journal["envelope"]["payload"])
+                    self._validate_disposition_binding_locked(disposition)
+                target = self._record_path(record_type, record_id)
+                if _path_exists(target):
+                    if self._read_record_file(record_type, record_id) != journal["envelope"]:
+                        raise ContractRecordConflictError("prepared record conflicts with journal")
+                elif journal["state"] == "prepared":
+                    _atomic_write_json(target, journal["envelope"])
+                else:
+                    raise ContractRecordStoreError("committed contract record is missing")
+                if journal["state"] == "prepared":
+                    committed = _make_journal(
+                        "committed", record_type, record_id, journal["envelope"]
+                    )
+                    _atomic_write_json(path, committed)
+                    journals[key] = (path, committed)
 
         for record_type, directory in self._directories.items():
             for path in _strict_json_files(directory):
                 record_id = path.stem
-                self._read_record_file(record_type, record_id)
-                journal = journals.get((record_type, record_id))
-                if journal is None:
+                if (record_type, record_id) not in journals:
                     raise ContractRecordStoreError("orphan contract record has no journal")
+                self._load_if_present_locked(record_type, record_id)
 
     def _scan_locked(self, record_type: str) -> tuple[tuple[str, object], ...]:
         return tuple(
@@ -511,6 +528,17 @@ def _record_id_for(
         )
     _require_record_id(result)
     return result
+
+
+def _validate_reviewer_key_space(result: object) -> None:
+    if not isinstance(result, PrewriteReviewerResult):
+        raise ContractRecordStoreError("reviewer result type mismatch")
+    result_id = _require_slug(result.result_id, "reviewer result_id")
+    for issue in result.issues:
+        issue_id = _require_slug(issue.issue_id, "review issue_id")
+        _require_record_id(
+            f"disposition-{result_id}-{issue_id}-{issue.canonical_issue_hash}-{'0' * 64}"
+        )
 
 
 def _payload_for(record_type: str, model: object, original: dict[str, Any]) -> dict[str, Any]:
@@ -949,14 +977,53 @@ def _io_path(path: Path) -> Path:
 
 
 def _path_exists(path: Path) -> bool:
-    return _io_path(path).exists()
+    try:
+        os.lstat(_io_path(path))
+    except FileNotFoundError:
+        return False
+    return True
+
+
+def _path_is_link_or_reparse(path: Path) -> bool:
+    try:
+        info = os.lstat(_io_path(path))
+    except FileNotFoundError:
+        return False
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return stat.S_ISLNK(info.st_mode) or bool(
+        getattr(info, "st_file_attributes", 0) & reparse_flag
+    )
+
+
+def _require_regular_path(path: Path, name: str) -> os.stat_result:
+    if _path_is_link_or_reparse(path):
+        raise ContractRecordStoreError(f"{name} cannot be a link or reparse point")
+    try:
+        info = os.lstat(_io_path(path))
+    except FileNotFoundError as error:
+        raise ContractRecordStoreError(f"{name} is missing") from error
+    if not stat.S_ISREG(info.st_mode):
+        raise ContractRecordStoreError(f"{name} must be a regular file")
+    return info
+
+
+def _ensure_store_directory(path: Path) -> None:
+    if not _path_exists(path):
+        _io_path(path).mkdir(parents=True, exist_ok=True)
+    if _path_is_link_or_reparse(path):
+        raise ContractRecordStoreError("contract record directory cannot be a link or reparse point")
+    try:
+        info = os.lstat(_io_path(path))
+    except FileNotFoundError as error:
+        raise ContractRecordStoreError("contract record directory is missing") from error
+    if not stat.S_ISDIR(info.st_mode):
+        raise ContractRecordStoreError("contract record directory must be a directory")
 
 
 def _read_canonical_json(path: Path) -> dict[str, Any]:
     try:
         io_path = _io_path(path)
-        if io_path.is_symlink() or not io_path.is_file():
-            raise ContractRecordStoreError("contract record path must be a regular file")
+        _require_regular_path(path, "contract record path")
         raw = io_path.read_text(encoding="utf-8")
         payload = json.loads(
             raw,
@@ -984,19 +1051,28 @@ def _reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 def _strict_json_files(directory: Path, *, allow_lock: bool = False) -> tuple[Path, ...]:
     files: list[Path] = []
     for path in sorted(_io_path(directory).iterdir(), key=lambda value: value.name):
+        logical_path = directory / path.name
+        if _path_is_link_or_reparse(logical_path):
+            raise ContractRecordStoreError(f"unexpected linked contract record path: {path.name}")
         if allow_lock and path.name == ".contract-records.lock":
+            _require_regular_path(logical_path, "contract record lock")
             continue
-        if path.name.startswith(".") and path.name.endswith(".tmp"):
+        if _ATOMIC_TEMP_NAME.fullmatch(path.name):
+            _require_regular_path(logical_path, "atomic temporary path")
             continue
-        if path.is_symlink() or not path.is_file() or path.suffix != ".json":
+        try:
+            info = os.lstat(_io_path(logical_path))
+        except FileNotFoundError as error:
+            raise ContractRecordStoreError(f"contract record path disappeared: {path.name}") from error
+        if not stat.S_ISREG(info.st_mode) or path.suffix != ".json":
             raise ContractRecordStoreError(f"unexpected contract record path: {path.name}")
-        files.append(directory / path.name)
+        files.append(logical_path)
     return tuple(files)
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
+    _ensure_store_directory(path.parent)
     io_parent = _io_path(path.parent)
-    io_parent.mkdir(parents=True, exist_ok=True)
     temporary: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
@@ -1015,9 +1091,64 @@ def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
             os.fsync(stream.fileno())
             temporary = Path(stream.name)
         temporary.replace(_io_path(path))
+        _fsync_directory(path.parent)
     finally:
         if temporary is not None and temporary.exists():
             temporary.unlink()
+
+
+def _fsync_directory(path: Path) -> None:
+    """Persist directory metadata where the standard library supports it."""
+    if os.name == "nt":
+        # Python exposes no reliable directory fsync handle on Windows. File
+        # content is fsynced before the same-directory atomic replace above.
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(path, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _open_lock_file(path: Path):
+    if _path_is_link_or_reparse(path):
+        raise ContractRecordStoreError("contract record lock cannot be a link or reparse point")
+    flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_BINARY", 0)
+    no_follow = getattr(os, "O_NOFOLLOW", 0)
+    descriptor: int | None = None
+    try:
+        if not _path_exists(path):
+            try:
+                descriptor = os.open(
+                    _io_path(path),
+                    flags | os.O_EXCL | no_follow,
+                    0o600,
+                )
+            except FileExistsError:
+                descriptor = None
+        if descriptor is None:
+            expected = _require_regular_path(path, "contract record lock")
+            descriptor = os.open(_io_path(path), flags | no_follow, 0o600)
+            actual = os.fstat(descriptor)
+            current = _require_regular_path(path, "contract record lock")
+            if (actual.st_dev, actual.st_ino) != (current.st_dev, current.st_ino) or (
+                expected.st_dev,
+                expected.st_ino,
+            ) != (current.st_dev, current.st_ino):
+                raise ContractRecordStoreError("contract record lock changed while opening")
+        actual = os.fstat(descriptor)
+        current = _require_regular_path(path, "contract record lock")
+        if (
+            not stat.S_ISREG(actual.st_mode)
+            or (actual.st_dev, actual.st_ino) != (current.st_dev, current.st_ino)
+        ):
+            raise ContractRecordStoreError("contract record lock must be a regular file")
+        return os.fdopen(descriptor, "r+b", closefd=True)
+    except Exception:
+        if descriptor is not None:
+            os.close(descriptor)
+        raise
 
 
 @contextmanager
@@ -1025,8 +1156,8 @@ def _exclusive_lock(path: Path) -> Iterator[None]:
     try:
         local_lock = _local_lock(path)
         with local_lock:
-            _io_path(path.parent).mkdir(parents=True, exist_ok=True)
-            with _io_path(path).open("a+b") as stream:
+            _ensure_store_directory(path.parent)
+            with _open_lock_file(path) as stream:
                 stream.seek(0, os.SEEK_END)
                 if stream.tell() == 0:
                     stream.write(b"\0")
@@ -1043,7 +1174,7 @@ def _exclusive_lock(path: Path) -> Iterator[None]:
 
 
 def _local_lock(path: Path) -> threading.Lock:
-    key = str(path.resolve())
+    key = str(path.absolute())
     with _LOCAL_LOCKS_GUARD:
         return _LOCAL_LOCKS.setdefault(key, threading.Lock())
 

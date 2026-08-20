@@ -26,6 +26,7 @@ from creative_os.domains.contract_review import (
     ReviewIssue,
     ReviewIssueDisposition,
 )
+from creative_os.domains.narrative_evidence import EvidenceLocator, EvidenceRef, EvidenceRole
 
 
 CONTRACT_ID = "narrative-chapter-007"
@@ -167,6 +168,30 @@ def _io_path(path: Path) -> Path:
     return Path("\\\\?\\" + str(path.absolute()))
 
 
+def _record_path(project_root: Path, directory: str, record_id: str) -> Path:
+    return _record_root(project_root) / directory / f"{record_id}.json"
+
+
+def _journal_path(project_root: Path, record_type: str, record_id: str) -> Path:
+    operation_id = _canonical_hash({"record_id": record_id, "record_type": record_type})
+    return _record_root(project_root) / "journal" / f"{operation_id}.json"
+
+
+def _read_json(path: Path) -> dict[str, object]:
+    return json.loads(_io_path(path).read_text(encoding="utf-8"))
+
+
+def _write_json(path: Path, payload: object) -> None:
+    _io_path(path).write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _copy_file(source: Path, target: Path) -> None:
+    _io_path(target).write_bytes(_io_path(source).read_bytes())
+
+
 def test_four_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_path: Path):
     store = ContractRecordStore(tmp_path)
     baseline, approval, review, disposition, ids = _seed(store)
@@ -222,6 +247,43 @@ def test_four_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_
     assert restarted.load_disposition(ids[3]) == disposition
 
 
+def test_approval_decision_evidence_round_trips_every_nested_field(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    evidence = EvidenceRef(
+        evidence_id="approval-evidence-1",
+        contract_id=CONTRACT_ID,
+        contract_version=CONTRACT_VERSION,
+        field_path="chapter_contract.protagonist_choice.cost",
+        role=EvidenceRole.DECISION,
+        source_id="approval-session-1",
+        source_version="7",
+        source_content_hash="e" * 64,
+        locator=EvidenceLocator(kind="record_id", value="decision-7"),
+        excerpt="主编确认当前选择代价。",
+        assertion="批准重大选择与代价。",
+        asserted_value=True,
+    )
+    item = replace(_approval_item(), decision_evidence=(evidence,))
+    approval = replace(_approval(baseline), major_choice_and_cost=item)
+
+    record_id = store.save_approval(approval)
+
+    assert ContractRecordStore(tmp_path).load_approval(record_id) == approval
+
+
+def test_generic_load_reconstructs_each_authoritative_record_type(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    baseline, approval, review, disposition, record_ids = _seed(store)
+
+    assert tuple(store.load(record_id) for record_id in record_ids) == (
+        baseline,
+        approval,
+        review,
+        disposition,
+    )
+
+
 def test_exact_repeated_saves_are_idempotent_but_same_id_different_content_conflicts(tmp_path: Path):
     store = ContractRecordStore(tmp_path)
     baseline = _baseline()
@@ -252,11 +314,53 @@ def test_save_and_load_reject_unsafe_slugs_and_path_escape(tmp_path: Path):
     with pytest.raises(ContractRecordStoreError):
         store.save_disposition(disposition)
 
-    overlong_review = _review(baseline, result_id="r" * 53)
-    store.save_reviewer_result(overlong_review)
-    with pytest.raises(ContractRecordStoreError):
-        store.save_disposition(_disposition(overlong_review, overlong_review.issues[0]))
     assert not (tmp_path / "outside.json").exists()
+
+
+@pytest.mark.parametrize(
+    "result",
+    (
+        _review(_baseline(), result_id="审阅-001"),
+        _review(_baseline(), result_id="r" * 65),
+        _review(_baseline(), issues=(_issue(issue_id="问题-代价"),)),
+        _review(_baseline(), issues=(_issue(issue_id="i" * 65),)),
+        _review(
+            _baseline(),
+            issues=(
+                _issue(),
+                _issue(
+                    issue_id="问题-后果",
+                    field_path="chapter_contract.protagonist_choice.consequence",
+                ),
+            ),
+        ),
+        _review(
+            _baseline(),
+            result_id="r" * 64,
+            issues=(_issue(issue_id="i" * 64),),
+        ),
+    ),
+    ids=(
+        "unicode-result",
+        "overlong-result",
+        "unicode-issue",
+        "overlong-issue",
+        "later-unicode-issue",
+        "combined-key",
+    ),
+)
+def test_reviewer_save_rejects_any_issue_without_a_safe_future_disposition_key(
+    tmp_path: Path,
+    result: PrewriteReviewerResult,
+):
+    store = ContractRecordStore(tmp_path)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_reviewer_result(result)
+
+    root = _record_root(tmp_path)
+    assert tuple((root / "reviews").glob("*.json")) == ()
+    assert tuple((root / "journal").glob("*.json")) == ()
 
 
 @pytest.mark.parametrize(
@@ -289,6 +393,23 @@ def test_strict_load_rejects_payload_hash_unknown_missing_and_wrong_types(tmp_pa
         ContractRecordStore(tmp_path).load_baseline(record_id)
 
 
+@pytest.mark.parametrize("mutation", ("duplicate-key", "noncanonical"))
+def test_strict_load_rejects_duplicate_keys_and_noncanonical_json(tmp_path: Path, mutation: str):
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    record_id = store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    path = _record_path(tmp_path, "baselines", record_id)
+    raw = _io_path(path).read_text(encoding="utf-8")
+    if mutation == "duplicate-key":
+        raw = raw.replace('{\n  "payload":', '{\n  "record_type": "baseline",\n  "payload":', 1)
+    else:
+        raw = json.dumps(json.loads(raw), ensure_ascii=False, sort_keys=True)
+    _io_path(path).write_text(raw, encoding="utf-8")
+
+    with pytest.raises(ContractRecordStoreError):
+        ContractRecordStore(tmp_path).load_baseline(record_id)
+
+
 def test_tampered_filename_is_rejected_and_never_used_by_exact_lookup(tmp_path: Path):
     store = ContractRecordStore(tmp_path)
     baseline = _baseline()
@@ -306,6 +427,60 @@ def test_tampered_filename_is_rejected_and_never_used_by_exact_lookup(tmp_path: 
             contract_hash=CONTRACT_HASH,
             baseline_fingerprint=baseline.fingerprint,
         )
+
+
+@pytest.mark.parametrize("mutation", ("entry-hash", "state", "filename"))
+def test_recover_rejects_journal_hash_state_and_filename_tamper(tmp_path: Path, mutation: str):
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    record_id = store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    journal_path = _journal_path(tmp_path, "baseline", record_id)
+    if mutation == "filename":
+        forged = journal_path.with_name(f"{journal_path.stem}-forged.json")
+        _io_path(journal_path).replace(_io_path(forged))
+    else:
+        journal = _read_json(journal_path)
+        if mutation == "entry-hash":
+            journal["entry_hash"] = "0" * 64
+        else:
+            journal["state"] = "unknown"
+            journal["entry_hash"] = _canonical_hash(
+                {key: value for key, value in journal.items() if key != "entry_hash"}
+            )
+        _write_json(journal_path, journal)
+
+    with pytest.raises(ContractRecordStoreError):
+        ContractRecordStore(tmp_path).recover()
+
+
+def test_recover_rejects_a_committed_journal_whose_record_is_missing_after_backup(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    record_id = store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    record_path = _record_path(tmp_path, "baselines", record_id)
+    backup = tmp_path / "missing-record-backup.json"
+    backup.write_bytes(_io_path(record_path).read_bytes())
+    _io_path(record_path).unlink()
+
+    with pytest.raises(ContractRecordStoreError, match="missing"):
+        ContractRecordStore(tmp_path).recover()
+
+    assert backup.read_bytes()
+
+
+def test_recover_rejects_an_orphan_record_without_a_journal(tmp_path: Path):
+    source_root = tmp_path / "source"
+    source = ContractRecordStore(source_root)
+    baseline = _baseline()
+    record_id = source.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    store = ContractRecordStore(tmp_path)
+    _copy_file(
+        _record_path(source_root, "baselines", record_id),
+        _record_path(tmp_path, "baselines", record_id),
+    )
+
+    with pytest.raises(ContractRecordStoreError, match="orphan"):
+        store.recover()
 
 
 def test_find_exact_rebuilds_cross_record_bindings_after_restart(tmp_path: Path):
@@ -381,6 +556,182 @@ def test_find_exact_fails_closed_when_multiple_reviewer_results_match(tmp_path: 
             baseline_fingerprint=baseline.fingerprint,
             ruleset_version="prewrite-v1",
         )
+
+
+@pytest.mark.parametrize("read_path", ("load_disposition", "load", "recover", "find_exact"))
+def test_every_authoritative_read_rejects_a_disposition_without_its_exact_reviewer_issue(
+    tmp_path: Path,
+    read_path: str,
+):
+    store = ContractRecordStore(tmp_path)
+    baseline, _, review, _, _ = _seed(store)
+    foreign_root = tmp_path / "foreign"
+    foreign_store = ContractRecordStore(foreign_root)
+    foreign_review = _review(baseline, result_id="review-foreign")
+    foreign_store.save_reviewer_result(foreign_review)
+    foreign_disposition = _disposition(foreign_review, foreign_review.issues[0])
+    foreign_id = foreign_store.save_disposition(foreign_disposition)
+    _copy_file(
+        _record_path(foreign_root, "dispositions", foreign_id),
+        _record_path(tmp_path, "dispositions", foreign_id),
+    )
+    _copy_file(
+        _journal_path(foreign_root, "disposition", foreign_id),
+        _journal_path(tmp_path, "disposition", foreign_id),
+    )
+
+    with pytest.raises(ContractRecordStoreError):
+        if read_path == "load_disposition":
+            store.load_disposition(foreign_id)
+        elif read_path == "load":
+            store.load(foreign_id)
+        elif read_path == "recover":
+            store.recover()
+        else:
+            store.find_exact(
+                contract_id=CONTRACT_ID,
+                contract_version=CONTRACT_VERSION,
+                contract_hash=CONTRACT_HASH,
+                baseline_fingerprint=baseline.fingerprint,
+                ruleset_version=review.ruleset_version,
+            )
+
+
+@pytest.mark.parametrize("reviewer_state", ("missing", "mismatched"))
+def test_prepared_disposition_recovery_validates_reviewer_before_record_or_commit(
+    tmp_path: Path,
+    reviewer_state: str,
+):
+    baseline = _baseline()
+    foreign_root = tmp_path / "foreign"
+    foreign_store = ContractRecordStore(foreign_root)
+    foreign_review = _review(baseline, result_id="review-foreign")
+    foreign_store.save_reviewer_result(foreign_review)
+    disposition = _disposition(foreign_review, foreign_review.issues[0])
+    record_id = foreign_store.save_disposition(disposition)
+
+    store = ContractRecordStore(tmp_path)
+    if reviewer_state == "mismatched":
+        store.save_reviewer_result(_review(baseline, result_id="review-foreign", issues=()))
+    journal = _read_json(_journal_path(foreign_root, "disposition", record_id))
+    journal["state"] = "prepared"
+    journal["entry_hash"] = _canonical_hash(
+        {key: value for key, value in journal.items() if key != "entry_hash"}
+    )
+    target_journal = _journal_path(tmp_path, "disposition", record_id)
+    _write_json(target_journal, journal)
+    target_record = _record_path(tmp_path, "dispositions", record_id)
+
+    with pytest.raises(ContractRecordStoreError):
+        store.recover()
+
+    assert not _io_path(target_record).exists()
+    persisted_journal = _read_json(target_journal)
+    assert persisted_journal["state"] == "prepared"
+
+
+def test_lock_file_symlink_is_rejected_without_following_or_changing_its_target(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    outside = tmp_path / "outside-lock-target"
+    outside.write_bytes(b"outside-sentinel")
+    lock_path = _record_root(tmp_path) / "journal" / ".contract-records.lock"
+    try:
+        lock_path.symlink_to(outside)
+    except OSError as error:
+        pytest.skip(f"symlink unavailable: {error}")
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert outside.read_bytes() == b"outside-sentinel"
+    assert tuple((_record_root(tmp_path) / "journal").glob("*.json")) == ()
+
+
+def test_lock_file_reparse_detection_is_enforced_when_symlink_creation_is_unavailable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    lock_path = _record_root(tmp_path) / "journal" / ".contract-records.lock"
+    lock_path.write_bytes(b"sentinel")
+    monkeypatch.setattr(
+        record_store_module,
+        "_path_is_link_or_reparse",
+        lambda path: Path(path).name == ".contract-records.lock",
+        raising=False,
+    )
+
+    with pytest.raises(ContractRecordStoreError):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+    assert lock_path.read_bytes() == b"sentinel"
+
+
+def test_lock_file_directory_is_rejected_before_open(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    lock_path = _record_root(tmp_path) / "journal" / ".contract-records.lock"
+    lock_path.mkdir()
+
+    with pytest.raises(ContractRecordStoreError, match="regular file"):
+        store.save_baseline(CONTRACT_ID, CONTRACT_VERSION, _baseline())
+
+
+@pytest.mark.parametrize("malicious_kind", ("wrong-name", "directory", "symlink"))
+def test_recover_rejects_malicious_paths_disguised_as_atomic_temps(
+    tmp_path: Path,
+    malicious_kind: str,
+):
+    store = ContractRecordStore(tmp_path)
+    records = _record_root(tmp_path) / "baselines"
+    malicious = records / (
+        ".evil.tmp" if malicious_kind == "wrong-name" else ".record-aaaaaaaa.tmp"
+    )
+    if malicious_kind == "directory":
+        malicious.mkdir()
+    elif malicious_kind == "symlink":
+        target = tmp_path / "outside-temp-target"
+        target.write_text("sentinel", encoding="utf-8")
+        try:
+            malicious.symlink_to(target)
+        except OSError as error:
+            pytest.skip(f"symlink unavailable: {error}")
+    else:
+        malicious.write_text("not an atomic temp", encoding="utf-8")
+
+    with pytest.raises(ContractRecordStoreError):
+        store.recover()
+
+
+def test_recover_ignores_only_a_regular_implementation_named_atomic_temp(tmp_path: Path):
+    store = ContractRecordStore(tmp_path)
+    temporary = _record_root(tmp_path) / "baselines" / ".record-aaaaaaaa.tmp"
+    temporary.write_text("incomplete", encoding="utf-8")
+
+    store.recover()
+
+    assert temporary.read_text(encoding="utf-8") == "incomplete"
+
+
+def test_recover_checks_reparse_type_before_ignoring_an_atomic_temp(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    import creative_os.domains.contract_record_store as record_store_module
+
+    store = ContractRecordStore(tmp_path)
+    temporary = _record_root(tmp_path) / "baselines" / ".record-aaaaaaaa.tmp"
+    temporary.write_text("sentinel", encoding="utf-8")
+    monkeypatch.setattr(
+        record_store_module,
+        "_path_is_link_or_reparse",
+        lambda path: Path(path).name == temporary.name,
+        raising=False,
+    )
+
+    with pytest.raises(ContractRecordStoreError):
+        store.recover()
 
 
 @pytest.mark.parametrize(
@@ -501,3 +852,18 @@ def test_concurrent_same_and_different_content_writes_are_serialized_determinist
     with ThreadPoolExecutor(max_workers=2) as pool:
         outcomes = tuple(pool.map(save, alternatives))
     assert sorted(status for status, _ in outcomes) == ["conflict", "saved"]
+
+
+def test_multiple_store_instances_share_file_lock_serialization(tmp_path: Path):
+    first = ContractRecordStore(tmp_path)
+    second = ContractRecordStore(tmp_path)
+    baseline = _baseline()
+    first.save_baseline(CONTRACT_ID, CONTRACT_VERSION, baseline)
+    approval = _approval(baseline)
+    stores = (first, second) * 8
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        record_ids = tuple(pool.map(lambda store: store.save_approval(approval), stores))
+
+    assert len(set(record_ids)) == 1
+    assert first.load_approval(record_ids[0]) == approval
