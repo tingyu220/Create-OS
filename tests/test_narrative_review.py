@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from creative_os.domains.narrative_decision import (
     ArcPhase,
     ChapterContract,
@@ -5,6 +7,7 @@ from creative_os.domains.narrative_decision import (
     NarrativeDecision,
     PressureCurve,
     ProtagonistChoice,
+    ChoiceStatus,
     ReaderChange,
 )
 from creative_os.domains.narrative_review import review_narrative
@@ -63,6 +66,36 @@ def test_review_reports_missing_foreshadow_action_without_modifying_contract():
     assert contract == before
 
 
+def test_formal_reviewer_splits_partial_choice_into_exact_field_issues():
+    original = _decision()
+    partial_choice = ProtagonistChoice(
+        "林子轩",
+        "调查日志",
+        (),
+        None,
+        None,
+        status=ChoiceStatus.PARTIAL,
+        missing_fields=("alternatives", "cost", "consequence"),
+    )
+    contract = replace(
+        original,
+        chapter_contract=replace(original.chapter_contract, protagonist_choice=partial_choice),
+    )
+
+    issues = review_narrative(contract, recent_contracts=[], text="林子轩走进走廊。")
+    by_code = {issue.code: issue for issue in issues}
+
+    assert {
+        "partial_protagonist_choice",
+        "missing_choice_alternatives",
+        "missing_choice_cost",
+        "missing_choice_consequence",
+    } <= by_code.keys()
+    assert by_code["missing_choice_alternatives"].evidence.endswith(".alternatives")
+    assert by_code["missing_choice_cost"].evidence.endswith(".cost")
+    assert by_code["missing_choice_consequence"].evidence.endswith(".consequence")
+
+
 def _replayed_contract(
     *,
     functions=("推进主线",),
@@ -94,7 +127,9 @@ def test_replay_reviewer_reports_unknown_fields_with_evidence_and_repair_hint():
         "unknown_ending_shift",
     } <= {issue.code for issue in issues}
     assert all(issue.severity == "warning" for issue in issues)
-    assert all(issue.evidence and issue.repair_hint for issue in issues)
+    assert all(issue.repair_hint for issue in issues)
+    choice_issue = next(issue for issue in issues if issue.code == "missing_protagonist_choice")
+    assert choice_issue.evidence == ()
 
 
 def test_replay_reviewer_reports_missing_cost_and_repeated_function_without_mutation():
@@ -118,3 +153,57 @@ def test_replay_reviewer_reports_missing_cost_and_repeated_function_without_muta
     assert {"missing_choice_cost", "repeated_chapter_function"} <= {issue.code for issue in issues}
     assert "missing_protagonist_choice" not in {issue.code for issue in issues}
     assert current == before
+
+
+def test_replay_reviewer_splits_partial_and_each_missing_choice_field_without_generic_evidence():
+    choice = ProtagonistChoice(
+        "林澈",
+        "继续调查",
+        (),
+        None,
+        None,
+        status=ChoiceStatus.PARTIAL,
+        missing_fields=("alternatives", "cost", "consequence"),
+    )
+    contract = _replayed_contract(
+        choice=choice,
+        reader_before="怀疑",
+        reader_after="确认",
+        ending_shift="被监控",
+    )
+
+    issues = review_replayed_contract(contract)
+
+    choice_issues = tuple(issue for issue in issues if "choice" in issue.code or "protagonist_choice" in issue.code)
+    assert {issue.code for issue in choice_issues} == {
+        "partial_protagonist_choice",
+        "missing_choice_alternatives",
+        "missing_choice_cost",
+        "missing_choice_consequence",
+    }
+    assert all(issue.evidence == () for issue in choice_issues)
+    partial = next(issue for issue in choice_issues if issue.code == "partial_protagonist_choice")
+    assert "alternatives" in partial.message and "cost" in partial.message and "consequence" in partial.message
+
+
+def test_replay_reviewer_treats_explicit_unknown_choice_as_missing_choice_only():
+    choice = ProtagonistChoice(
+        None,
+        None,
+        (),
+        None,
+        None,
+        status=ChoiceStatus.UNKNOWN,
+        missing_fields=("actor", "action", "alternatives", "cost", "consequence"),
+    )
+    contract = _replayed_contract(
+        choice=choice,
+        reader_before="怀疑",
+        reader_after="确认",
+        ending_shift="被监控",
+    )
+
+    issues = review_replayed_contract(contract)
+
+    assert {issue.code for issue in issues} == {"missing_protagonist_choice"}
+    assert issues[0].evidence == ()
