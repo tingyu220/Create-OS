@@ -156,15 +156,17 @@ A12 -> B13-B14 -> C15-C17 -> D18-D20
 
 ### Task 9: 首次激活与权威证明重读
 
-**Files:** Modify `creative_os/domains/contract_lifecycle.py`, `creative_os/domains/narrative_memory.py`; Test `tests/test_contract_lifecycle_initial.py`。
+**前置依赖：** `docs/superpowers/specs/2026-08-22-versioned-authority-read-layer-design.md`。仅复用现有可验证 revision/version/hash；无 exact 能力的 role 必须 `source_not_versioned` fail-closed。禁止新增通用历史库、CAS、迁移平台、正文副本或 Phase B-D 能力。
 
-**Interfaces:** Consumes: Tasks 5–8；API 只接收 id/version/hash/baseline fingerprint，不接收临时记录对象。Produces: `activate_initial(...)`、`recover_initial(contract_id)`。
+**Files:** Create `creative_os/domains/contract_baseline_resolver.py`; Modify `creative_os/domains/contract_lifecycle.py`, `creative_os/domains/narrative_memory.py`; Test `tests/test_contract_baseline_resolver.py`, `tests/test_contract_lifecycle_initial.py`。
 
-- [ ] 写失败测试：未 save 的临时批准不生效；错 hash/version/baseline/ruleset、篡改记录均拒绝；只有 ReviewerResult 存在 blocking warning 或 `requires_human_disposition=true` issue 时，缺少针对该精确 issue 绑定的 disposition 才拒绝；无此类 issue 时空 disposition 不阻断；锁内重跑 Preflight/causal 时 partial/unknown、缺 intent、非法 N/A、undetermined 或 analyzer failure 即使四类记录齐全也拒绝且不创建 pointer；覆盖激活四步故障恢复、pointer 不得指缺证明合同、幂等。
+**Interfaces:** Consumes: Tasks 5–8。Produces: `BaselineSourceResolver.resolve(BaselineEntry) -> AuthoritativeBaselineSnapshot`、role-to-adapter registry、`activate_initial(...)`、`recover_initial(contract_id)`。Resolver 是 `BaselineManifest` 的唯一 exact 重读通道：只通过显式 role→权威 adapter 读取，逐项核验 source_id/source_version/content_hash，输出不可变规范化快照与审计校验结果；禁止由 source_id 推断路径、读取最新值或让 Manifest 承载解析对象。Lifecycle API 只接收 id/version/hash/baseline fingerprint 与 resolver，不接收调用方临时 baseline 事实对象。
+
+- [ ] 写失败测试：每个支持 role exact resolve；source_id/version/hash 漂移、缺失、读取异常、未知/重复 role 均 blocking；重启后仍从权威来源重读；未 save 的临时批准不生效；错 hash/version/baseline/ruleset、篡改记录均拒绝；只有 ReviewerResult 存在 blocking warning 或 `requires_human_disposition=true` issue 时，缺少针对该精确 issue 绑定的 disposition 才拒绝；无此类 issue 时空 disposition 不阻断；activate_initial 不接收临时 baseline 事实对象；锁内 resolver 重读并重跑 Preflight/causal 时 partial/unknown、缺 intent、非法 N/A、undetermined、resolver 无法重读或 analyzer failure 即使四类记录齐全也拒绝且不创建 pointer；覆盖激活四步故障恢复、恢复路径重跑 resolver/Preflight/causal、pointer 不得指缺证明合同、幂等。
 - [ ] 运行 `python -m pytest tests/test_contract_lifecycle_initial.py -v`；预期 FAIL。
-- [ ] 最小实现：锁内从 candidate 重算 hash，基于已持久化 baseline 来源重新执行 `ContractPreflightValidator.validate(...)` 与 `CausalDependencyAnalyzer.analyze(...)`，再用 Store exact read baseline/approval/reviewer；仅为 ReviewerResult 中 blocking warning/需人工 issue 逐一查找 exact disposition；所有 Gate 通过后才写 prepared，恢复时完整重跑同一顺序。
-- [ ] 加 record/store/narrative_memory 回归；预期全部 PASS。
-- [ ] 建议提交：`git add creative_os/domains/contract_lifecycle.py creative_os/domains/narrative_memory.py tests/test_contract_lifecycle_initial.py && git commit -m "feat: 以权威记录驱动首版合同激活"`
+- [ ] 最小实现：新增独立 `VersionedAuthorityReader`、四类固定 role adapter（profile/fact_snapshot/previous_chapter/outline_change）与 registry；adapter 只调用现有可验证 revision/version/hash 读取接口，不能猜路径、读 latest 或接收临时对象；不具备 exact 能力的 role 直接返回 blocking `source_not_versioned`，不创建任何新历史库/正文副本。Lifecycle 在项目锁内从 candidate 重算 hash、resolver exact 重读 baseline sources，重跑 `ContractPreflightValidator.validate(...)` 与 `CausalDependencyAnalyzer.analyze(...)`，再用 Store exact read baseline/approval/reviewer；仅为 ReviewerResult 中 blocking warning/需人工 issue 逐一查找 exact disposition；所有 Gate 通过后才写 prepared，恢复时完整重跑同一顺序。Resolver 的 entry 校验结果仅追加审计，不覆盖 baseline。
+- [ ] 加 resolver、record/store/narrative_memory 回归；预期全部 PASS。
+- [ ] 建议提交：`git add creative_os/domains/contract_baseline_resolver.py creative_os/domains/contract_lifecycle.py creative_os/domains/narrative_memory.py tests/test_contract_baseline_resolver.py tests/test_contract_lifecycle_initial.py && git commit -m "feat: 以权威基线重读驱动首版合同激活"`
 
 ### Task 10: WriterAdmission 两阶段纯门禁、grant 与最终 token
 
