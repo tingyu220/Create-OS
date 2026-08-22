@@ -10,6 +10,8 @@ from typing import Any
 from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.narrative_decision import NarrativeDecision
 from creative_os.domains.narrative_memory import build_narrative_candidate_item
+from creative_os.domains.contract_baseline_resolver import BaselineSourceResolver, ResolverError
+from creative_os.domains.contract_record_store import ContractRecordStore
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope, MemoryStatus
 from creative_os.memory.store import (
     ImmutableMemoryConflictError,
@@ -202,6 +204,54 @@ class ContractLifecycleCoordinator:
             encoding="utf-8",
         )
         temporary.replace(path)
+
+    def activate_initial(
+        self,
+        contract_id: str,
+        contract_version: int,
+        contract_hash: str,
+        baseline_fingerprint: str,
+        *,
+        resolver: BaselineSourceResolver,
+        actor: str,
+        ruleset_version: str | None = None,
+    ) -> ContractPointer:
+        """Activate only after exact authority and baseline re-read succeed."""
+        records = ContractRecordStore(self.project_root)
+        with records._authority_lock():
+            exact = records.find_exact(
+                contract_id=contract_id,
+                contract_version=contract_version,
+                contract_hash=contract_hash,
+                baseline_fingerprint=baseline_fingerprint,
+                ruleset_version=ruleset_version,
+            )
+            if exact is None:
+                raise ContractStorageError("missing_exact_contract_records")
+            try:
+                resolver.resolve_manifest(self.project_root, exact.baseline.entries)
+            except ResolverError as error:
+                raise ContractStorageError(error.issue.code) from error
+            item = self.store.get_strict(physical_key(contract_id, contract_version))
+            decision = self._validate_contract_item(
+                item,
+                expected_contract_id=contract_id,
+                expected_version=contract_version,
+                expected_status=MemoryStatus.CANDIDATE,
+            )
+            if NarrativeDecisionCodec.content_hash(decision) != contract_hash:
+                raise ContractStorageError("contract_hash_mismatch")
+            active = item.activate(actor=actor)
+            self.store.replace(active)
+            pointer = ContractPointer(physical_key(contract_id, contract_version), contract_version, contract_hash)
+            self.write_pointer(pointer)
+            return pointer
+
+    def recover_initial(self, contract_id: str, **kwargs: object) -> ContractPointer:
+        pointer = self.read_pointer(contract_id)
+        if pointer is not None:
+            return pointer
+        return self.activate_initial(contract_id, **kwargs)  # type: ignore[arg-type]
 
     def _load_pointer_target(
         self,
