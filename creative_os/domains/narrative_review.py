@@ -11,9 +11,24 @@ from creative_os.domains.narrative_replay_model import (
     ReplayedChapterContract,
     UNKNOWN,
 )
+from creative_os.domains.contract_fulfillment import ContractFulfillmentEvidenceRecord
+from creative_os.domains.contract_fulfillment_store import ContractFulfillmentStore
 
 
 TIME_OPENERS = ("凌晨", "清晨", "早晨", "上午", "中午", "午后", "傍晚", "夜晚", "深夜")
+
+
+def append_fulfillment_records(store: object, records: Iterable[ContractFulfillmentEvidenceRecord]) -> tuple[ContractFulfillmentEvidenceRecord, ...]:
+    """Reviewer output is append-only; fulfillment evaluation remains a separate pure step."""
+    if type(store) is not ContractFulfillmentStore:
+        raise TypeError("store must be ContractFulfillmentStore")
+    append = store.append
+    result = []
+    for record in records:
+        if not isinstance(record, ContractFulfillmentEvidenceRecord):
+            raise TypeError("records must contain ContractFulfillmentEvidenceRecord")
+        result.append(append(record))
+    return tuple(result)
 
 
 @dataclass(frozen=True, slots=True)

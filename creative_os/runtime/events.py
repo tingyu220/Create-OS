@@ -121,7 +121,7 @@ class AppendOnlyEventLog:
             sequence=0,
             task_id=record.task_id,
             execution_id=record.execution_id,
-            payload=payload,
+            payload={"context_id": record.context_id, **payload},
         )
 
     def _read(self) -> list[ExecutionEvent]:

@@ -13,7 +13,9 @@ from creative_os.domains.narrative_decision import (
     ReaderChange,
 )
 from creative_os.domains.narrative_review import review_narrative
-from creative_os.domains.narrative_replay_model import EvidenceRef, ReplayedChapterContract
+from creative_os.domains.narrative_replay_model import (
+    EvidenceRef, ReplayedChapterContract, ReplayedProtagonistChoice,
+)
 from creative_os.domains.narrative_review import review_replayed_contract
 
 
@@ -158,6 +160,8 @@ def _replayed_contract(
     reader_after="unknown",
     ending_shift="unknown",
 ):
+    if choice is None:
+        choice = ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN)
     return ReplayedChapterContract(
         chapter_id="chapter_001",
         functions=functions,
@@ -187,7 +191,10 @@ def test_replay_reviewer_reports_unknown_fields_with_evidence_and_repair_hint():
 
 
 def test_replay_reviewer_reports_missing_cost_and_repeated_function_without_mutation():
-    choice = ProtagonistChoice("林澈", "继续调查", (), "unknown", "进入监控名单")
+    choice = ReplayedProtagonistChoice(
+        ChoiceStatus.PARTIAL, "林澈", "继续调查", (), "unknown", "进入监控名单",
+        ("alternatives", "cost"),
+    )
     previous = _replayed_contract(
         choice=choice,
         reader_before="怀疑",
@@ -210,14 +217,9 @@ def test_replay_reviewer_reports_missing_cost_and_repeated_function_without_muta
 
 
 def test_replay_reviewer_splits_partial_and_each_missing_choice_field_without_generic_evidence():
-    choice = ProtagonistChoice(
-        "林澈",
-        "继续调查",
-        (),
-        None,
-        None,
-        status=ChoiceStatus.PARTIAL,
-        missing_fields=("alternatives", "cost", "consequence"),
+    choice = ReplayedProtagonistChoice(
+        ChoiceStatus.PARTIAL, "林澈", "继续调查", (), "unknown", "unknown",
+        ("alternatives", "cost", "consequence"),
     )
     contract = _replayed_contract(
         choice=choice,
@@ -241,15 +243,7 @@ def test_replay_reviewer_splits_partial_and_each_missing_choice_field_without_ge
 
 
 def test_replay_reviewer_treats_explicit_unknown_choice_as_missing_choice_only():
-    choice = ProtagonistChoice(
-        None,
-        None,
-        (),
-        None,
-        None,
-        status=ChoiceStatus.UNKNOWN,
-        missing_fields=("actor", "action", "alternatives", "cost", "consequence"),
-    )
+    choice = ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN)
     contract = _replayed_contract(
         choice=choice,
         reader_before="怀疑",

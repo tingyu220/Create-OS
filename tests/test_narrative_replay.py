@@ -45,7 +45,7 @@ def test_replay_marks_unproven_fields_unknown_without_inferring_from_prose():
     contract = replay_chapter(evidence)
 
     assert contract.functions == ("unknown",)
-    assert contract.protagonist_choice is None
+    assert contract.protagonist_choice.status.value == "unknown"
     assert contract.reader_before == "unknown"
     assert contract.reader_after == "unknown"
     assert contract.ending_shift == "unknown"
@@ -94,6 +94,37 @@ def test_replay_reads_only_explicit_structured_contract_fields():
     assert contract.reader_after == "确认有人掩盖"
     assert contract.ending_shift == "林澈被标记为异常人员"
     assert any(item.source_ref.endswith("contract.json") for item in contract.evidence)
+
+
+@pytest.mark.parametrize("chapter_number", [2, 3, 4])
+def test_replay_preserves_partial_choice_and_exact_missing_fields(chapter_number):
+    evidence = ChapterEvidence(
+        chapter_id=f"chapter_{chapter_number:03d}", prose="# 章节\n\n正文。",
+        contexts=(JsonArtifact("contract.json", {"chapter_contract": {
+            "functions": ["推进选择"], "dramatic_question": "是否继续？",
+            "protagonist_choice": {"actor": "许砚", "action": "暂不上报"},
+        }}),), reviews=(), knowledge=(), tasks=(),
+        source_refs=(f"production/final_chapters/chapter_{chapter_number:03d}.md",),
+    )
+    choice = replay_chapter(evidence).protagonist_choice
+    assert choice.status.value == "partial"
+    assert choice.missing_fields == ("alternatives", "cost", "consequence")
+
+
+def test_replay_preserves_complete_choice_candidate_for_chapter_five():
+    evidence = ChapterEvidence(
+        chapter_id="chapter_005", prose="# 第五章\n\n正文。",
+        contexts=(JsonArtifact("contract.json", {"chapter_contract": {
+            "functions": ["保留证据"], "dramatic_question": "是否上报？",
+            "protagonist_choice": {"actor": "许砚", "action": "保存缺页证据",
+                "alternatives": ["立即上报"], "cost": "隐瞒风险",
+                "consequence": "进入监控"},
+        }}),), reviews=(), knowledge=(), tasks=(),
+        source_refs=("production/final_chapters/chapter_005.md",),
+    )
+    choice = replay_chapter(evidence).protagonist_choice
+    assert choice.status.value == "complete"
+    assert choice.missing_fields == ()
 
 
 def test_replay_range_defaults_to_first_six_chapters(tmp_path):

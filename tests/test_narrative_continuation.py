@@ -71,8 +71,8 @@ def test_required_narrative_contract_blocks_real_continuation_when_missing(tmp_p
 
 
 def test_runner_can_require_narrative_contract_before_model_call(tmp_path):
-    with pytest.raises(ContinuationBlockedError, match="narrative decision"):
-        continue_one_chapter(_project(tmp_path), client=None, require_narrative_contract=True)
+    with pytest.raises(TypeError, match="PreparedWriterRun"):
+        continue_one_chapter(_project(tmp_path), client=None)
 
 
 def test_draft_promotion_can_require_narrative_contract(tmp_path):
@@ -81,66 +81,35 @@ def test_draft_promotion_can_require_narrative_contract(tmp_path):
     draft.parent.mkdir(parents=True)
     draft.write_text("# 第2章\n" + "正文" * 3000, encoding="utf-8")
 
-    with pytest.raises(ContinuationBlockedError, match="narrative decision"):
-        promote_passing_draft(project, require_narrative_contract=True)
+    with pytest.raises(TypeError, match="PreparedWriterRun"):
+        promote_passing_draft(project)
 
 
-def test_approved_narrative_contract_blocks_forbidden_information_in_draft(tmp_path):
+def test_legacy_approved_contract_cannot_enter_public_writer_exit(tmp_path):
     project = _project(tmp_path)
     _approved_contract(project)
     text = "# 第2章\n" + "正文" * 1600 + "周远就是发送者。"
 
-    result = continue_one_chapter(project, client=type("Client", (), {"complete": lambda self, *_args, **_kwargs: text})())
-
-    assert result.status == "fail"
-    assert "narrative:forbidden_information_revealed" in result.issues
+    with pytest.raises(TypeError, match="PreparedWriterRun"):
+        continue_one_chapter(project, client=type("Client", (), {"complete": lambda self, *_args, **_kwargs: text})())
     assert not (project / "production/final_chapters/chapter_002.md").exists()
-    review = json.loads((project / ".creative_os/reviews/chapter_002_continuation.json").read_text(encoding="utf-8"))
-    assert review["narrative_issues"] == [
-        {
-            "code": "forbidden_information_revealed",
-            "severity": "high",
-            "evidence": "周远就是发送者",
-        }
-    ]
 
 
-def test_approved_contract_controls_length_and_writer_instructions(tmp_path):
+def test_legacy_approved_contract_is_not_loaded_into_context(tmp_path):
     project = _project(tmp_path)
     _approved_contract(project)
     task, context = build_next_chapter(project)
 
-    assert task.target_chinese_chars == 2000
-    assert task.min_chinese_chars == 1500
-    assert "周远就是发送者" in task.forbidden_contradictions
-    assert context.contains_source("narrative:chapter:002")
-
-    class CaptureClient:
-        messages = []
-
-        def complete(self, messages, **_kwargs):
-            self.messages = messages
-            return "# 第2章\n" + "正文" * 1600
-
-    client = CaptureClient()
-    result = continue_one_chapter(project, client=client)
-
-    assert result.status == "pass"
-    prompt = client.messages[-1].content
-    assert "章节叙事合同" in prompt
-    assert "人物主动选择：林子轩应保留证据" in prompt
-    assert "周远就是发送者" in prompt
-    assert "目标中文字符数：约 2000" in prompt
+    assert task.contract_projection is None
+    assert not context.contains_source("narrative:chapter:002")
 
 
-def test_reviewer_loads_recent_contracts_before_promoting_next_chapter(tmp_path):
+def test_legacy_contracts_cannot_bypass_prepared_run_for_next_chapter(tmp_path):
     project = _project(tmp_path)
     (project / "production/final_chapters/chapter_002.md").write_text("# 第2章\n上一章结尾。", encoding="utf-8")
     _approved_contract(project, chapter=2)
     _approved_contract(project, chapter=3)
 
-    result = continue_one_chapter(project, client=type("Client", (), {"complete": lambda self, *_args, **_kwargs: "# 第3章\n" + "正文" * 1600})())
-
-    assert result.status == "fail"
-    assert "narrative:duplicate_recent_function" in result.issues
+    with pytest.raises(TypeError, match="PreparedWriterRun"):
+        continue_one_chapter(project, client=type("Client", (), {"complete": lambda self, *_args, **_kwargs: "# 第3章\n" + "正文" * 1600})())
     assert not (project / "production/final_chapters/chapter_003.md").exists()

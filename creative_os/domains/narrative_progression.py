@@ -3,6 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from creative_os.domains.narrative_decision import ArcPhase, NarrativeDecision
+from creative_os.domains.narrative_semantics import (
+    FunctionSemanticNormalizer, SemanticComparison, SemanticRelation,
+)
 
 
 PHASE_ORDER = {
@@ -33,6 +36,7 @@ class NarrativeProgression:
     pressure_curve: tuple[str, str, str]
     reader_change: tuple[str, str]
     foreshadow_actions: tuple[str, ...]
+    semantic_comparisons: tuple[SemanticComparison, ...]
     issues: tuple[ProgressionIssue, ...]
 
 
@@ -48,6 +52,7 @@ def evaluate_progression(
     issues: list[ProgressionIssue] = []
     contract = current.chapter_contract
     phase_changed = previous is not None and previous.arc_phase != current.arc_phase
+    semantic_comparisons: list[SemanticComparison] = []
 
     if previous is not None:
         if PHASE_ORDER[current.arc_phase] < PHASE_ORDER[previous.arc_phase]:
@@ -77,6 +82,31 @@ def evaluate_progression(
                 "stalled_story_progression", "medium",
                 f"功能={','.join(sorted(overlap))}; 结尾失衡未改变",
             ))
+        normalizer = FunctionSemanticNormalizer()
+        for current_function in contract.functions:
+            current_key = normalizer.normalize(
+                current_function, before_state=contract.reader_change.before,
+                after_state=contract.reader_change.after, arc_phase=current.arc_phase.value,
+                ending_shift=contract.ending_shift,
+            )
+            for previous_function in previous.chapter_contract.functions:
+                previous_key = normalizer.normalize(
+                    previous_function,
+                    before_state=previous.chapter_contract.reader_change.before,
+                    after_state=previous.chapter_contract.reader_change.after,
+                    arc_phase=previous.arc_phase.value,
+                    ending_shift=previous.chapter_contract.ending_shift,
+                )
+                comparison = normalizer.compare(current_key, previous_key)
+                semantic_comparisons.append(comparison)
+                if comparison.relation is SemanticRelation.REPEATED:
+                    issues.append(ProgressionIssue(
+                        "repeated_chapter_function", "high", "; ".join(comparison.evidence),
+                    ))
+                elif comparison.relation is SemanticRelation.UNCERTAIN:
+                    issues.append(ProgressionIssue(
+                        "uncertain_function_similarity", "high", "; ".join(comparison.evidence),
+                    ))
 
     recent_actions = {
         action
@@ -104,5 +134,6 @@ def evaluate_progression(
         ),
         reader_change=(contract.reader_change.before, contract.reader_change.after),
         foreshadow_actions=contract.foreshadow_actions,
+        semantic_comparisons=tuple(semantic_comparisons),
         issues=tuple(issues),
     )

@@ -5,9 +5,11 @@ import json
 from pathlib import Path
 
 from creative_os.domains.narrative_decision import NarrativeDecision
-from creative_os.domains.narrative_decision import ProtagonistChoice
+from creative_os.domains.narrative_decision import ChoiceStatus
 from creative_os.domains.narrative_evidence import ChapterEvidence, EvidenceRef, JsonArtifact, load_chapter_evidence
-from creative_os.domains.narrative_replay_model import ReplayedChapterContract, UNKNOWN
+from creative_os.domains.narrative_replay_model import (
+    ReplayedChapterContract, ReplayedProtagonistChoice, UNKNOWN,
+)
 from creative_os.domains.narrative_replay_store import NarrativeReplayEvent, NarrativeReplayStore
 from creative_os.domains.narrative_review import TIME_OPENERS, review_narrative
 
@@ -32,7 +34,7 @@ def replay_chapter(evidence: ChapterEvidence) -> ReplayedChapterContract:
 
     functions: tuple[str, ...] = ()
     dramatic_question = UNKNOWN
-    protagonist_choice: ProtagonistChoice | None = None
+    protagonist_choice = ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN)
     reader_before = UNKNOWN
     reader_after = UNKNOWN
     pressure_start = UNKNOWN
@@ -192,20 +194,28 @@ def _task_ending(tasks: tuple[JsonArtifact, ...]) -> tuple[str, EvidenceRef | No
     return UNKNOWN, None
 
 
-def _choice(value: object) -> ProtagonistChoice | None:
+def _choice(value: object) -> ReplayedProtagonistChoice:
     payload = _object(value)
     if payload is None:
-        return None
+        return ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN)
     actor = _text(payload.get("actor"))
     action = _text(payload.get("action"))
-    if actor == UNKNOWN or action == UNKNOWN:
-        return None
-    return ProtagonistChoice(
+    alternatives = _strings(payload.get("alternatives"))
+    cost = _text(payload.get("cost"))
+    consequence = _text(payload.get("consequence"))
+    missing = tuple(name for name, item in (
+        ("actor", actor), ("action", action), ("alternatives", alternatives),
+        ("cost", cost), ("consequence", consequence),
+    ) if item == UNKNOWN or not item)
+    status = ChoiceStatus.UNKNOWN if len(missing) == 5 else ChoiceStatus.PARTIAL if missing else ChoiceStatus.COMPLETE
+    return ReplayedProtagonistChoice(
+        status=status,
         actor=actor,
         action=action,
-        alternatives=_strings(payload.get("alternatives")),
-        cost=_text(payload.get("cost")),
-        consequence=_text(payload.get("consequence")),
+        alternatives=alternatives,
+        cost=cost,
+        consequence=consequence,
+        missing_fields=missing,
     )
 
 

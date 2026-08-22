@@ -5,6 +5,7 @@ import pytest
 from creative_os.domains.contract_baseline import BaselineEntry
 from creative_os.domains.contract_baseline_resolver import (
     AuthorityRead,
+    AuthorityFactSnapshot,
     BaselineSourceResolver,
     ResolverError,
     UnsupportedAuthorityAdapter,
@@ -65,3 +66,17 @@ def test_default_unversioned_roles_fail_closed(tmp_path):
     with pytest.raises(ResolverError) as caught:
         resolver.resolve(tmp_path, entry("previous_chapter", "chapter:1"))
     assert caught.value.issue.code == "source_not_versioned"
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"kind": "", "subject": "hero", "canonical_payload": ()},
+        {"kind": "character", "subject": "", "canonical_payload": ()},
+        {"kind": "character", "subject": "hero", "canonical_payload": (("b", 1), ("a", 2))},
+        {"kind": "character", "subject": "hero", "canonical_payload": (("a", []),)},
+    ],
+)
+def test_fact_snapshot_requires_deeply_immutable_canonical_payload(kwargs):
+    with pytest.raises((TypeError, ValueError)):
+        AuthorityFactSnapshot(**kwargs)

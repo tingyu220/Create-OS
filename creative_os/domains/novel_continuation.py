@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,8 @@ from creative_os.memory.context_compiler import CompileRequest, CompiledContext,
 from creative_os.memory.retriever import MemoryQuery, MemoryRetrievalResult, MemoryRetriever
 from creative_os.memory.store import JsonMemoryStore
 from creative_os.domains.narrative_decision import NarrativeDecision
-from creative_os.domains.narrative_memory import load_active_narrative_decision
+from creative_os.domains.writer_admission import AdmissionGrant, AdmittedContractProjection, WriterAdmissionService
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.novel_state_store import compact_active_snapshots
 
 
@@ -33,7 +35,13 @@ class ContinuationTask:
     character_states: list[str]
     target_chinese_chars: int
     min_chinese_chars: int
-    narrative_contract: NarrativeDecision | None = None
+    contract_projection: AdmittedContractProjection | None = None
+
+
+def continuation_task_hash(task: ContinuationTask) -> str:
+    return hashlib.sha256(json.dumps(
+        asdict(task), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()).hexdigest()
 
 
 def build_next_chapter(
@@ -41,6 +49,8 @@ def build_next_chapter(
     *,
     target_chinese_chars: int | None = None,
     require_narrative_contract: bool = False,
+    grant: AdmissionGrant | None = None,
+    admission_service: WriterAdmissionService | None = None,
 ) -> tuple[ContinuationTask, CompiledContext]:
     root = Path(project_root)
     _ensure_conflicts_resolved(root)
@@ -52,7 +62,18 @@ def build_next_chapter(
     active_baseline = import_root / "active_baseline.json"
     baseline = _read_json(active_baseline if active_baseline.exists() else import_root / "baseline.json")
     continuation = _continuation_task(last_number, last_text, baseline, target_chinese_chars)
-    narrative_contract = load_active_narrative_decision(root, continuation.chapter_number)
+    if grant is not None:
+        if admission_service is None:
+            raise ContinuationBlockedError("admission service is required for grant validation")
+        admission_service.validate_grant_for_context(grant)
+    narrative_contract = None if grant is None else NarrativeDecisionCodec.decode_v2(grant.projection.canonical_json)
+    if grant is not None and (
+        grant.project_id != root.name
+        or grant.chapter_id != f"chapter_{continuation.chapter_number:03d}"
+        or narrative_contract.chapter != continuation.chapter_number
+        or narrative_contract.contract_id != grant.contract_id
+    ):
+        raise ContinuationBlockedError("admission grant does not match continuation chapter")
     if require_narrative_contract and narrative_contract is None:
         raise ContinuationBlockedError(
             f"missing approved narrative decision for chapter {continuation.chapter_number}"
@@ -67,7 +88,7 @@ def build_next_chapter(
                 dict.fromkeys([*continuation.forbidden_contradictions, *contract.forbidden])
             ),
         )
-    continuation = replace(continuation, narrative_contract=narrative_contract)
+    continuation = replace(continuation, contract_projection=None if grant is None else grant.projection)
     task = Task(
         id=f"chapter-{continuation.chapter_number:03d}",
         title=f"续写第 {continuation.chapter_number} 章",
@@ -113,20 +134,16 @@ def build_next_chapter(
             )
             for snapshot in compact_active_snapshots(root, max_chars=6000)
         ],
-        *(
-            [
-                KnowledgeItem(
-                    id=f"narrative:chapter:{narrative_contract.chapter:03d}",
-                    kind="narrative_decision",
-                    title=f"第 {narrative_contract.chapter} 章叙事合同",
-                    body=narrative_contract.to_json(),
-                    tags={"narrative", "narrative_decision", "continuation"},
-                )
-            ]
-            if narrative_contract is not None
-            else []
-        ),
     ]
+    knowledge.append(
+        KnowledgeItem(
+            id=f"writer-task:chapter:{continuation.chapter_number:03d}",
+            kind="writer_task_binding",
+            title="冻结 Writer Task",
+            body=continuation_task_hash(continuation),
+            tags={"writer-task", "admission"},
+        )
+    )
     compiled = ContextCompiler().compile(
         CompileRequest(
             user_input="继续当前小说，不改写既有正式正文或核心设定。",
@@ -135,6 +152,8 @@ def build_next_chapter(
             knowledge=knowledge,
             memory=memory,
             domain_rules=["character_consistency", "world_consistency", "continuity"],
+            contract_projection=None if grant is None else grant.projection,
+            exclusions=() if grant is None else grant.exclusions,
         ),
         max_chars=20000,
     )

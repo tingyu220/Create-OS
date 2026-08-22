@@ -16,8 +16,12 @@ from creative_os.task_status import ChapterTaskStatus, write_chapter_status
 from creative_os.validation_runtime import (
     _chapter_specs_for_number,
     validate_reader_facing_text,
-    write_final_chapter_v2_artifacts,
 )
+
+
+def _writer_exit_guard():
+    from creative_os.novel_continuation_runner import _EXIT_GUARD
+    return _EXIT_GUARD
 
 
 class ModelClient(Protocol):
@@ -223,7 +227,7 @@ def build_chapter_rewrite_input(project_root: str | Path, chapter_number: int) -
     root = Path(project_root)
     chapter_path = root / "final_chapters" / f"chapter_{chapter_number:03d}.md"
     if not chapter_path.exists():
-        write_final_chapter_v2_artifacts(root)
+        raise FileNotFoundError(chapter_path)
     if not chapter_path.exists():
         raise FileNotFoundError(chapter_path)
     source_text = chapter_path.read_text(encoding="utf-8")
@@ -325,15 +329,34 @@ def _generic_fact_is_supported(fact: str, text: str) -> bool:
     return supported >= required
 
 
-def run_llm_writer_pilot(
+def run_llm_writer_pilot(prepared: object, client: ModelClient, max_attempts: int = 2,
+                         use_local_repair: bool = False, runtime_runner: RuntimeRunner | None = None) -> dict[str, object]:
+    from creative_os.novel_continuation_runner import PreparedWriterRun, _require_prepared_binding
+    if not isinstance(prepared, PreparedWriterRun):
+        raise TypeError("run_llm_writer_pilot requires PreparedWriterRun")
+    _require_prepared_binding(prepared)
+    return prepared.admission_service.validate_token(
+        prepared.token, prepared.run_id, prepared.context.fingerprint,
+        handoff=lambda: _run_llm_writer_pilot_impl(prepared.project_root, client, _guard=_writer_exit_guard(),
+            chapters=[prepared.task.chapter_number], max_attempts=max_attempts,
+            use_local_repair=use_local_repair,
+            compiled_contexts={prepared.task.chapter_number: prepared.context}, runtime_runner=runtime_runner),
+    )
+
+
+def _run_llm_writer_pilot_impl(
     project_root: str | Path,
     client: ModelClient,
+    *,
+    _guard: object,
     chapters: list[int] | None = None,
     max_attempts: int = 2,
     use_local_repair: bool = False,
     compiled_contexts: dict[int, object] | None = None,
     runtime_runner: RuntimeRunner | None = None,
 ) -> dict[str, object]:
+    if _guard is not _writer_exit_guard():
+        raise PermissionError("writer exit implementation requires admission handoff")
     root = Path(project_root)
     selected = chapters or [4, 5, 6]
     out_root = root / "llm_writer_pilot"
@@ -455,9 +478,23 @@ def revalidate_llm_writer_pilot(project_root: str | Path, chapters: list[int] | 
     return run_record
 
 
-def promote_llm_writer_pilot_to_final(project_root: str | Path, chapters: list[int] | None = None) -> dict[str, object]:
+def promote_llm_writer_pilot_to_final(prepared: object) -> dict[str, object]:
+    from creative_os.novel_continuation_runner import PreparedWriterRun, _require_prepared_binding
+    if not isinstance(prepared, PreparedWriterRun):
+        raise TypeError("promotion requires PreparedWriterRun")
+    _require_prepared_binding(prepared)
+    return prepared.admission_service.validate_token(
+        prepared.token, prepared.run_id, prepared.context.fingerprint,
+        handoff=lambda: _promote_llm_writer_pilot_to_final_impl(
+            prepared.project_root, [prepared.task.chapter_number], _guard=_writer_exit_guard()),
+    )
+
+
+def _promote_llm_writer_pilot_to_final_impl(project_root: str | Path, chapters: list[int], *, _guard: object) -> dict[str, object]:
+    if _guard is not _writer_exit_guard():
+        raise PermissionError("writer exit implementation requires admission handoff")
     root = Path(project_root)
-    selected = chapters or [4, 5, 6]
+    selected = chapters
     validation = revalidate_llm_writer_pilot(root, selected)
     if validation["result"] != "pass":
         return {"result": "fail", "reason": "pilot_validation_failed", "validation": validation}

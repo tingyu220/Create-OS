@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Protocol
 
 from creative_os.domains.novel_continuation import build_next_chapter
-from creative_os.domains.narrative_memory import load_active_narrative_decision
-from creative_os.novel_continuation_runner import ContinuationRun, continue_one_chapter
+from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator
+from creative_os.novel_continuation_runner import ContinuationRun, PreparedWriterRun, continue_one_chapter
 from creative_os.runtime import AppendOnlyEventLog
 
 
@@ -63,34 +63,34 @@ class ContinuousValidationReport:
 
 
 def run_continuous_validation(
-    project_root: str | Path,
+    prepared_runs: tuple[PreparedWriterRun, ...],
     *,
     client: ProductionValidationClient,
-    chapter_count: int = 10,
     max_attempts: int = 2,
-    target_chinese_chars: int | None = None,
-    require_narrative_contract: bool = True,
 ) -> ContinuousValidationReport:
-    if chapter_count < 1:
-        raise ValueError("chapter_count must be positive")
+    if not prepared_runs or any(not isinstance(item, PreparedWriterRun) for item in prepared_runs):
+        raise TypeError("continuous validation requires PreparedWriterRun values")
     if max_attempts < 1:
         raise ValueError("max_attempts must be positive")
-    root = Path(project_root)
+    root = prepared_runs[0].project_root
+    if any(item.project_root != root for item in prepared_runs):
+        raise ValueError("prepared runs must belong to one project")
     results: list[ChapterValidationResult] = []
-    for _ in range(chapter_count):
+    for prepared in prepared_runs:
         run = continue_one_chapter(
-            root,
+            prepared,
             client=client,
             max_attempts=max_attempts,
-            target_chinese_chars=target_chinese_chars,
-            require_narrative_contract=require_narrative_contract,
         )
         results.append(_result(run))
         if run.status != "pass":
             break
     event_log = AppendOnlyEventLog(root / ".creative_os" / "runtime" / "events.jsonl")
-    recovery_ok = _recovery_check(root, results, require_narrative_contract=require_narrative_contract)
+    recovery_ok = all(item.admission_service.validate_token(
+        item.token, item.run_id, item.context.fingerprint
+    ) == item.token for item in prepared_runs)
     context_sizes = [_context_size(Path(item.context_path)) for item in results]
+    chapter_count = len(prepared_runs)
     status = "pass" if len(results) == chapter_count and all(item.status == "pass" for item in results) and recovery_ok else "fail"
     report = ContinuousValidationReport(
         project_root=str(root),
@@ -127,15 +127,14 @@ def audit_narrative_production(
         final_path = root / "production" / "final_chapters" / f"chapter_{chapter:03d}.md"
         context = json.loads(context_path.read_text(encoding="utf-8")) if context_path.exists() else {}
         review = json.loads(review_path.read_text(encoding="utf-8")) if review_path.exists() else {"issues": ["missing_review"]}
-        event_types = [event.event_type.value for event in events if event.task_id == task_id]
+        chapter_events = [event for event in events if event.task_id == task_id]
+        event_types = [event.event_type.value for event in chapter_events]
         required_events = {"TaskCreated", "TaskStarted", "ContextBuilt", "CapabilityCalled", "ResultGenerated", "ReviewPassed", "KnowledgeUpdated", "StateChanged", "TaskCompleted"}
-        contract_source = f"narrative:chapter:{chapter:03d}"
-        sources = {str(item.get("source_id", "")) for item in context.get("sources", [])}
+        authority_ok = _audit_contract_binding(root, chapter, context, review, chapter_events)
         complete = (
-            load_active_narrative_decision(root, chapter) is not None
-            and final_path.exists()
+            final_path.exists()
             and not review.get("issues")
-            and contract_source in sources
+            and authority_ok
             and required_events <= set(event_types)
         )
         results.append({
@@ -151,6 +150,46 @@ def audit_narrative_production(
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
+
+
+def _audit_contract_binding(root: Path, chapter: int, context: object,
+                            review: object, events: list[object]) -> bool:
+    if not isinstance(context, dict) or set(context.get("contract_binding", {})) != {
+        "contract_id", "contract_version", "contract_content_hash", "context_fingerprint",
+    }:
+        return False
+    binding = context["contract_binding"]
+    fingerprint = context.get("fingerprint")
+    if (not isinstance(binding["contract_id"], str)
+            or type(binding["contract_version"]) is not int
+            or not isinstance(binding["contract_content_hash"], str)
+            or len(binding["contract_content_hash"]) != 64
+            or not isinstance(fingerprint, str) or len(fingerprint) != 64
+            or binding["context_fingerprint"] != fingerprint):
+        return False
+    if not isinstance(review, dict) or review.get("context") != fingerprint:
+        return False
+    context_event_types = {"ContextBuilt", "CapabilityCalled", "ResultGenerated"}
+    context_events = [event for event in events
+                      if event.event_type.value in context_event_types]
+    if ({event.event_type.value for event in context_events} != context_event_types
+            or any(not isinstance(event.payload, dict)
+                   or event.payload.get("context_id") != fingerprint
+                   for event in context_events)):
+        return False
+    try:
+        lifecycle = ContractLifecycleCoordinator(root)
+        pointer = lifecycle.read_pointer(binding["contract_id"])
+        decision = lifecycle.load_current(binding["contract_id"])
+    except (OSError, ValueError, KeyError):
+        return False
+    return bool(
+        pointer is not None and decision is not None
+        and decision.chapter == chapter
+        and decision.chapter_contract.chapter_id == f"chapter_{chapter:03d}"
+        and pointer.contract_version == binding["contract_version"]
+        and pointer.content_hash == binding["contract_content_hash"]
+    )
 
 
 def _result(run: ContinuationRun) -> ChapterValidationResult:

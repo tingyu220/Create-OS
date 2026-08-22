@@ -1,8 +1,62 @@
 import json
+import hashlib
+from dataclasses import asdict, replace
+from types import SimpleNamespace
 
 import creative_os.novel_continuation_runner as runner
+import pytest
 from creative_os.llm_metrics import TimedCompletion
-from creative_os.novel_continuation_runner import continue_one_chapter, promote_passing_draft
+from creative_os.novel_continuation_runner import (
+    PreparedWriterRun,
+    continue_one_chapter as _secure_continue_one_chapter,
+    promote_passing_draft as _secure_promote_passing_draft,
+)
+from creative_os.domains.writer_admission import AdmittedContractProjection, WriterAdmissionService, WriterAdmissionToken
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+from tests.test_narrative_memory import _decision
+from creative_os.foundation.knowledge import KnowledgeItem
+
+
+@pytest.fixture(autouse=True)
+def _unit_writer_handoff(monkeypatch):
+    monkeypatch.setattr(WriterAdmissionService, "validate_token",
+                        lambda self, _token, _run_id, _fingerprint, *, handoff: handoff())
+
+
+def _prepared(project, *, target_chinese_chars=None):
+    task, context = runner.build_next_chapter(project, target_chinese_chars=target_chinese_chars)
+    decision = _decision(task.chapter_number)
+    contract_hash = NarrativeDecisionCodec.content_hash(decision)
+    projection = AdmittedContractProjection(decision.contract_id, decision.contract_version,
+                                             contract_hash, NarrativeDecisionCodec.encode_v2(decision))
+    task = replace(task, contract_projection=projection)
+    task_hash = hashlib.sha256(json.dumps(asdict(task), ensure_ascii=False, sort_keys=True,
+                                          separators=(",", ":")).encode()).hexdigest()
+    context.knowledge[:] = [
+        KnowledgeItem(item.id, item.kind, item.title, task_hash, category=item.category,
+                      tags=item.tags, references=item.references, status=item.status,
+                      source_task_id=item.source_task_id)
+        if item.id == f"writer-task:chapter:{task.chapter_number:03d}" else item
+        for item in context.knowledge
+    ]
+    projection_hash = hashlib.sha256(json.dumps(asdict(projection), ensure_ascii=False, sort_keys=True,
+                                                separators=(",", ":")).encode()).hexdigest()
+    token = WriterAdmissionToken(
+        "writer_admission_token", "grant", project.name, f"chapter_{task.chapter_number:03d}",
+        projection.contract_id, projection.contract_version, contract_hash, "b" * 64, "c" * 64, "d" * 64, "e" * 64,
+        "f" * 64, "rules", (), "1" * 64, projection_hash, "2" * 64, context.fingerprint,
+        "test-run", "2026-08-22T00:00:00+00:00", "2026-08-23T00:00:00+00:00", "signature",
+    )
+    return PreparedWriterRun(project, "test-run", task, context, projection, token,
+                             WriterAdmissionService(project, object()))
+
+
+def continue_one_chapter(project, *, target_chinese_chars=None, **kwargs):
+    return _secure_continue_one_chapter(_prepared(project, target_chinese_chars=target_chinese_chars), **kwargs)
+
+
+def promote_passing_draft(project, **_kwargs):
+    return _secure_promote_passing_draft(_prepared(project))
 
 
 class FakeClient:

@@ -325,6 +325,48 @@ class ContractApprovalPolicy:
         return tuple(item_name for item_name in APPROVAL_ITEMS[:-1] if item_name in required)
 
     @classmethod
+    def required_revision_approvals(
+        cls,
+        current: NarrativeDecision,
+        candidate: NarrativeDecision,
+        revision_request: object,
+        *,
+        authority_causal_impact_paths: tuple[str, ...],
+        authority_approved_change_requests: tuple[object, ...],
+    ) -> tuple[str, ...]:
+        """Derive the complete human re-review set for a frozen replacement."""
+        from creative_os.domains.contract_revision import ContractRevisionRequest
+
+        if not isinstance(current, NarrativeDecision) or not isinstance(candidate, NarrativeDecision):
+            raise TypeError("current and candidate must be NarrativeDecision values")
+        current.validate()
+        candidate.validate()
+        if not isinstance(revision_request, ContractRevisionRequest):
+            raise TypeError("revision_request must be a ContractRevisionRequest")
+        if (
+            revision_request.contract_id != candidate.contract_id
+            or revision_request.replacement_contract_version != candidate.contract_version
+            or revision_request.replacement_contract_content_hash
+            != NarrativeDecisionCodec.content_hash(candidate)
+        ):
+            raise ValueError("revision request candidate binding mismatch")
+        revision_request.verify(
+            current,
+            candidate,
+            authority_causal_impact_paths=authority_causal_impact_paths,
+            authority_approved_change_requests=authority_approved_change_requests,
+        )
+        required = {FULL_CONTRACT, "post_freeze_revision"}
+        for item_name, patterns in _PHASE_A_REAPPROVAL_PATHS:
+            if any(
+                _path_matches(pattern, path)
+                for pattern in patterns
+                for path in revision_request.changed_field_paths + revision_request.causal_impact_paths
+            ):
+                required.add(item_name)
+        return tuple(item for item in APPROVAL_ITEMS if item in required)
+
+    @classmethod
     def validate(
         cls,
         record: ContractApprovalRecord,

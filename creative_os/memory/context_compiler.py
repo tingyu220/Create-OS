@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 from creative_os.engine.context import ContextBoundaryError
 from creative_os.foundation.knowledge import KnowledgeItem
@@ -10,6 +10,7 @@ from creative_os.foundation.state import ProjectState
 from creative_os.foundation.task import Task
 from creative_os.memory.model import MemoryItem, MemoryKind
 from creative_os.memory.retriever import MemoryRetrievalResult
+from creative_os.domains.writer_admission import AdmittedContractProjection, ContextExclusion
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,6 +30,8 @@ class CompileRequest:
     knowledge: list[KnowledgeItem]
     memory: MemoryRetrievalResult
     domain_rules: list[str]
+    contract_projection: AdmittedContractProjection | None = None
+    exclusions: tuple[ContextExclusion, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,10 +58,23 @@ class ContextCompiler:
     def compile(self, request: CompileRequest, *, max_chars: int = 12000) -> CompiledContext:
         self._validate_boundaries(request)
         working = [item for item in request.memory.items if item.kind == MemoryKind.WORKING]
-        optional = [item for item in request.memory.items if item.kind != MemoryKind.WORKING]
+        excluded = {item.contract_id for item in request.exclusions}
+        working = [item for item in working if not _excluded_contract(item.id, excluded)]
+        optional = [item for item in request.memory.items if item.kind != MemoryKind.WORKING
+                    and not _excluded_contract(item.id, excluded)]
+        knowledge = list(request.knowledge)
+        if request.contract_projection is not None:
+            projection = request.contract_projection
+            knowledge = [item for item in knowledge if item.kind != "narrative_decision"
+                         and not _excluded_contract(item.id, {projection.contract_id})]
+            knowledge.append(KnowledgeItem(
+                id=f"{projection.contract_id}-v{projection.contract_version:04d}", kind="narrative_decision",
+                title="冻结章节合同", body=projection.canonical_json,
+                tags={"narrative", "narrative_decision", "admitted"},
+            ))
         selected_memory: list[MemoryItem] = []
 
-        required_size = self._estimate(request, working, request.knowledge, selected_memory)
+        required_size = self._estimate(request, working, knowledge, selected_memory)
         if required_size > max_chars:
             raise ContextBoundaryError(f"required context too large: {required_size} > {max_chars}")
 
@@ -70,14 +86,14 @@ class ContextCompiler:
             selected_memory.append(item)
             current_size += item_size
 
-        sources = self._sources(request, working, selected_memory)
-        fingerprint = self._fingerprint(request, working, selected_memory, sources)
+        sources = self._sources(request, working, selected_memory, knowledge)
+        fingerprint = self._fingerprint(request, working, selected_memory, sources, knowledge)
         return CompiledContext(
             user_input=request.user_input,
             task=request.task,
             state=request.state,
             working=working,
-            knowledge=list(request.knowledge),
+            knowledge=knowledge,
             memory=selected_memory,
             rules=list(request.domain_rules),
             sources=sources,
@@ -110,10 +126,11 @@ class ContextCompiler:
         request: CompileRequest,
         working: list[MemoryItem],
         memory: list[MemoryItem],
+        knowledge: list[KnowledgeItem],
     ) -> list[ContextSource]:
         sources = [
             ContextSource("knowledge", item.id, "required_project_fact", 1, _hash(item.body))
-            for item in request.knowledge
+            for item in knowledge
         ]
         for item in [*working, *memory]:
             reason = ",".join(request.memory.reasons.get(item.id, [])) or "selected_memory"
@@ -126,13 +143,16 @@ class ContextCompiler:
         working: list[MemoryItem],
         memory: list[MemoryItem],
         sources: list[ContextSource],
+        knowledge: list[KnowledgeItem],
     ) -> str:
         payload = {
             "compiler_version": self.VERSION,
             "task_id": request.task.id,
             "state": request.state.compact(),
             "user_input": request.user_input,
-            "knowledge": [item.id for item in request.knowledge],
+            "knowledge": [item.id for item in knowledge],
+            "contract_projection": asdict(request.contract_projection) if request.contract_projection else None,
+            "exclusions": [asdict(item) for item in request.exclusions],
             "working": [item.id for item in working],
             "memory": [item.id for item in memory],
             "rules": request.domain_rules,
@@ -147,3 +167,7 @@ class ContextCompiler:
 
 def _hash(content: str) -> str:
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def _excluded_contract(item_id: str, contract_ids: set[str]) -> bool:
+    return any(item_id == contract_id or item_id.startswith(contract_id + "-v") for contract_id in contract_ids)

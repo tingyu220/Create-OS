@@ -2,11 +2,12 @@ from dataclasses import FrozenInstanceError, fields
 
 import pytest
 
-from creative_os.domains.narrative_decision import ProtagonistChoice
+from creative_os.domains.narrative_decision import ChoiceStatus, ProtagonistChoice
 from creative_os.domains.narrative_replay_model import (
     EvidenceRef,
     NarrativeReplayState,
     ReplayedChapterContract,
+    ReplayedProtagonistChoice,
 )
 
 
@@ -15,12 +16,14 @@ def _contract() -> ReplayedChapterContract:
         chapter_id="chapter_001",
         functions=("建立主角的初始困境",),
         dramatic_question="主角是否决定追查失踪事件？",
-        protagonist_choice=ProtagonistChoice(
+        protagonist_choice=ReplayedProtagonistChoice(
+            status=ChoiceStatus.COMPLETE,
             actor="林澈",
             action="决定追查",
             alternatives=("离开雾城",),
             cost="暴露自身行踪",
             consequence="被监视者注意",
+            missing_fields=(),
         ),
         evidence=(
             EvidenceRef(
@@ -45,12 +48,22 @@ def test_replayed_chapter_contract_rejects_claim_without_evidence():
         chapter_id="chapter_001",
         functions=("推进主线",),
         dramatic_question="是否继续调查？",
-        protagonist_choice=None,
+        protagonist_choice=ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN),
         evidence=(),
     )
 
     with pytest.raises(ValueError, match="evidence"):
         contract.validate()
+
+
+def test_replay_model_rejects_formal_contract_choice_type():
+    contract = _contract()
+    formal = ProtagonistChoice("林澈", "追查", ("离开",), "暴露", "被监视")
+    with pytest.raises(ValueError, match="audit-only"):
+        ReplayedChapterContract(
+            contract.chapter_id, contract.functions, contract.dramatic_question,
+            formal, contract.evidence,
+        ).validate()
 
 
 def test_replay_state_does_not_store_manuscript_content():

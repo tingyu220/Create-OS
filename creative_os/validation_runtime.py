@@ -870,7 +870,7 @@ def compose_final_chapter(chapter_path: str | Path) -> str:
     return text
 
 
-def write_composed_final_artifacts(root: str | Path) -> dict[str, object]:
+def _build_validation_fixture_composed_artifacts(root: str | Path) -> dict[str, object]:
     project_root = Path(root)
     chapter_dirs = sorted(project_root.glob("chapter_*"))
     if len(chapter_dirs) < 36:
@@ -990,11 +990,11 @@ def write_final_chapter_v2_text(chapter_number: int, title: str, source_text: st
     return text
 
 
-def write_final_chapter_v2_artifacts(root: str | Path) -> dict[str, object]:
+def _build_validation_fixture_final_v2_artifacts(root: str | Path) -> dict[str, object]:
     project_root = Path(root)
     source_dir = project_root / "final_chapters"
     if not source_dir.exists():
-        write_composed_final_artifacts(project_root)
+        _build_validation_fixture_composed_artifacts(project_root)
     output_dir = project_root / "final_chapters_v2"
     all_parts = ["# 雾城回声\n"]
     chapter_issues: dict[str, list[str]] = {}

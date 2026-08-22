@@ -273,6 +273,10 @@ contract_approval_record:
 
 Baseline 至少绑定批准时使用的 Profile、所有事实快照、上一章正式工件/冻结合同、所有适用改纲记录的 `source_id/source_version/source_content_hash`。WriterAdmission 重新构造 manifest：条目集合、任一来源版本/hash 或整体 fingerprint 不同即 `stale_contract_baseline`（blocking/high），必须重新运行预写 Reviewer 并重新审批完整合同及受影响专项项。
 
+#### 实施决定：权威 Baseline Source Resolver
+
+`BaselineManifest` 只保存 bindings/fingerprint，绝不承载反序列化后的领域对象。首次激活和后续准入通过独立 `BaselineSourceResolver` 完成 exact 重读：它只从显式 role→权威 source adapter registry 读取，并对每个 entry 的 `source_id/source_version/content_hash` 和规范化类型逐项校验。缺失、漂移、未知或重复 role、读取异常均产生 blocking 结果；不得根据 source_id 猜测路径、回退到最新值或接受调用方临时对象。Resolver 输出不可变快照及仅供审计的 entry 校验结果，不创建第二事实源、不覆盖 Manifest；Lifecycle 在项目锁内消费这些快照重跑 Preflight 与 CausalDependencyAnalyzer。
+
 ### 6.6 审批覆盖路径与冲突规则
 
 | 审批项 | 覆盖 field_path | 触发重新审批 |

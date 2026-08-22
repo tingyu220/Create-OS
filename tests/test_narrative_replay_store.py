@@ -1,6 +1,9 @@
 import pytest
 
-from creative_os.domains.narrative_replay_model import EvidenceRef, ReplayedChapterContract
+from creative_os.domains.narrative_decision import ChoiceStatus
+from creative_os.domains.narrative_replay_model import (
+    EvidenceRef, ReplayedChapterContract, ReplayedProtagonistChoice,
+)
 from creative_os.domains.narrative_replay_store import NarrativeReplayEvent, NarrativeReplayStore
 
 
@@ -10,7 +13,7 @@ def valid_contract() -> ReplayedChapterContract:
         chapter_id="chapter_001",
         functions=("建立困境",),
         dramatic_question="主角会继续调查吗？",
-        protagonist_choice=None,
+        protagonist_choice=ReplayedProtagonistChoice(ChoiceStatus.UNKNOWN),
         evidence=(EvidenceRef("chapter", "production/final_chapters/chapter_001.md", "主角回城。"),),
     )
 

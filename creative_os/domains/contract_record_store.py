@@ -20,12 +20,16 @@ from creative_os.domains.contract_approval import (
 from creative_os.domains.contract_baseline import BaselineEntry, BaselineManifest
 from creative_os.domains.contract_issue import EvidenceCheck
 from creative_os.domains.contract_record_filesystem import TrustedStoreFilesystem
+from creative_os.domains.project_authority import project_authority_lock
 from creative_os.domains.contract_review import (
     PrewriteReviewerResult,
     ReviewIssue,
     ReviewIssueDisposition,
 )
 from creative_os.domains.narrative_evidence import EvidenceLocator, EvidenceRef, EvidenceRole
+from creative_os.domains.contract_revision import (
+    RunContinuationStatus, WriterRunContinuationAuthorization,
+)
 
 
 class ContractRecordStoreError(ValueError):
@@ -65,6 +69,7 @@ _RECORD_DIRECTORIES = {
     "approval": "approvals",
     "reviewer_result": "reviews",
     "disposition": "dispositions",
+    "continuation_authorization": "continuation_authorizations",
 }
 _ENVELOPE_FIELDS = frozenset({"record_type", "schema_version", "payload_hash", "payload"})
 _JOURNAL_FIELDS = frozenset(
@@ -117,7 +122,6 @@ class ContractRecordStore:
             raise
         except OSError as error:
             raise ContractRecordStoreError("contract record filesystem setup failed") from error
-
     def save_baseline(
         self,
         contract_id: str,
@@ -145,6 +149,37 @@ class ContractRecordStore:
             validate_binding=True,
         )
 
+    def save_continuation_authorization(self, authorization: WriterRunContinuationAuthorization) -> str:
+        return self._save(
+            "continuation_authorization", _continuation_authorization_to_payload(authorization),
+            validate_binding=True,
+        )
+
+    def load_continuation_authorization(self, record_id: str) -> WriterRunContinuationAuthorization:
+        return self._load("continuation_authorization", record_id)
+
+    def find_exact_continuation_authorization(
+        self, *, authorization_id: str, run_id: str, contract_id: str,
+        contract_version: int, contract_hash: str,
+    ) -> tuple[str, WriterRunContinuationAuthorization] | None:
+        with self._authority_lock():
+            records = [
+                (record_id, record)
+                for record_id, record in self._scan_locked("continuation_authorization")
+                if record.run_id == run_id
+                and record.old_contract_id == contract_id
+                and record.old_contract_version == contract_version
+                and record.old_contract_hash == contract_hash
+            ]
+            active = [item for item in records if item[1].authorization_id == authorization_id
+                      and item[1].status == RunContinuationStatus.ACTIVE]
+            revoked = {item[1].supersedes_authorization_id for item in records
+                       if item[1].status == RunContinuationStatus.REVOKED}
+            active = [item for item in active if item[1].authorization_id not in revoked]
+            if len(active) > 1:
+                raise ContractRecordStoreError("duplicate continuation authorization")
+            return active[0] if active else None
+
     def load_baseline(self, record_id: str) -> BaselineManifest:
         return self._load("baseline", record_id)
 
@@ -160,13 +195,14 @@ class ContractRecordStore:
     def load(
         self,
         record_id: str,
-    ) -> BaselineManifest | ContractApprovalRecord | PrewriteReviewerResult | ReviewIssueDisposition:
+    ) -> BaselineManifest | ContractApprovalRecord | PrewriteReviewerResult | ReviewIssueDisposition | WriterRunContinuationAuthorization:
         _require_record_id(record_id)
         for prefix, record_type in (
             ("baseline-", "baseline"),
             ("approval-", "approval"),
             ("review-", "reviewer_result"),
             ("disposition-", "disposition"),
+            ("continuation-", "continuation_authorization"),
         ):
             if record_id.startswith(prefix):
                 return self._load(record_type, record_id)
@@ -280,7 +316,10 @@ class ContractRecordStore:
             with self._authority_lock():
                 self._recover_locked()
                 if validate_binding:
-                    self._validate_disposition_binding_locked(model)
+                    if record_type == "disposition":
+                        self._validate_disposition_binding_locked(model)
+                    else:
+                        self._validate_continuation_binding_locked(model)
                 existing = self._load_if_present_locked(record_type, record_id)
                 if existing is not None:
                     existing_envelope = self._read_record_file(record_type, record_id)
@@ -360,6 +399,9 @@ class ContractRecordStore:
         model = _decode_payload(record_type, envelope["payload"])
         if record_type == "disposition":
             self._validate_disposition_binding_locked(model)
+        if (record_type == "continuation_authorization"
+                and model.status == RunContinuationStatus.REVOKED):
+            self._validate_continuation_binding_locked(model)
         return model
 
     def _recover_locked(self) -> None:
@@ -376,11 +418,17 @@ class ContractRecordStore:
         for disposition_phase in (False, True):
             for key, (path, journal) in tuple(journals.items()):
                 record_type, record_id = key
-                if (record_type == "disposition") is not disposition_phase:
+                decoded = _decode_payload(record_type, journal["envelope"]["payload"])
+                needs_binding = (
+                    record_type == "disposition"
+                    or record_type == "continuation_authorization"
+                )
+                if needs_binding is not disposition_phase:
                     continue
                 if record_type == "disposition":
-                    disposition = _decode_payload(record_type, journal["envelope"]["payload"])
-                    self._validate_disposition_binding_locked(disposition)
+                    self._validate_disposition_binding_locked(decoded)
+                elif record_type == "continuation_authorization":
+                    self._validate_continuation_binding_locked(decoded)
                 target = self._record_path(record_type, record_id)
                 if self._filesystem.exists_regular(target):
                     if self._read_record_file(record_type, record_id) != journal["envelope"]:
@@ -408,6 +456,34 @@ class ContractRecordStore:
             (path.stem, self._load_if_present_locked(record_type, path.stem))
             for path in self._json_files(self._directories[record_type])
         )
+
+    def _validate_continuation_binding_locked(self, model: object) -> None:
+        if not isinstance(model, WriterRunContinuationAuthorization):
+            raise ContractRecordStoreError("continuation authorization type mismatch")
+        targets = []
+        same_ids = []
+        for path in self._json_files(self._directories["continuation_authorization"]):
+            envelope = self._read_record_file("continuation_authorization", path.stem)
+            record = _decode_payload("continuation_authorization", envelope["payload"])
+            if record.authorization_id == model.authorization_id:
+                same_ids.append(record)
+            if (record.authorization_id == model.supersedes_authorization_id
+                    and record.status == RunContinuationStatus.ACTIVE):
+                targets.append(record)
+        if model.status == RunContinuationStatus.ACTIVE:
+            if same_ids and any(record != model for record in same_ids):
+                raise ContractRecordStoreError("continuation authorization_id conflict")
+            return
+        if len(targets) != 1:
+            raise ContractRecordStoreError("continuation revocation target missing or ambiguous")
+        target = targets[0]
+        if (
+            target.run_id != model.run_id
+            or target.old_contract_id != model.old_contract_id
+            or target.old_contract_version != model.old_contract_version
+            or target.old_contract_hash != model.old_contract_hash
+        ):
+            raise ContractRecordStoreError("continuation revocation binding mismatch")
 
     def _validate_disposition_binding_locked(self, model: object) -> None:
         if not isinstance(model, ReviewIssueDisposition):
@@ -477,9 +553,10 @@ class ContractRecordStore:
 
     @contextmanager
     def _authority_lock(self) -> Iterator[None]:
-        with _local_lock(self._lock_path):
-            with self._filesystem.exclusive_lock():
-                yield
+        with project_authority_lock(self.project_root):
+            with _local_lock(self._lock_path):
+                with self._filesystem.exclusive_lock():
+                    yield
 
     def _read_json(self, path: Path) -> dict[str, Any]:
         try:
@@ -586,13 +663,16 @@ def _record_id_for(
         contract_id = _require_slug(model.contract_id, "contract_id")
         version = _require_version(model.contract_version)
         result = f"review-{contract_id}-v{version:04d}-{model.result_hash}"
-    else:
+    elif record_type == "disposition":
         assert isinstance(model, ReviewIssueDisposition)
         result_id = _require_slug(model.reviewer_result_id, "reviewer_result_id")
         issue_id = _require_slug(model.issue_id, "issue_id")
         result = (
             f"disposition-{result_id}-{issue_id}-{model.canonical_issue_hash}-{payload_hash}"
         )
+    else:
+        assert isinstance(model, WriterRunContinuationAuthorization)
+        result = f"continuation-{_require_slug(model.authorization_id, 'authorization_id')}-{payload_hash}"
     _require_record_id(result)
     return result
 
@@ -622,8 +702,11 @@ def _payload_for(record_type: str, model: object, original: dict[str, Any]) -> d
     if record_type == "reviewer_result":
         assert isinstance(model, PrewriteReviewerResult)
         return _review_to_payload(model)
-    assert isinstance(model, ReviewIssueDisposition)
-    return _disposition_to_payload(model)
+    if record_type == "disposition":
+        assert isinstance(model, ReviewIssueDisposition)
+        return _disposition_to_payload(model)
+    assert isinstance(model, WriterRunContinuationAuthorization)
+    return _continuation_authorization_to_payload(model)
 
 
 def _decode_payload(record_type: str, payload: object) -> object:
@@ -643,6 +726,8 @@ def _decode_payload(record_type: str, payload: object) -> object:
             return _review_from_payload(payload)
         if record_type == "disposition":
             return _disposition_from_payload(payload)
+        if record_type == "continuation_authorization":
+            return _continuation_authorization_from_payload(payload)
         raise ContractRecordStoreError("unknown record_type")
     except ContractRecordStoreError:
         raise
@@ -665,6 +750,43 @@ def _manifest_to_payload(manifest: object) -> dict[str, Any]:
         ],
         "fingerprint": manifest.fingerprint,
     }
+
+
+def _continuation_authorization_to_payload(value: object) -> dict[str, Any]:
+    if not isinstance(value, WriterRunContinuationAuthorization):
+        raise ContractRecordStoreError("continuation authorization type mismatch")
+    return {
+        "authorization_id": value.authorization_id, "run_id": value.run_id,
+        "old_contract_id": value.old_contract_id,
+        "old_contract_version": value.old_contract_version,
+        "old_contract_hash": value.old_contract_hash, "actor": value.actor,
+        "reason": value.reason, "created_at": value.created_at,
+        "expires_at": value.expires_at, "status": value.status.value,
+        "supersedes_authorization_id": value.supersedes_authorization_id,
+    }
+
+
+def _continuation_authorization_from_payload(payload: object) -> WriterRunContinuationAuthorization:
+    _require_object(payload, frozenset({
+        "authorization_id", "run_id", "old_contract_id", "old_contract_version",
+        "old_contract_hash", "actor", "reason", "created_at", "expires_at",
+        "status", "supersedes_authorization_id",
+    }), "continuation authorization")
+    for name in ("authorization_id", "run_id", "old_contract_id", "old_contract_hash",
+                 "actor", "reason", "created_at", "expires_at", "status"):
+        _require_exact_text(payload[name], name)
+    if type(payload["old_contract_version"]) is not int:
+        raise ContractRecordStoreError("old_contract_version must be exact integer")
+    if payload["supersedes_authorization_id"] is not None:
+        _require_exact_text(payload["supersedes_authorization_id"], "supersedes_authorization_id")
+    return WriterRunContinuationAuthorization(
+        authorization_id=payload["authorization_id"], run_id=payload["run_id"],
+        old_contract_id=payload["old_contract_id"], old_contract_version=payload["old_contract_version"],
+        old_contract_hash=payload["old_contract_hash"], actor=payload["actor"], reason=payload["reason"],
+        created_at=payload["created_at"], expires_at=payload["expires_at"],
+        status=RunContinuationStatus(payload["status"]),
+        supersedes_authorization_id=payload["supersedes_authorization_id"],
+    )
 
 
 def _manifest_from_payload(payload: object) -> BaselineManifest:
@@ -1067,3 +1189,14 @@ def _local_lock(path: Path) -> threading.Lock:
     key = str(path.absolute())
     with _LOCAL_LOCKS_GUARD:
         return _LOCAL_LOCKS.setdefault(key, threading.Lock())
+
+
+def authoritative_record_hash(record: object) -> str:
+    """Canonical payload hash used by activation bindings without copying payloads."""
+    if isinstance(record, ContractApprovalRecord):
+        return _canonical_hash(_approval_to_payload(record))
+    if isinstance(record, PrewriteReviewerResult):
+        return _canonical_hash(_review_to_payload(record))
+    if isinstance(record, ReviewIssueDisposition):
+        return _canonical_hash(_disposition_to_payload(record))
+    raise TypeError("unsupported authoritative record")

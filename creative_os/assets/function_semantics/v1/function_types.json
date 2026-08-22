@@ -1,0 +1,1 @@
+{"schema_version":1,"version":"v1","types":{"establish":["建立","塑造"],"upgrade":["升级","强化"],"turn":["转折","逆转"],"reveal":["揭示","揭露"],"fulfill":["兑现","回收"],"close":["收束","关闭"]},"allowed_transitions":[["establish","upgrade"],["establish","turn"],["upgrade","turn"],["reveal","fulfill"],["fulfill","close"]]}

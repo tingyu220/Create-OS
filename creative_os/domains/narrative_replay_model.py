@@ -2,11 +2,42 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from creative_os.domains.narrative_decision import ProtagonistChoice
+from creative_os.domains.narrative_decision import ChoiceStatus
 from creative_os.domains.narrative_evidence import EvidenceRef
 
 
 UNKNOWN = "unknown"
+ReplayChoiceStatus = ChoiceStatus
+_CHOICE_FIELDS = ("actor", "action", "alternatives", "cost", "consequence")
+
+
+@dataclass(frozen=True, slots=True)
+class ReplayedProtagonistChoice:
+    """Audit-only choice projection. It is never a formal contract choice."""
+
+    status: ReplayChoiceStatus
+    actor: str = UNKNOWN
+    action: str = UNKNOWN
+    alternatives: tuple[str, ...] = ()
+    cost: str = UNKNOWN
+    consequence: str = UNKNOWN
+    missing_fields: tuple[str, ...] = _CHOICE_FIELDS
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, ReplayChoiceStatus):
+            raise ValueError("invalid replay choice status")
+        actual = tuple(
+            name for name in _CHOICE_FIELDS
+            if (not self.alternatives if name == "alternatives"
+                else getattr(self, name) == UNKNOWN)
+        )
+        if self.missing_fields != actual:
+            raise ValueError("replay choice missing_fields must be exact")
+        expected = (ReplayChoiceStatus.UNKNOWN if len(actual) == len(_CHOICE_FIELDS)
+                    else ReplayChoiceStatus.PARTIAL if actual
+                    else ReplayChoiceStatus.COMPLETE)
+        if self.status is not expected:
+            raise ValueError("replay choice status does not match fields")
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,7 +75,7 @@ class ReplayedChapterContract:
     chapter_id: str
     functions: tuple[str, ...]
     dramatic_question: str
-    protagonist_choice: ProtagonistChoice | None
+    protagonist_choice: ReplayedProtagonistChoice
     evidence: tuple[EvidenceRef, ...]
     reader_before: str = UNKNOWN
     reader_after: str = UNKNOWN
@@ -59,6 +90,8 @@ class ReplayedChapterContract:
             raise ValueError("replayed chapter contract functions must be non-empty")
         if not self.evidence:
             raise ValueError("replayed chapter contract requires evidence")
+        if type(self.protagonist_choice) is not ReplayedProtagonistChoice:
+            raise ValueError("replayed contract requires an audit-only protagonist choice")
         for evidence in self.evidence:
             evidence.validate()
 

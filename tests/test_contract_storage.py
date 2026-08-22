@@ -29,6 +29,16 @@ def _lifecycle(tmp_path) -> tuple[ContractLifecycleCoordinator, object]:
     return ContractLifecycleCoordinator(project), project
 
 
+def _pointer(physical_key_value: str, version: int, content_hash: str) -> ContractPointer:
+    return ContractPointer.build(
+        physical_key=physical_key_value, contract_version=version, content_hash=content_hash,
+        baseline_fingerprint="b" * 64, approval_record_id="approval-test",
+        approval_record_hash="c" * 64, reviewer_result_id="review-test",
+        reviewer_result_hash="d" * 64, ruleset_version="rules-v1",
+        semantic_asset_versions=(("semantics", "v1"),), disposition_set_hash="e" * 64,
+    )
+
+
 def _race_initial_candidates(project, decisions):
     lifecycles = tuple(ContractLifecycleCoordinator(project) for _ in decisions)
     barrier = Barrier(len(decisions))
@@ -56,11 +66,7 @@ def test_physical_key_and_pointer_require_the_same_strict_business_version():
     with pytest.raises(ValueError, match="contract_version"):
         physical_key("narrative-chapter-007", 10_000)
     with pytest.raises(ValueError, match="physical_key.*contract_version"):
-        ContractPointer(
-            physical_key="narrative-chapter-007-v0002",
-            contract_version=1,
-            content_hash="a" * 64,
-        )
+        _pointer("narrative-chapter-007-v0002", 1, "a" * 64)
 
 
 def test_create_initial_candidate_persists_only_canonical_v0001_without_pointer(tmp_path):
@@ -157,7 +163,7 @@ def test_concurrent_different_contract_content_has_one_winner_and_one_conflict(t
         assert list((project / ".creative_os" / "memory" / "items").glob("*.tmp")) == []
 
 
-def test_current_read_uses_only_the_pointer_and_pointer_json_has_three_fields(tmp_path):
+def test_current_read_uses_only_the_complete_activation_bound_pointer(tmp_path):
     lifecycle, project = _lifecycle(tmp_path)
     decision = _decision()
     candidate = lifecycle.create_initial_candidate(decision, evidence=_evidence())
@@ -166,11 +172,7 @@ def test_current_read_uses_only_the_pointer_and_pointer_json_has_three_fields(tm
 
     assert lifecycle.load_current(decision.contract_id) is None
 
-    pointer = ContractPointer(
-        physical_key=candidate.id,
-        contract_version=decision.contract_version,
-        content_hash=NarrativeDecisionCodec.content_hash(decision),
-    )
+    pointer = _pointer(candidate.id, decision.contract_version, NarrativeDecisionCodec.content_hash(decision))
     lifecycle.write_pointer(pointer)
     pointer_path = (
         project
@@ -181,11 +183,7 @@ def test_current_read_uses_only_the_pointer_and_pointer_json_has_three_fields(tm
         / "contract-current-007.json"
     )
 
-    assert json.loads(pointer_path.read_text(encoding="utf-8")) == {
-        "physical_key": "narrative-chapter-007-v0001",
-        "contract_version": 1,
-        "content_hash": pointer.content_hash,
-    }
+    assert json.loads(pointer_path.read_text(encoding="utf-8")) == pointer.to_dict()
     assert not pointer_path.with_suffix(".json.tmp").exists()
     assert lifecycle.read_pointer(decision.contract_id) == pointer
     assert lifecycle.load_current(decision.contract_id) == decision
@@ -206,24 +204,20 @@ def test_pointer_reads_fail_closed_on_missing_or_inconsistent_targets(tmp_path, 
     decision = _decision()
     candidate = lifecycle.create_initial_candidate(decision, evidence=_evidence())
     store = JsonMemoryStore(project / ".creative_os" / "memory")
-    pointer_payload = {
-        "physical_key": candidate.id,
-        "contract_version": 1,
-        "content_hash": NarrativeDecisionCodec.content_hash(decision),
-    }
+    pointer_key = candidate.id
+    pointer_version = 1
+    pointer_hash = NarrativeDecisionCodec.content_hash(decision)
 
     if mutation == "missing_target":
         version_two = replace(decision, contract_version=2)
-        pointer_payload = {
-            "physical_key": physical_key(decision.contract_id, 2),
-            "contract_version": 2,
-            "content_hash": NarrativeDecisionCodec.content_hash(version_two),
-        }
+        pointer_key = physical_key(decision.contract_id, 2)
+        pointer_version = 2
+        pointer_hash = NarrativeDecisionCodec.content_hash(version_two)
     elif mutation == "candidate_target":
         pass
     elif mutation == "wrong_hash":
         store.replace(candidate.activate(actor="测试审批人"))
-        pointer_payload["content_hash"] = "0" * 64
+        pointer_hash = "0" * 64
     elif mutation == "wrong_envelope_version":
         store.replace(replace(candidate.activate(actor="测试审批人"), version=2))
     elif mutation == "version_mismatch":
@@ -244,6 +238,7 @@ def test_pointer_reads_fail_closed_on_missing_or_inconsistent_targets(tmp_path, 
         / "contract-current-007.json"
     )
     pointer_path.parent.mkdir(parents=True, exist_ok=True)
+    pointer_payload = _pointer(pointer_key, pointer_version, pointer_hash).to_dict()
     pointer_path.write_text(json.dumps(pointer_payload), encoding="utf-8")
 
     with pytest.raises(ContractStorageError, match=error_code):
@@ -296,11 +291,7 @@ def test_pointer_target_requires_an_exact_typed_raw_envelope(tmp_path, mutation)
     candidate = lifecycle.create_initial_candidate(decision, evidence=_evidence())
     store = JsonMemoryStore(project / ".creative_os" / "memory")
     store.replace(candidate.activate(actor="测试审批人"))
-    pointer = ContractPointer(
-        physical_key=candidate.id,
-        contract_version=1,
-        content_hash=NarrativeDecisionCodec.content_hash(decision),
-    )
+    pointer = _pointer(candidate.id, 1, NarrativeDecisionCodec.content_hash(decision))
     lifecycle.write_pointer(pointer)
     item_path = store.items_dir / f"{candidate.id}.json"
     payload = json.loads(item_path.read_text(encoding="utf-8"))
@@ -335,11 +326,7 @@ def test_pointer_target_rejects_unknown_contract_content_fields(tmp_path):
     store = JsonMemoryStore(project / ".creative_os" / "memory")
     store.replace(candidate.activate(actor="测试审批人"))
     lifecycle.write_pointer(
-        ContractPointer(
-            physical_key=candidate.id,
-            contract_version=1,
-            content_hash=NarrativeDecisionCodec.content_hash(decision),
-        )
+        _pointer(candidate.id, 1, NarrativeDecisionCodec.content_hash(decision))
     )
     item_path = store.items_dir / f"{candidate.id}.json"
     payload = json.loads(item_path.read_text(encoding="utf-8"))

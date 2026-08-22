@@ -8,9 +8,9 @@ from creative_os.validation_runtime import (
     write_full_draft_artifacts,
     write_full_review_artifacts,
     write_v11_acceptance_artifacts,
-    write_composed_final_artifacts,
+    _build_validation_fixture_composed_artifacts as write_composed_final_artifacts,
     validate_reader_facing_text,
-    write_final_chapter_v2_artifacts,
+    _build_validation_fixture_final_v2_artifacts as write_final_chapter_v2_artifacts,
 )
 
 

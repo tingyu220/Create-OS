@@ -230,7 +230,7 @@ def _process_save_approval(
         result_queue.put(("error", f"{type(error).__name__}: {error}"))
 
 
-def test_four_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_path: Path):
+def test_authority_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_path: Path):
     store = ContractRecordStore(tmp_path)
     baseline, approval, review, disposition, ids = _seed(store)
     disposition_payload = {
@@ -262,6 +262,7 @@ def test_four_record_types_use_exact_physical_keys_envelopes_and_round_trip(tmp_
         "approvals",
         "reviews",
         "dispositions",
+        "continuation_authorizations",
         "journal",
     }
     for directory, record_id, record_type in zip(

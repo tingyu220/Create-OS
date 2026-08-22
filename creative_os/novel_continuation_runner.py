@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
-from creative_os.domains.novel_continuation import ContinuationTask, build_next_chapter
+from creative_os.domains.novel_continuation import ContinuationTask, build_next_chapter, continuation_task_hash
 from creative_os.domains.entity_consistency import canonical_entities_from_baseline, entity_aliases_from_baseline, find_entity_warnings
-from creative_os.domains.narrative_memory import load_active_narrative_decision
 from creative_os.domains.novel_chapter_memory import save_chapter_candidates
 from creative_os.domains.narrative_review import review_narrative
+from creative_os.domains.narrative_decision import NarrativeDecision
 from creative_os.llm_writer import ModelMessage
 from creative_os.llm_metrics import TimedCompletion
 from creative_os.runtime import AppendOnlyEventLog, EventType, RuntimeExecutionError, RuntimeRequest, RuntimeRunner
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
+from creative_os.domains.writer_admission import (AdmissionGrant, PreAdmissionRequest,
+    RestrictedWriterAdmissionToken, WriterAdmissionService, WriterAdmissionToken)
 from creative_os.task_status import ChapterTaskStatus, write_chapter_status
 from creative_os.validation_runtime import validate_reader_facing_text
 
@@ -22,6 +25,9 @@ from creative_os.validation_runtime import validate_reader_facing_text
 class ContinuationClient(Protocol):
     def complete(self, messages: list[ModelMessage], *, temperature: float, max_tokens: int) -> str | TimedCompletion:
         ...
+
+
+_EXIT_GUARD = object()
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,23 +42,55 @@ class ContinuationRun:
     entity_warnings: list[dict[str, object]] | None = None
 
 
-def continue_one_chapter(
-    project_root: str | Path,
+@dataclass(frozen=True, slots=True)
+class PreparedWriterRun:
+    project_root: Path
+    run_id: str
+    task: ContinuationTask
+    context: object
+    projection: object
+    token: WriterAdmissionToken | RestrictedWriterAdmissionToken
+    admission_service: WriterAdmissionService
+
+
+def prepare_continuation_run(project_root: str | Path, run_id: str,
+                             admission_service: WriterAdmissionService,
+                             contract_id: str) -> PreparedWriterRun:
+    root = Path(project_root)
+    grant = admission_service.pre_admit(PreAdmissionRequest(contract_id))
+    task, context = build_next_chapter(root, require_narrative_contract=True,
+                                       grant=grant, admission_service=admission_service)
+    token = admission_service.finalize_admission(grant, context.fingerprint, run_id)
+    return PreparedWriterRun(root, run_id, task, context, grant.projection, token, admission_service)
+
+
+def continue_one_chapter(prepared: PreparedWriterRun, *, client: ContinuationClient | None,
+                         dry_run: bool = False, max_attempts: int = 1,
+                         runtime_runner: RuntimeRunner | None = None) -> ContinuationRun:
+    if not isinstance(prepared, PreparedWriterRun):
+        raise TypeError("continue_one_chapter requires PreparedWriterRun")
+    _require_prepared_binding(prepared)
+    return prepared.admission_service.validate_token(
+        prepared.token, prepared.run_id, prepared.context.fingerprint,
+        handoff=lambda: _continue_one_chapter_impl(prepared, _guard=_EXIT_GUARD, client=client, dry_run=dry_run,
+                                                   max_attempts=max_attempts, runtime_runner=runtime_runner),
+    )
+
+
+def _continue_one_chapter_impl(
+    prepared: PreparedWriterRun,
     *,
+    _guard: object,
     client: ContinuationClient | None,
     dry_run: bool = False,
     max_attempts: int = 1,
-    target_chinese_chars: int | None = None,
-    require_narrative_contract: bool = False,
     runtime_runner: RuntimeRunner | None = None,
 ) -> ContinuationRun:
-    root = Path(project_root)
+    if _guard is not _EXIT_GUARD:
+        raise PermissionError("writer exit implementation requires admission handoff")
+    root = prepared.project_root
     event_log = AppendOnlyEventLog(root / ".creative_os" / "runtime" / "events.jsonl")
-    task, context = build_next_chapter(
-        root,
-        target_chinese_chars=target_chinese_chars,
-        require_narrative_contract=require_narrative_contract,
-    )
+    task, context = prepared.task, prepared.context
     event_log.append_simple(EventType.TASK_CREATED, task_id=f"chapter-{task.chapter_number:03d}", payload={"chapter": task.chapter_number})
     event_log.append_simple(EventType.TASK_STARTED, task_id=f"chapter-{task.chapter_number:03d}", payload={"previous_chapter": task.previous_chapter})
     context_path = _write_context(root, task, context)
@@ -153,13 +191,62 @@ def continue_one_chapter(
     return ContinuationRun(task.chapter_number, "pass" if not issues else "fail", context_path, draft_path, final_path, issues, experiences, entity_warnings)
 
 
-def promote_passing_draft(
-    project_root: str | Path,
-    *,
-    require_narrative_contract: bool = False,
-) -> ContinuationRun:
-    root = Path(project_root)
-    task, context = build_next_chapter(root, require_narrative_contract=require_narrative_contract)
+def promote_passing_draft(prepared: PreparedWriterRun) -> ContinuationRun:
+    if not isinstance(prepared, PreparedWriterRun):
+        raise TypeError("promote_passing_draft requires PreparedWriterRun")
+    _require_prepared_binding(prepared)
+    return prepared.admission_service.validate_token(
+        prepared.token, prepared.run_id, prepared.context.fingerprint,
+        handoff=lambda: _promote_passing_draft_impl(prepared, _guard=_EXIT_GUARD),
+    )
+
+
+def _require_prepared_binding(prepared: PreparedWriterRun) -> None:
+    token = prepared.token
+    projection = prepared.projection
+    if (type(token) not in {WriterAdmissionToken, RestrictedWriterAdmissionToken}
+            or not isinstance(prepared.task, ContinuationTask)
+            or type(prepared.admission_service) is not WriterAdmissionService
+            or not hasattr(projection, "canonical_json")):
+        raise TypeError("prepared run requires final token and frozen projection")
+    compiled_task = getattr(prepared.context, "task", None)
+    task_binding = next(
+        (item for item in getattr(prepared.context, "knowledge", ())
+         if item.id == f"writer-task:chapter:{prepared.task.chapter_number:03d}"),
+        None,
+    )
+    expected_task_body = continuation_task_hash(prepared.task)
+    projection_hash_mismatch = (
+        token.projection_hash != hashlib.sha256(
+            json.dumps(asdict(projection), ensure_ascii=False, sort_keys=True,
+                       separators=(",", ":")).encode()
+        ).hexdigest()
+    )
+    if (
+        prepared.project_root.resolve() != prepared.admission_service.project_root.resolve()
+        or prepared.task.contract_projection != projection
+        or getattr(compiled_task, "id", None) != f"chapter-{prepared.task.chapter_number:03d}"
+        or getattr(compiled_task, "goal", None) != prepared.task.narrative_goal
+        or task_binding is None
+        or task_binding.body != expected_task_body
+    ):
+        raise ValueError("prepared task/context binding mismatch")
+    if (
+        token.project_id != prepared.project_root.name
+        or token.chapter_id != f"chapter_{prepared.task.chapter_number:03d}"
+        or token.contract_id != projection.contract_id
+        or token.contract_version != projection.contract_version
+        or token.contract_content_hash != projection.contract_content_hash
+        or projection_hash_mismatch
+    ):
+        raise ValueError("prepared run binding mismatch")
+
+
+def _promote_passing_draft_impl(prepared: PreparedWriterRun, *, _guard: object) -> ContinuationRun:
+    if _guard is not _EXIT_GUARD:
+        raise PermissionError("writer exit implementation requires admission handoff")
+    root = prepared.project_root
+    task, context = prepared.task, prepared.context
     draft_path = root / ".creative_os" / "llm_writer" / "drafts" / f"chapter_{task.chapter_number:03d}.md"
     if not draft_path.exists():
         raise FileNotFoundError(draft_path)
@@ -201,8 +288,8 @@ def _messages(task: ContinuationTask, context: object, previous_issues: list[str
         "标题只能使用首行的一个 `#`，正文禁止出现任何 `##` 标题。\n"
         f"\n获批 Context：\n{knowledge_text}\n\n{memory_text}"
     )
-    if task.narrative_contract is not None:
-        contract = task.narrative_contract.chapter_contract
+    if task.contract_projection is not None:
+        contract = NarrativeDecision.from_json(task.contract_projection.canonical_json).chapter_contract
         choice = contract.protagonist_choice
         reader = contract.reader_change
         prompt += (
@@ -258,14 +345,9 @@ def _review(project_root: Path, task: ContinuationTask, text: str) -> list[str]:
 
 
 def _narrative_issues(project_root: Path, task: ContinuationTask, text: str):
-    if task.narrative_contract is None:
+    if task.contract_projection is None:
         return []
-    recent_contracts = [
-        decision
-        for chapter in range(max(1, task.chapter_number - 2), task.chapter_number)
-        if (decision := load_active_narrative_decision(project_root, chapter)) is not None
-    ]
-    return review_narrative(task.narrative_contract, recent_contracts, text)
+    return review_narrative(NarrativeDecision.from_json(task.contract_projection.canonical_json), [], text)
 
 
 def _entity_warnings(project_root: Path, text: str) -> list[dict[str, object]]:
@@ -304,6 +386,12 @@ def _write_context(root: Path, task: ContinuationTask, context: object) -> Path:
         "chapter": task.chapter_number,
         "task": asdict(task),
         "fingerprint": getattr(context, "fingerprint"),
+        "contract_binding": {
+            "contract_id": task.contract_projection.contract_id,
+            "contract_version": task.contract_projection.contract_version,
+            "contract_content_hash": task.contract_projection.contract_content_hash,
+            "context_fingerprint": getattr(context, "fingerprint"),
+        },
         "size_chars": getattr(context, "size_chars"),
         "sources": [asdict(source) for source in getattr(context, "sources")],
     }
