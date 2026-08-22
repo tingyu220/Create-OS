@@ -127,7 +127,33 @@ class ContractPreflightValidator:
                 )
             )
 
+        issues.extend(_validate_engagement_obligations(candidate, causal_result))
+
         return PreflightResult(_deduplicate_issues(issues))
+
+
+def _validate_engagement_obligations(candidate: NarrativeDecision, causal_result: object) -> list[ContractIssue]:
+    obligations = candidate.chapter_contract.engagement_obligations
+    if candidate.schema_version == 3 and not obligations:
+        return [_issue("engagement_missing", "chapter_contract.engagement_obligations", "补充已激活 projection 的 obligations。")]
+    issues: list[ContractIssue] = []
+    known = None
+    projection_hash = None
+    deadlines: dict[str, int] = {}
+    if isinstance(causal_result, dict):
+        known = causal_result.get("expectation_ids")
+        projection_hash = causal_result.get("projection_hash")
+        deadlines = causal_result.get("deadlines", {}) if isinstance(causal_result.get("deadlines", {}), dict) else {}
+    for index, obligation in enumerate(obligations):
+        path = f"chapter_contract.engagement_obligations[{index}]"
+        if known is not None and obligation.expectation_id not in known:
+            issues.append(_issue("engagement_unauthorized_target", path, "目标 expectation 不在当前 projection。"))
+        if projection_hash is not None and obligation.projection_hash != projection_hash:
+            issues.append(_issue("engagement_stale_projection", path, "projection hash 已过期，锁内重读后重建合同。"))
+        deadline = deadlines.get(obligation.expectation_id)
+        if deadline is not None and obligation.deadline_chapter is not None and obligation.deadline_chapter != deadline:
+            issues.append(_issue("engagement_deadline_conflict", path, "obligation deadline 与权威 ledger 冲突。"))
+    return issues
 
 
 def _required_evidence_roles(

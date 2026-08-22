@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from collections.abc import Mapping
 from typing import Any
 
@@ -12,6 +13,7 @@ from creative_os.domains.narrative_decision import (
     CandidateKind,
     CandidateValueState,
     ChapterContract,
+    EngagementObligation,
     ChoiceStatus,
     FieldEvidenceBinding,
     InformationPlan,
@@ -44,6 +46,10 @@ class NarrativeDecisionCodec:
             return cls.decode_v1(payload)
         if version == 2:
             return cls.decode_v2(payload)
+        if version == 3:
+            if not isinstance(payload.get("chapter_contract"), Mapping) or "engagement_obligations" not in payload["chapter_contract"]:
+                raise NarrativeValidationError("unsupported narrative decision schema: 3")
+            return cls.decode_v3(payload)
         raise NarrativeValidationError(f"unsupported narrative decision schema: {version}")
 
     @classmethod
@@ -230,6 +236,62 @@ class NarrativeDecisionCodec:
             raise NarrativeValidationError("encode_v2 requires NarrativeDecision")
         decision.validate()
         return cls.canonical_json(cls._encode_decision(decision))
+
+    @classmethod
+    def encode_v3(cls, decision: NarrativeDecision) -> str:
+        if not isinstance(decision, NarrativeDecision):
+            raise NarrativeValidationError("encode_v3 requires NarrativeDecision")
+        if not decision.chapter_contract.engagement_obligations:
+            raise NarrativeValidationError("engagement obligations are required for v3")
+        decision.validate()
+        payload = cls._encode_decision(decision)
+        payload["schema_version"] = 3
+        payload["chapter_contract"]["engagement_obligations"] = [
+            {
+                "action": item.action,
+                "expectation_id": item.expectation_id,
+                "projection_hash": item.projection_hash,
+                "deadline_chapter": item.deadline_chapter,
+                "intent_evidence": [cls._encode_evidence(ref) for ref in item.intent_evidence],
+            }
+            for item in decision.chapter_contract.engagement_obligations
+        ]
+        return cls.canonical_json(payload)
+
+    @classmethod
+    def decode_v3(cls, content: str | bytes | Mapping[str, Any]) -> NarrativeDecision:
+        payload = cls._payload(content)
+        if cls._integer(payload.get("schema_version"), "schema_version") != 3:
+            raise NarrativeValidationError("decode_v3 requires schema 3")
+        contract = cls._object(payload.get("chapter_contract"), "chapter_contract")
+        obligations = []
+        for item in cls._objects(contract.get("engagement_obligations"), "engagement_obligations"):
+            refs = tuple(cls._decode_evidence(ref) for ref in cls._objects(item.get("intent_evidence"), "intent_evidence"))
+            obligations.append(EngagementObligation(
+                action=cls._text(item.get("action"), "engagement action"),
+                expectation_id=cls._text(item.get("expectation_id"), "expectation_id"),
+                intent_evidence=refs,
+                projection_hash=cls._text(item.get("projection_hash"), "projection_hash"),
+                deadline_chapter=item.get("deadline_chapter"),
+            ))
+        base = dict(payload)
+        base["schema_version"] = 2
+        base_contract = dict(contract)
+        base_contract.pop("engagement_obligations", None)
+        base["chapter_contract"] = base_contract
+        decoded = cls.decode_v2(base)
+        updated = replace(decoded.chapter_contract, engagement_obligations=tuple(obligations))
+        return replace(decoded, chapter_contract=updated, schema_version=3)
+
+    @classmethod
+    def adapt_v2_to_v3(cls, content: str | bytes | Mapping[str, Any]) -> NarrativeDecision:
+        decoded = cls.decode_v2(content)
+        return replace(decoded, schema_version=3)
+
+    @staticmethod
+    def schema_version(content: str | bytes | Mapping[str, Any]) -> int:
+        payload = NarrativeDecisionCodec._payload(content)
+        return NarrativeDecisionCodec._integer(payload.get("schema_version"), "schema_version")
 
     @classmethod
     def content_hash(cls, value: NarrativeDecision | Mapping[str, Any] | str | bytes) -> str:

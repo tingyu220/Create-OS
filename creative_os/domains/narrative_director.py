@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from creative_os.domains.narrative_decision import NarrativeDecision, NarrativeProjectProfile, NarrativeValidationError
+from creative_os.domains.reader_engagement_model import ChapterEngagementProjection
+import hashlib
 
 
 class NarrativeDirectorBlockedError(ValueError):
@@ -20,6 +22,8 @@ class DirectorInput:
     previous_ending: str
     active_decisions: tuple[NarrativeDecision, ...]
     target_chinese_chars: int
+    engagement_projection: ChapterEngagementProjection | None = None
+    context_fingerprint: str | None = None
 
 
 class NarrativeDirector:
@@ -45,6 +49,23 @@ class NarrativeDirector:
             raise NarrativeDirectorBlockedError("proposal narrative phase does not match active profile")
         if proposal.chapter_contract.target_chinese_chars != input.target_chinese_chars:
             raise NarrativeDirectorBlockedError("proposal target length does not match director target")
+        projection = input.engagement_projection
+        if projection is not None:
+            if projection.chapter_number != input.chapter_number:
+                raise NarrativeDirectorBlockedError("engagement projection chapter mismatch")
+            if len(set(projection.obligation_ids)) != len(projection.obligation_ids):
+                raise NarrativeDirectorBlockedError("engagement projection contains duplicate obligations")
+            obligations = proposal.chapter_contract.engagement_obligations
+            if not obligations:
+                raise NarrativeDirectorBlockedError("engagement projection is required")
+            if any(item.projection_hash != projection.projection_hash for item in obligations):
+                raise NarrativeDirectorBlockedError("engagement projection hash mismatch")
+            if tuple(item.expectation_id for item in obligations) != projection.obligation_ids:
+                raise NarrativeDirectorBlockedError("engagement obligations do not match frozen projection")
+            if input.context_fingerprint is not None:
+                expected = hashlib.sha256(projection.canonical_json.encode("utf-8")).hexdigest()
+                if input.context_fingerprint != expected:
+                    raise NarrativeDirectorBlockedError("context fingerprint is not bound to projection")
         if any(decision.chapter == input.chapter_number for decision in input.active_decisions):
             raise NarrativeDirectorBlockedError("an active decision already exists for this chapter")
         return proposal

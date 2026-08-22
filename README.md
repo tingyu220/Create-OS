@@ -107,3 +107,6 @@ releases\雾城回声\
 ```powershell
 python scripts\novel_console.py --project-root projects\雾城回声
 ```
+# Reader Engagement Foundation
+
+Phase E-A 的 Reader Engagement 权威入口位于 `creative_os.domains.reader_engagement_*`：Plan、Ledger、Curve 与人工 Review 通过追加式 Store 管理。迁移工具仅做只读审计，不从旧正文推断 payoff、abandoned 或自动激活计划。

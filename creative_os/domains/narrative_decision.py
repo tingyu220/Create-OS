@@ -361,6 +361,33 @@ class PressureCurve:
 
 
 @dataclass(frozen=True, slots=True)
+class EngagementObligation:
+    action: str
+    expectation_id: str
+    intent_evidence: tuple[EvidenceRef, ...]
+    projection_hash: str
+    deadline_chapter: int | None = None
+
+    def validate(self, contract_id: str, contract_version: int) -> None:
+        if self.action not in {"establish", "escalate", "pay", "withhold"}:
+            raise NarrativeValidationError("invalid engagement obligation action")
+        _require_text(self.expectation_id, "engagement expectation_id")
+        _require_text(self.projection_hash, "engagement projection_hash")
+        if not self.intent_evidence:
+            raise NarrativeValidationError("engagement intent evidence is required")
+        for ref in self.intent_evidence:
+            if not isinstance(ref, EvidenceRef) or ref.is_legacy_replay_ref:
+                raise NarrativeValidationError("engagement evidence must be exact EvidenceRef")
+            ref.validate()
+            if ref.contract_id != contract_id or ref.contract_version != contract_version:
+                raise NarrativeValidationError("engagement evidence contract identity mismatch")
+            if ref.role is not EvidenceRole.INTENT:
+                raise NarrativeValidationError("engagement evidence role must be intent")
+        if self.deadline_chapter is not None and (isinstance(self.deadline_chapter, bool) or self.deadline_chapter <= 0):
+            raise NarrativeValidationError("engagement deadline must be positive")
+
+
+@dataclass(frozen=True, slots=True)
 class ChapterContract:
     functions: tuple[str, ...]
     dramatic_question: str
@@ -375,6 +402,7 @@ class ChapterContract:
     chapter_id: str = ""
     optional_candidates: tuple[OptionalCandidateResolution, ...] = ()
     intent_evidence_bindings: tuple[FieldEvidenceBinding, ...] = ()
+    engagement_obligations: tuple[EngagementObligation, ...] = ()
 
     def __post_init__(self) -> None:
         if isinstance(self.foreshadow_actions, tuple):
@@ -433,6 +461,14 @@ class ChapterContract:
             seen_paths.add(binding.field_path)
             assert contract_id is not None and contract_version is not None
             binding.validate(contract_id, contract_version)
+        if not isinstance(self.engagement_obligations, tuple):
+            raise NarrativeValidationError("engagement_obligations must be a tuple")
+        for obligation in self.engagement_obligations:
+            if not isinstance(obligation, EngagementObligation):
+                raise NarrativeValidationError("engagement_obligations must contain obligations")
+            if contract_id is None or contract_version is None:
+                raise NarrativeValidationError("contract identity is required for engagement obligations")
+            obligation.validate(contract_id, contract_version)
 
 
 @dataclass(frozen=True, slots=True)
@@ -493,7 +529,7 @@ class NarrativeDecision:
         )
 
     def validate(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version != 2 or self.kind != "narrative_decision":
+        if type(self.schema_version) is not int or self.schema_version not in (2, 3) or self.kind != "narrative_decision":
             raise NarrativeValidationError("unsupported narrative decision schema")
         _require_positive_integer(self.chapter, "decision chapter")
         if self.contract_id != f"narrative-chapter-{self.chapter:03d}":
@@ -512,6 +548,8 @@ class NarrativeDecision:
         _require_text(self.inherited_pressure, "decision inherited_pressure")
         _require_items(self.future_pressures, "decision future_pressures")
         self.chapter_contract.validate(self.contract_id, self.contract_version)
+        if self.schema_version == 3 and not self.chapter_contract.engagement_obligations:
+            raise NarrativeValidationError("engagement projection is unsatisfied")
         if not isinstance(self.legacy_unclassified_evidence, tuple):
             raise NarrativeValidationError("legacy_unclassified_evidence must be a tuple")
         for evidence in self.legacy_unclassified_evidence:

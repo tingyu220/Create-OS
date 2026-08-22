@@ -25,3 +25,6 @@
 
 - Stress Report: `projects/validation_novel/production/reports/llm_writer_stress_report.md`
 - V2 Backlog: `projects/validation_novel/production/reports/v2_backlog.md`
+# Phase E 状态
+
+- E-A Reader Engagement Foundation：实现与 Gate 验收中，是 E-B 逐章编排的前置条件。
