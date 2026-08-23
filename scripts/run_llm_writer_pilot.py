@@ -36,7 +36,11 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true", help="Skip chapters that already passed in the latest run record")
     parser.add_argument("--force", action="store_true", help="Run selected chapters even when prior run passed")
     parser.add_argument("--local-repair", action="store_true", help="Use local repair for reader-surface issues")
+    parser.add_argument("--orchestrator", action="store_true", help="Run through the chapter orchestrator")
     args = parser.parse_args()
+
+    if not args.orchestrator:
+        parser.error("direct Writer entry is disabled; invoke the ChapterProductionOrchestrator")
 
     chapters = parse_chapters(args.chapters)
     if args.resume and not args.force:

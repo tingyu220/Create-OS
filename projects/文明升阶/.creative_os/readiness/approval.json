@@ -1,0 +1,14 @@
+{
+  "approval_hash": "548c1b6796ad463a436d85fea62bbfd39d6e5d5909de93c81562e501515a5a52",
+  "brief_authority_input_hash": "12a22796b7b7ef157ed642a8580cfd9265a79cafa9b2ea19c048476ab7101dfb",
+  "brief_hash": "119244f8ae0afaf52e7b043daca35fd8cd5492fe6ee73876c873d0cb287f14ab",
+  "ruleset": "phase-e-readiness-v1",
+  "sources": [
+    {"path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\Novel_README.md", "sha256": "d20d9f45607da966d4ef0b0a1c381300832a4491ffdec4ef9e0d4205337a9855"},
+    {"path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\00_Worldview\\Main_Worldview.md", "sha256": "a1428b042ae0d5cd0979eb09eb7e35c631eb56bdc2ab9773c1b8265071255ada"},
+    {"path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\核心框架.md", "sha256": "d8bb85825562ed50921bcbe575915665934c49097294bfeb21fb74bedda2f429"},
+    {"path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\02_Plot\\Plot_Outline.md", "sha256": "a230a00b62407c4379d0efda1f57beab0c15c2e94fbac07aa5430df0399c59ee"},
+    {"path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\03_Hooks\\Hooks_Tracker.md", "sha256": "e045c1cc5686f7f4126267f7ec173feab4bfaf359ab40d348752237fb5dd0c02"}
+  ],
+  "status": "approved"
+}

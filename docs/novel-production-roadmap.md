@@ -27,4 +27,7 @@
 - V2 Backlog: `projects/validation_novel/production/reports/v2_backlog.md`
 # Phase E 状态
 
-- E-A Reader Engagement Foundation：实现与 Gate 验收中，是 E-B 逐章编排的前置条件。
+- E-A Reader Engagement Foundation：已完成并通过离线 Gate。
+- E-B 逐章生产编排：已完成离线十章与故障矩阵 Gate（Tasks 0–8）。
+- E-B 文档/运维证据收口：进行中（Task 9）。
+- E-D 真实 7–16 章校准：未启动，必须等待人工合同审批、质量阅读与模型调用授权。
