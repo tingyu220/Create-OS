@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"他知道，从今天起，那张频谱图上的红点不会只待在文件夹里。它们会跟着他，像有人把一根极细的鱼线穿过他的枕骨，另一头系在某个他还没看见的地方。他把手指从抽屉边缘收回来，起身去三号台调周远的观察间录音。陈景行已经坐回自己的终端前，头没回，只说了一句：“三号台第十七轨，昨天下班前刚跑完清洗。”顿了一下又补了一句，“用耳机。那段低频有共振。”\", \"source_chapter\": \"production/final_chapters/chapter_018.md\"}], \"fields\": {\"outcome\": \"他知道，从今天起，那张频谱图上的红点不会只待在文件夹里。它们会跟着他，像有人把一根极细的鱼线穿过他的枕骨，另一头系在某个他还没看见的地方。他把手指从抽屉边缘收回来，起身去三号台调周远的观察间录音。陈景行已经坐回自己的终端前，头没回，只说了一句：“三号台第十七轨，昨天下班前刚跑完清洗。”顿了一下又补了一句，“用耳机。那段低频有共振。”\"}, \"id\": \"chapter-018-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第18章事件\"}",
+  "created_at": "2026-08-24T06:05:20.513232+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_018.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-018-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 18 章状态：event",
+  "updated_at": "2026-08-24T06:05:20.513232+00:00",
+  "version": 1
+}

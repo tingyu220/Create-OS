@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "“现在，我们继续。既然不能走，就让我看看门后面还有什么。” 这句话说完之后，操作室里出现了几秒钟的绝对安静。那安静比警报声更刺耳。它像是从所有机器的缝隙里同时渗出来，把空气压成一块透明的铁。林子轩能听见自己后颈电极下面血管跳动的声音，一下一下，像是什么东西在对着他的脊椎敲一支没有调子的钟。 方晴点了点头，像是松了一口气。陈景行却低声问了一句：“你信任你父亲吗？” “我不知道。但我还不想今晚就验证这个问题。”林子轩把通讯器翻过去扣在桌上，声音轻得像是说给自己听，“我已经把足够多的人摆上桌面了。再添一个，我怕桌子翻掉。”",
+  "created_at": "2026-08-23T22:49:23.548025+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_008.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-008-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_008",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 8 章章节摘要",
+  "updated_at": "2026-08-23T22:49:23.548025+00:00",
+  "version": 1
+}

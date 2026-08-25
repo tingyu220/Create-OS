@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林子轩没有动。门缝外的冷光像一条细细的刀刃，把他和方晴的影子同时切成两半。她的嘴唇又动了一次，这次他看清了：“别出声。跟我来。” 他回头看了一眼房间。宇没有阻止，也没有提示。脑子里像有什么东西轻轻按了一下——是宇用最微弱的电流问了一句：“要跟吗？” 林子轩看向屏幕。那条曲线陡直上升，在末端冲过一条红色临界线，然后被自动放大。会议室里安静了一瞬。魏诚猛地站起来，指着屏幕喊：“切断投影！” 但那条曲线已经留在了所有人的眼睛里。",
+  "created_at": "2026-08-24T06:39:12.351181+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_021.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-021-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_021",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 21 章章节摘要",
+  "updated_at": "2026-08-24T06:39:12.351181+00:00",
+  "version": 1
+}

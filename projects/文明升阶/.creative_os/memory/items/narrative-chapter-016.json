@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":16,\"chapter_contract\":{\"dramatic_question\":\"周远留下的警告究竟在保护谁？\",\"ending_shift\":\"林子轩决定验证警告而不是相信警告\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"周远的动机\",\"筛选机制\"],\"functions\":[\"推进内鬼线\",\"连接上一阶段伏笔\"],\"information\":{\"misdirect\":[\"暂不一次解释周远的遗言背后的全部真相\"],\"reveal\":[\"周远的遗言\"],\"withhold\":[\"周远真正的立场\"]},\"pressure_curve\":{\"end\":\"周远的线索把主角推向更危险的验证\",\"start\":\"悬疑\",\"turn\":\"信息只给出筛选机制而不给出答案\"},\"protagonist_choice\":{\"action\":\"在看守程序允许的窗口内读取周远留下的信息\",\"actor\":\"林子轩\",\"alternatives\":[\"暂缓行动\"],\"consequence\":\"周远指出那个声音一直在筛选听众\",\"cost\":\"让自己进入更深的监控范围\"},\"reader_change\":{\"after\":\"读者意识到周远可能不是单纯的内鬼\",\"before\":\"读者获得关于声音的新警告\"},\"target_chinese_chars\":9000,\"scene_plan\":{\"scenes\":[{\"id\":\"watched-access\",\"order\":1,\"place_id\":\"longyuan-information-room\",\"place_label\":\"信息室\",\"place_class\":\"research\",\"interior_exterior\":\"interior\",\"time_window\":\"夜间\",\"participants\":[\"林子轩\",\"宇\",\"陈景行\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"读取周远留下的信息\",\"conflict\":\"看守程序与短时访问窗口\",\"action\":\"在窗口关闭前提取遗言片段\",\"information_change\":\"周远的警告指向可验证事实\",\"state_change\":\"访问行为触发内部审查\",\"entry_reason\":\"宇的限制指令暴露旧接口\",\"exit_trigger\":\"看守程序重新封锁\",\"inherited_from_previous\":true},{\"id\":\"security-questioning\",\"order\":2,\"place_id\":\"longyuan-interrogation-room\",\"place_label\":\"审讯室\",\"place_class\":\"security\",\"interior_exterior\":\"interior\",\"time_window\":\"读取后\",\"participants\":[\"林子轩\",\"安全部人员\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"保住验证机会\",\"conflict\":\"安全部要求交代读取内容\",\"action\":\"只承认访问不承认警告为真\",\"information_change\":\"内鬼线与周远遗言尚不能等同\",\"state_change\":\"林子轩决定验证而非相信\",\"entry_reason\":\"违规访问被发现\",\"exit_trigger\":\"有限释放\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"把周远遗言从读屏变成受限窗口内的证据核验\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"受看守程序限制，必须在基地信息设施内完成\"},\"technology_plan\":{\"technologies\":[]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T04:38:43.305448+00:00",
+  "evidence": [
+    {
+      "note": "第16章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第15章正文",
+      "source_id": "production/final_chapters/chapter_015.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-016",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_016",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 16 章叙事合同",
+  "updated_at": "2026-08-24T04:38:43.323041+00:00",
+  "version": 1
+}

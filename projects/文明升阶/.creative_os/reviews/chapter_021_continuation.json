@@ -1,0 +1,31 @@
+{
+  "issues": [],
+  "entity_warnings": [
+    {
+      "entity_type": "character",
+      "canonical": "苏晚晴",
+      "observed": "苏晚琴",
+      "position": 3313,
+      "excerpt": "地看着他：“我希望你先把原始记录交给苏晚琴，不是安全委员会。让她从量子通信侧再",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "苏晚晴",
+      "observed": "苏晚琴",
+      "position": 3990,
+      "excerpt": "信，从屏蔽材料库直接走旧的内部网，进苏晚琴的工作站。但只有一个小时。”\n\n“一",
+      "reason": "可能的实体名称漂移"
+    },
+    {
+      "entity_type": "character",
+      "canonical": "苏晚晴",
+      "observed": "苏晚琴",
+      "position": 6135,
+      "excerpt": "那个符号，后颈像被冰水浸了一下。\n\n苏晚琴教过他这个。很多年前，在他还小的时候",
+      "reason": "可能的实体名称漂移"
+    }
+  ],
+  "narrative_issues": [],
+  "context": "ed70256f05be71beed16edae1e57589c31367dd85fe1e0b8577124bce1c03c29"
+}

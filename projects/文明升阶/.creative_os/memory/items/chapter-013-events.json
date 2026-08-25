@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "黑暗里有东西在响。 不是墙壁那边的方晴，也不是走廊里均匀得像钟表走的空气循环声。那声音从耳麦里渗出来，像一粒沙落进金属盘，轻得几乎不像信号。林子轩没有动，他仰面躺在安全宿舍的窄床上，被口拉到胸口，眼睛睁着。 林子轩没再说话。他往房间走，走廊里灯带均匀得让人分不清白昼。他发现自己的步子在慢慢变稳。不是风停了，是他心里终于有一个具体的方向。 哪怕那个方向，藏在父亲不愿打开的旧纸页里。他也要把纸页翻开，一页一页看下去。",
+  "created_at": "2026-08-24T04:24:22.633964+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_013.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-013-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_013",
+    "event",
+    "novel"
+  ],
+  "title": "第 13 章关键事件",
+  "updated_at": "2026-08-24T04:24:22.633964+00:00",
+  "version": 1
+}

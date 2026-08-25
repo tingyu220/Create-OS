@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":20,\"chapter_contract\":{\"dramatic_question\":\"被栽赃并隔离后，林子轩是否愿意相信方晴并离开安全宿舍？\",\"ending_shift\":\"方晴带着现实存储介质来接应，证据转运即将开始\",\"forbidden\":[\"不得出现已进入建造者遗产仓库\",\"不得新增遗产实物或自毁程序\"],\"foreshadow_actions\":[\"现实存储介质\",\"旧方案原始记录\"],\"functions\":[\"深化信任危机\",\"启动现实证据转运\"],\"information\":{\"reveal\":[\"安全部可永久隔离被判定为信息污染源的人\",\"方晴持有黑色金属证据盒\"],\"withhold\":[\"盒内旧方案记录的完整内容\"],\"misdirect\":[\"所有电子证据继续指向林子轩\"]},\"pressure_curve\":{\"start\":\"审讯逼迫\",\"turn\":\"宇恢复并警告方晴也可能有嫌疑\",\"end\":\"林子轩仍决定跟方晴离开\"},\"protagonist_choice\":{\"actor\":\"林子轩\",\"action\":\"冒险相信方晴并离开安全宿舍\",\"alternatives\":[\"留在隔离室等待安全部核验\"],\"cost\":\"可能坐实逃避审查并落入第二个陷阱\",\"consequence\":\"现实证据转运行动启动\"},\"reader_change\":{\"before\":\"读者无法判断任何电子证据是否可信\",\"after\":\"读者知道下一步必须依靠现实介质与人物选择验证\"},\"target_chinese_chars\":8000,\"scene_plan\":{\"scenes\":[{\"id\":\"interrogation\",\"order\":1,\"place_id\":\"longyuan-interrogation-room\",\"place_label\":\"龙渊审讯室\",\"place_class\":\"security\",\"interior_exterior\":\"interior\",\"time_window\":\"深夜\",\"participants\":[\"林子轩\",\"魏诚\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"争取查看证据链\",\"conflict\":\"安全部以永久隔离施压\",\"action\":\"拒绝在未知数据上自证有罪\",\"information_change\":\"确认永久隔离条款\",\"state_change\":\"审查压力升级\",\"entry_reason\":\"承接袭击后的审讯\",\"exit_trigger\":\"魏诚结束问询\",\"inherited_from_previous\":true},{\"id\":\"secure-dorm\",\"order\":2,\"place_id\":\"longyuan-secure-dorm\",\"place_label\":\"龙渊安全宿舍\",\"place_class\":\"residential_security\",\"interior_exterior\":\"interior\",\"time_window\":\"黎明前\",\"participants\":[\"林子轩\",\"宇\",\"方晴\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"判断谁仍可信\",\"conflict\":\"宇警告方晴无法排除嫌疑\",\"action\":\"开门跟随方晴\",\"information_change\":\"确认走廊存在新增监听光纤\",\"state_change\":\"现实证据转运启动\",\"entry_reason\":\"审讯结束后被送回隔离\",\"exit_trigger\":\"方晴携证据盒出现\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"用隔离空间完成信任选择，并把下一章推入真实转运路线\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"本章核心是隔离监控下的信任困局\"},\"technology_plan\":{\"technologies\":[]},\"forbidden\":[\"不得出现已进入建造者遗产仓库\",\"不得新增遗产实物或自毁程序\"]},\"future_pressures\":[\"现实证据盒转运\",\"旧方案缺口公开\"],\"inherited_pressure\":\"第19章人为袭击后，伪造日志把林子轩变成嫌疑人。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T06:11:53.972963+00:00",
+  "evidence": [
+    {
+      "note": "第20章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第19章正文",
+      "source_id": "production/final_chapters/chapter_019.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-020",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_020",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 20 章叙事合同",
+  "updated_at": "2026-08-24T06:11:53.982972+00:00",
+  "version": 1
+}

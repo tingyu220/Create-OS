@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":17,\"chapter_contract\":{\"dramatic_question\":\"当声音主动提出交易，林子轩能否拒绝看似唯一的出口？\",\"ending_shift\":\"林子轩保留怀疑仍继续验证\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"坐标\",\"交易代价\"],\"functions\":[\"建立对手规则\",\"制造不可回避的选择\"],\"information\":{\"misdirect\":[\"暂不一次解释第一次谈判背后的全部真相\"],\"reveal\":[\"声音的交易条件\"],\"withhold\":[\"坐标指向何处\"]},\"pressure_curve\":{\"end\":\"声音的可信度变得更危险\",\"start\":\"试探\",\"turn\":\"验证结果一半正确一半错误\"},\"protagonist_choice\":{\"action\":\"与声音谈判并要求它先证明一条可验证事实\",\"actor\":\"林子轩\",\"alternatives\":[\"暂缓行动\"],\"consequence\":\"他获得一个无法立刻验证的坐标\",\"cost\":\"答应接收一段可能污染神经的信号\"},\"reader_change\":{\"after\":\"读者开始怀疑所谓帮助的代价\",\"before\":\"读者知道声音可以主动改变现实线索\"},\"target_chinese_chars\":10000,\"scene_plan\":{\"scenes\":[{\"id\":\"voice-contact\",\"order\":1,\"place_id\":\"old-fan-room\",\"place_label\":\"旧风机房\",\"place_class\":\"maintenance\",\"interior_exterior\":\"interior\",\"time_window\":\"深夜\",\"participants\":[\"林子轩\",\"朋友\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"要求朋友证明一条事实\",\"conflict\":\"看似唯一出口可能是诱导\",\"action\":\"拒绝开门并限定验证条件\",\"information_change\":\"朋友能预测地点但细节会出错\",\"state_change\":\"交易进入有限验证\",\"entry_reason\":\"声音主动提出交易\",\"exit_trigger\":\"林子轩离开旧风机房\",\"inherited_from_previous\":true},{\"id\":\"canteen-verification\",\"order\":2,\"place_id\":\"longyuan-canteen-backdoor\",\"place_label\":\"食堂后门\",\"place_class\":\"service\",\"interior_exterior\":\"exterior\",\"time_window\":\"次日清晨\",\"participants\":[\"林子轩\",\"胖阿姨\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":true,\"goal\":\"核验朋友展示的场景\",\"conflict\":\"预测大体正确但动作细节错误\",\"action\":\"现场检查红灯和自身动作习惯\",\"information_change\":\"朋友并非全知\",\"state_change\":\"林子轩保留怀疑继续验证\",\"entry_reason\":\"按交易条件核验\",\"exit_trigger\":\"返回信息室\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"在生活空间和旧设施中建立朋友的交易规则\",\"required_world_slice\":\"基地食堂劳动者\",\"allowed_same_place_run\":3,\"exception_reason\":\"\"},\"technology_plan\":{\"technologies\":[]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T04:42:45.500758+00:00",
+  "evidence": [
+    {
+      "note": "第17章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第16章正文",
+      "source_id": "production/final_chapters/chapter_016.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-017",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_017",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 17 章叙事合同",
+  "updated_at": "2026-08-24T04:42:45.516071+00:00",
+  "version": 1
+}
