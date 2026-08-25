@@ -181,6 +181,12 @@ def test_reader_facing_quality_gate_rejects_wrong_father_child_gender():
     assert "character_relation_mismatch" in validate_reader_facing_text(text)
 
 
+def test_reader_facing_quality_gate_rejects_truncated_sentence_ending():
+    text = "# 第25章：家属服务厅\n\n老周抬起头说：“我这一班，夜"
+
+    assert "truncated_sentence_ending" in validate_reader_facing_text(text)
+
+
 def test_final_chapter_v2_artifacts_remove_ai_flavor_and_scene_stitching(tmp_path):
     write_v11_acceptance_artifacts(tmp_path)
 

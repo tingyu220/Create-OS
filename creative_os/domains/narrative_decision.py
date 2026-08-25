@@ -182,6 +182,133 @@ class PressureCurve:
 
 
 @dataclass(frozen=True, slots=True)
+class SceneContract:
+    id: str
+    order: int
+    place_id: str
+    place_label: str
+    place_class: str
+    interior_exterior: str
+    time_window: str
+    participants: tuple[str, ...]
+    viewpoint: str
+    ordinary_people_present: bool
+    goal: str
+    conflict: str
+    action: str
+    information_change: str
+    state_change: str
+    entry_reason: str
+    exit_trigger: str
+    inherited_from_previous: bool = False
+
+    def validate(self) -> None:
+        for name in ("id", "place_id", "place_label", "place_class", "interior_exterior", "time_window", "viewpoint", "goal", "conflict", "action", "entry_reason", "exit_trigger"):
+            _require_text(str(getattr(self, name)), f"scene {name}")
+        if self.order < 1:
+            raise NarrativeValidationError("scene order must be positive")
+        _require_items(self.participants, "scene participants")
+        if not self.information_change.strip() and not self.state_change.strip():
+            raise NarrativeValidationError("scene requires information_change or state_change")
+
+
+@dataclass(frozen=True, slots=True)
+class ScenePlan:
+    scenes: tuple[SceneContract, ...] = ()
+    chapter_spatial_intent: str = ""
+    required_world_slice: str = ""
+    allowed_same_place_run: int = 3
+    exception_reason: str = ""
+
+    def validate(self, *, required: bool = False) -> None:
+        if required and not self.scenes:
+            raise NarrativeValidationError("scene plan requires scenes")
+        if not self.scenes:
+            return
+        _require_text(self.chapter_spatial_intent, "scene plan chapter_spatial_intent")
+        if self.allowed_same_place_run < 1:
+            raise NarrativeValidationError("scene plan allowed_same_place_run must be positive")
+        orders = []
+        for scene in self.scenes:
+            scene.validate()
+            orders.append(scene.order)
+        if orders != list(range(1, len(self.scenes) + 1)):
+            raise NarrativeValidationError("scene orders must be unique and contiguous")
+
+
+@dataclass(frozen=True, slots=True)
+class TechnologyContract:
+    id: str
+    name: str
+    role: str
+    birth_reason: str
+    source: str
+    prerequisites: tuple[str, ...]
+    validation_stage: str
+    first_application: str
+    social_diffusion: tuple[str, ...]
+    cost: str
+    changed_domains: tuple[str, ...]
+
+    def validate(self) -> None:
+        for field_name in ("id", "name", "role", "birth_reason", "source", "validation_stage", "first_application", "cost"):
+            _require_text(str(getattr(self, field_name)), f"technology {field_name}")
+        if self.role not in {"core", "supporting", "background"}:
+            raise NarrativeValidationError("technology role must be core, supporting, or background")
+        if self.role in {"core", "supporting"}:
+            _require_items(self.prerequisites, "technology prerequisites")
+            _require_items(self.social_diffusion, "technology social_diffusion")
+            _require_items(self.changed_domains, "technology changed_domains")
+
+
+@dataclass(frozen=True, slots=True)
+class TechnologyPlan:
+    technologies: tuple[TechnologyContract, ...] = ()
+
+    def validate(self) -> None:
+        for technology in self.technologies:
+            technology.validate()
+
+
+@dataclass(frozen=True, slots=True)
+class SupportingAgencyContract:
+    actor: str
+    independent_goal: str
+    resistance: str
+    choice: str
+    cost: str
+    result: str
+    mainline_change: str
+
+    def validate(self) -> None:
+        for field_name in (
+            "actor", "independent_goal", "resistance", "choice", "cost", "result", "mainline_change",
+        ):
+            _require_text(str(getattr(self, field_name)), f"supporting agency {field_name}")
+
+
+@dataclass(frozen=True, slots=True)
+class PointOfViewPlan:
+    primary_owner: str = ""
+    mode: str = ""
+    protagonist_present: bool = True
+    supporting_agency: tuple[SupportingAgencyContract, ...] = ()
+    rationale: str = ""
+
+    def validate(self, *, required: bool = False) -> None:
+        if not self.primary_owner and not required:
+            return
+        _require_text(self.primary_owner, "POV primary_owner")
+        if self.mode not in {"limited", "first_person", "omniscient_limited"}:
+            raise NarrativeValidationError("POV mode is invalid")
+        _require_text(self.rationale, "POV rationale")
+        if required and not self.supporting_agency:
+            raise NarrativeValidationError("POV requires supporting agency")
+        for agency in self.supporting_agency:
+            agency.validate()
+
+
+@dataclass(frozen=True, slots=True)
 class ChapterContract:
     functions: tuple[str, ...]
     dramatic_question: str
@@ -193,6 +320,9 @@ class ChapterContract:
     ending_shift: str
     target_chinese_chars: int
     forbidden: tuple[str, ...]
+    scene_plan: ScenePlan = ScenePlan()
+    technology_plan: TechnologyPlan = TechnologyPlan()
+    pov_plan: PointOfViewPlan = PointOfViewPlan()
 
     def validate(self) -> None:
         _require_items(self.functions, "chapter functions")
@@ -206,6 +336,9 @@ class ChapterContract:
         if self.target_chinese_chars <= 0:
             raise NarrativeValidationError("chapter target_chinese_chars must be positive")
         _require_items(self.forbidden, "chapter forbidden")
+        self.scene_plan.validate()
+        self.technology_plan.validate()
+        self.pov_plan.validate()
 
 
 @dataclass(frozen=True, slots=True)
@@ -223,7 +356,7 @@ class NarrativeDecision:
     kind: str = "narrative_decision"
 
     def validate(self) -> None:
-        if self.schema_version != 1 or self.kind != "narrative_decision":
+        if self.schema_version not in {1, 2} or self.kind != "narrative_decision":
             raise NarrativeValidationError("unsupported narrative decision schema")
         if self.chapter < 1:
             raise NarrativeValidationError("decision chapter must be positive")
@@ -234,6 +367,8 @@ class NarrativeDecision:
         _require_text(self.inherited_pressure, "decision inherited_pressure")
         _require_items(self.future_pressures, "decision future_pressures")
         self.chapter_contract.validate()
+        if self.schema_version == 2:
+            self.chapter_contract.scene_plan.validate(required=True)
 
     def to_json(self) -> str:
         self.validate()
@@ -247,6 +382,9 @@ class NarrativeDecision:
         reader = _object(contract.get("reader_change"), "reader_change")
         information = _object(contract.get("information"), "information")
         pressure = _object(contract.get("pressure_curve"), "pressure_curve")
+        scene_plan = _object(contract.get("scene_plan", {}), "scene_plan")
+        technology_plan = _object(contract.get("technology_plan", {}), "technology_plan")
+        pov_plan = _object(contract.get("pov_plan", {}), "pov_plan")
         decision = cls(
             chapter=_integer(payload.get("chapter"), "chapter"),
             profile_id=str(payload.get("profile_id", "")),
@@ -281,6 +419,45 @@ class NarrativeDecision:
                 ending_shift=str(contract.get("ending_shift", "")),
                 target_chinese_chars=_integer(contract.get("target_chinese_chars"), "target_chinese_chars"),
                 forbidden=_string_tuple(contract.get("forbidden")),
+                scene_plan=ScenePlan(
+                    scenes=tuple(SceneContract(
+                        id=str(item.get("id", "")), order=_integer(item.get("order"), "scene order"),
+                        place_id=str(item.get("place_id", "")), place_label=str(item.get("place_label", "")),
+                        place_class=str(item.get("place_class", "")), interior_exterior=str(item.get("interior_exterior", "")),
+                        time_window=str(item.get("time_window", "")), participants=_string_tuple(item.get("participants")),
+                        viewpoint=str(item.get("viewpoint", "")), ordinary_people_present=bool(item.get("ordinary_people_present", False)),
+                        goal=str(item.get("goal", "")), conflict=str(item.get("conflict", "")), action=str(item.get("action", "")),
+                        information_change=str(item.get("information_change", "")), state_change=str(item.get("state_change", "")),
+                        entry_reason=str(item.get("entry_reason", "")), exit_trigger=str(item.get("exit_trigger", "")),
+                        inherited_from_previous=bool(item.get("inherited_from_previous", False)),
+                    ) for item in _object_list(scene_plan.get("scenes", []), "scenes")),
+                    chapter_spatial_intent=str(scene_plan.get("chapter_spatial_intent", "")),
+                    required_world_slice=str(scene_plan.get("required_world_slice", "")),
+                    allowed_same_place_run=_integer(scene_plan.get("allowed_same_place_run", 3), "allowed_same_place_run"),
+                    exception_reason=str(scene_plan.get("exception_reason", "")),
+                ),
+                technology_plan=TechnologyPlan(technologies=tuple(TechnologyContract(
+                    id=str(item.get("id", "")), name=str(item.get("name", "")), role=str(item.get("role", "")),
+                    birth_reason=str(item.get("birth_reason", "")), source=str(item.get("source", "")),
+                    prerequisites=_string_tuple(item.get("prerequisites")), validation_stage=str(item.get("validation_stage", "")),
+                    first_application=str(item.get("first_application", "")), social_diffusion=_string_tuple(item.get("social_diffusion")),
+                    cost=str(item.get("cost", "")), changed_domains=_string_tuple(item.get("changed_domains")),
+                ) for item in _object_list(technology_plan.get("technologies", []), "technologies"))),
+                pov_plan=PointOfViewPlan(
+                    primary_owner=str(pov_plan.get("primary_owner", "")),
+                    mode=str(pov_plan.get("mode", "")),
+                    protagonist_present=bool(pov_plan.get("protagonist_present", True)),
+                    supporting_agency=tuple(SupportingAgencyContract(
+                        actor=str(item.get("actor", "")),
+                        independent_goal=str(item.get("independent_goal", "")),
+                        resistance=str(item.get("resistance", "")),
+                        choice=str(item.get("choice", "")),
+                        cost=str(item.get("cost", "")),
+                        result=str(item.get("result", "")),
+                        mainline_change=str(item.get("mainline_change", "")),
+                    ) for item in _object_list(pov_plan.get("supporting_agency", []), "supporting_agency")),
+                    rationale=str(pov_plan.get("rationale", "")),
+                ),
             ),
             schema_version=_integer(payload.get("schema_version", 1), "schema_version"),
             kind=str(payload.get("kind", "")),

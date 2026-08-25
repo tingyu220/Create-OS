@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -13,9 +14,15 @@ from creative_os.domains.narrative_decision import (
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
+    SceneContract,
+    ScenePlan,
     StoryContract,
     StoryArc,
     StoryVolume,
+    TechnologyContract,
+    TechnologyPlan,
+    PointOfViewPlan,
+    SupportingAgencyContract,
     WrittenTextStrategy,
 )
 
@@ -167,3 +174,65 @@ def test_change_request_round_trip_tracks_impact_without_rewriting_text():
 
     assert NarrativeChangeRequest.from_json(request.to_json()) == request
     assert payload["written_text_strategy"] == "keep"
+
+
+def test_v2_decision_round_trip_preserves_scene_and_technology_plans():
+    decision = _decision()
+    contract = decision.chapter_contract
+    planned = NarrativeDecision(
+        chapter=decision.chapter,
+        profile_id=decision.profile_id,
+        volume_id=decision.volume_id,
+        arc_id=decision.arc_id,
+        arc_phase=decision.arc_phase,
+        arc_goal=decision.arc_goal,
+        inherited_pressure=decision.inherited_pressure,
+        future_pressures=decision.future_pressures,
+        chapter_contract=ChapterContract(
+            functions=contract.functions,
+            dramatic_question=contract.dramatic_question,
+            protagonist_choice=contract.protagonist_choice,
+            reader_change=contract.reader_change,
+            information=contract.information,
+            pressure_curve=contract.pressure_curve,
+            foreshadow_actions=contract.foreshadow_actions,
+            ending_shift=contract.ending_shift,
+            target_chinese_chars=contract.target_chinese_chars,
+            forbidden=contract.forbidden,
+            scene_plan=ScenePlan(
+                scenes=(SceneContract(
+                    id="scene-1", order=1, place_id="gobi-test-site", place_label="西北试验场",
+                    place_class="field", interior_exterior="exterior", time_window="深夜",
+                    participants=("林子轩", "齐雨"), viewpoint="林子轩", ordinary_people_present=True,
+                    goal="确认停机原因", conflict="工期与安全冲突", action="进入厂房复核偏滤器",
+                    information_change="确认旧图缺失", state_change="试运行暂停",
+                    entry_reason="远程数据不足", exit_trigger="故障树建立完成",
+                ),),
+                chapter_spatial_intent="让技术冲突落到工程现场", required_world_slice="工程劳动者",
+                allowed_same_place_run=2,
+            ),
+            technology_plan=TechnologyPlan(technologies=(TechnologyContract(
+                id="fusion-divertor", name="耐高热偏滤器", role="supporting",
+                birth_reason="旧部件无法承受持续热流", source="人类根据CMB理论工程化",
+                prerequisites=("耐高热材料", "真空制造"), validation_stage="现场复核",
+                first_application="聚变试验堆", social_diffusion=("工业热交换",),
+                cost="延误点火并增加材料争夺", changed_domains=("protagonist_capability", "power_relations"),
+            ),)),
+        ),
+        schema_version=2,
+    )
+
+    assert NarrativeDecision.from_json(planned.to_json()) == planned
+
+
+def test_pov_plan_round_trips_supporting_character_agency():
+    decision = _decision()
+    agency = SupportingAgencyContract("韩宁", "查明偏滤器裂纹", "工期封锁", "坚持停机", "承担延期责任", "首堆停机", "暴露旧图缺陷")
+    scene = SceneContract("s1", 1, "plant", "十九号厂房", "field", "interior", "深夜", ("韩宁", "工人"), "韩宁", True, "查明裂纹", "工期压力", "拉下停机闸", "旧图缺陷", "首堆停机", "联调异常", "进入复盘")
+    planned = replace(decision, schema_version=2, chapter_contract=replace(
+        decision.chapter_contract,
+        scene_plan=ScenePlan((scene,), "工程现场", "现场工人"),
+        pov_plan=PointOfViewPlan("韩宁", "limited", False, (agency,), "工程现场配角POV"),
+    ))
+
+    assert NarrativeDecision.from_json(planned.to_json()) == planned

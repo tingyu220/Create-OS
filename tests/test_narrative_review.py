@@ -6,6 +6,12 @@ from creative_os.domains.narrative_decision import (
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
+    SceneContract,
+    ScenePlan,
+    TechnologyContract,
+    TechnologyPlan,
+    PointOfViewPlan,
+    SupportingAgencyContract,
 )
 from creative_os.domains.narrative_review import review_narrative
 from creative_os.domains.narrative_replay_model import EvidenceRef, ReplayedChapterContract
@@ -118,3 +124,70 @@ def test_replay_reviewer_reports_missing_cost_and_repeated_function_without_muta
     assert {"missing_choice_cost", "repeated_chapter_function"} <= {issue.code for issue in issues}
     assert "missing_protagonist_choice" not in {issue.code for issue in issues}
     assert current == before
+
+
+def test_review_reports_declared_location_world_slice_and_technology_not_dramatized():
+    contract = _decision()
+    planned = replace(
+        contract,
+        schema_version=2,
+        chapter_contract=replace(
+            contract.chapter_contract,
+            scene_plan=ScenePlan(scenes=(SceneContract(
+                   "scene-1", 1, "gobi", "西北戈壁试验场", "field", "exterior", "深夜",
+                   ("林子轩", "工人"), "林子轩", True, "查故障", "工期冲突", "现场停机",
+                   "确认旧图缺失", "试验暂停", "远程数据不足", "完成复盘",
+            ),), chapter_spatial_intent="现场行动", required_world_slice="普通工人", allowed_same_place_run=2),
+            technology_plan=TechnologyPlan(technologies=(TechnologyContract(
+                   "fusion", "耐高热偏滤器", "core", "解决热流烧蚀", "CMB理论工程化", ("耐热材料",),
+                   "现场试验", "试验堆停机复核", ("工业热交换",), "工期延期", ("ordinary_life",),
+            ),)),
+        ),
+    )
+
+    codes = _codes(review_narrative(planned, recent_contracts=[], text="林子轩留在基地会议室查看数据。"))
+
+    assert {"declared_location_not_dramatized", "external_world_slice_missing", "technology_application_missing"} <= codes
+
+
+def test_review_does_not_accept_isolated_location_and_technology_name_mentions():
+    contract = _decision()
+    planned = replace(
+        contract,
+        schema_version=2,
+        chapter_contract=replace(
+            contract.chapter_contract,
+            scene_plan=ScenePlan(scenes=(SceneContract(
+                "scene-1", 1, "gobi", "西北戈壁试验场", "field", "exterior", "深夜",
+                ("林子轩", "工人"), "林子轩", True, "查故障", "工期冲突", "现场停机",
+                "确认旧图缺失", "试验暂停", "远程数据不足", "完成复盘",
+            ),), chapter_spatial_intent="现场行动", required_world_slice="普通工人", allowed_same_place_run=2),
+            technology_plan=TechnologyPlan(technologies=(TechnologyContract(
+                "fusion", "耐高热偏滤器", "core", "解决热流烧蚀", "CMB理论工程化", ("耐热材料",),
+                "现场试验", "试验堆停机复核", ("工业热交换",), "工期延期", ("ordinary_life",),
+            ),)),
+        ),
+    )
+
+    codes = _codes(review_narrative(
+        planned, recent_contracts=[], text="报告页脚列着西北戈壁试验场和耐高热偏滤器。",
+    ))
+
+    assert "declared_location_not_dramatized" in codes
+    assert "external_world_slice_missing" in codes
+    assert "technology_application_missing" in codes
+
+
+def test_review_requires_supporting_character_choice_to_change_mainline():
+    contract = _decision()
+    agency = SupportingAgencyContract("韩宁", "查明裂纹", "工期压力", "拉下停机闸", "承担延期", "首堆停机", "旧图进入复盘")
+    scene = SceneContract("s1", 1, "plant", "十九号厂房", "field", "interior", "深夜", ("韩宁", "工人"), "韩宁", True, "查明裂纹", "工期压力", "拉下停机闸", "旧图缺陷", "首堆停机", "联调异常", "进入复盘")
+    planned = replace(contract, schema_version=2, chapter_contract=replace(
+        contract.chapter_contract,
+        scene_plan=ScenePlan((scene,), "工程现场", "现场工人"),
+        pov_plan=PointOfViewPlan("韩宁", "limited", False, (agency,), "配角主导"),
+    ))
+
+    codes = _codes(review_narrative(planned, [], "十九号厂房里，韩宁查明裂纹，但没有作出选择。"))
+    assert "supporting_agency_not_dramatized" in codes
+from dataclasses import replace

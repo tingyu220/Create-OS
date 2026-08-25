@@ -1,0 +1,7 @@
+{
+  "target_chapter": 27,
+  "chapter_function": "阻断境外现场不可逆事故",
+  "required_capability": "block-incident",
+  "unclaimed_sources": ["chapter-024", "chapter-025", "chapter-026"],
+  "recommended": "overseas-engineer"
+}
