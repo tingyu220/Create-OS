@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":19,\"chapter_contract\":{\"dramatic_question\":\"人为袭击利用RC-7制造事故表象后，林子轩能否保住证据并救下方晴？\",\"ending_shift\":\"袭击者把林子轩伪造成事故责任人，调查转向九层权限持有者\",\"forbidden\":[\"不得把袭击写成RC-7自行失控\",\"不得提前确认幕后主使\"],\"foreshadow_actions\":[\"九层权限\",\"伪造终端指令\"],\"functions\":[\"确认人为暗杀\",\"把技术事故表象转为权限追查\"],\"information\":{\"reveal\":[\"袭击者远程切换环控并投放RC-7裂解物\"],\"withhold\":[\"九名权限持有者中的真凶\"],\"misdirect\":[\"安全部日志把责任指向林子轩\"]},\"pressure_curve\":{\"start\":\"密闭与中毒\",\"turn\":\"林子轩中止回放启动喷淋\",\"end\":\"伪造日志使受害者成为嫌疑人\"},\"protagonist_choice\":{\"actor\":\"林子轩\",\"action\":\"中止回放并启动喷淋救下方晴\",\"alternatives\":[\"保住回放窗口\"],\"cost\":\"丢失实时窗口并暴露最后一帧数据\",\"consequence\":\"两人获救但林子轩被隔离审讯\"},\"reader_change\":{\"before\":\"读者把异常视为系统故障\",\"after\":\"读者确认有人利用RC-7发动袭击并栽赃\"},\"target_chinese_chars\":8000,\"scene_plan\":{\"scenes\":[{\"id\":\"attack-room\",\"order\":1,\"place_id\":\"longyuan-information-room\",\"place_label\":\"龙渊信息室\",\"place_class\":\"secure_lab\",\"interior_exterior\":\"interior\",\"time_window\":\"深夜\",\"participants\":[\"林子轩\",\"方晴\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"保住证据并逃生\",\"conflict\":\"环控被远程切断并投放RC-7裂解物\",\"action\":\"中止回放启动喷淋\",\"information_change\":\"确认九层权限被复制\",\"state_change\":\"方晴中毒且回放中止\",\"entry_reason\":\"承接第18章外部入侵\",\"exit_trigger\":\"救援破门\",\"inherited_from_previous\":true},{\"id\":\"security-interrogation\",\"order\":2,\"place_id\":\"longyuan-interrogation-room\",\"place_label\":\"龙渊审讯室\",\"place_class\":\"security\",\"interior_exterior\":\"interior\",\"time_window\":\"同夜稍后\",\"participants\":[\"林子轩\",\"魏诚\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"证明日志遭到伪造\",\"conflict\":\"个人终端证据反指林子轩\",\"action\":\"要求核验完整路径与合法签名\",\"information_change\":\"确认宿舍终端被冒用\",\"state_change\":\"林子轩成为安全部嫌疑人\",\"entry_reason\":\"袭击后被隔离\",\"exit_trigger\":\"发现方晴留下的芯片\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"用两个封闭空间完成袭击与栽赃升级，批准连续基地例外\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"暗杀与隔离审讯必须保持封闭压迫\"},\"technology_plan\":{\"technologies\":[{\"id\":\"rc7-weaponization\",\"name\":\"RC-7裂解物\",\"role\":\"background\",\"birth_reason\":\"袭击者利用神经介入药物的高温裂解毒性制造事故表象\",\"source\":\"既有神经干预项目被恶意利用\",\"prerequisites\":[],\"validation_stage\":\"空气传感器分子片段匹配\",\"first_application\":\"环控投放与密闭袭击\",\"social_diffusion\":[],\"cost\":\"方晴中毒、回放中止、项目安全信用受损\",\"changed_domains\":[\"faction_relations\"]}]},\"forbidden\":[\"不得把袭击写成RC-7自行失控\",\"不得提前确认幕后主使\"]},\"future_pressures\":[\"九层权限追查\",\"旧方案证据转运\"],\"inherited_pressure\":\"第18章有人从外部切入龙渊照明和环控。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T06:05:57.516404+00:00",
+  "evidence": [
+    {
+      "note": "第19章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第18章正文",
+      "source_id": "production/final_chapters/chapter_018.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-019",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_019",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 19 章叙事合同",
+  "updated_at": "2026-08-24T06:05:57.527637+00:00",
+  "version": 1
+}

@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "本章出场人物：军方代表、宇、方晴、林子轩、林正弘、老周、赵磊、陈景行。",
+  "created_at": "2026-08-23T23:25:42.912815+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_011.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-011-characters",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_011",
+    "character_state",
+    "novel"
+  ],
+  "title": "第 11 章人物状态",
+  "updated_at": "2026-08-23T23:25:42.912815+00:00",
+  "version": 1
+}

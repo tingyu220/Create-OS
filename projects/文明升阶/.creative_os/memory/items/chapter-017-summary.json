@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "但他还是迈出去了。因为这是他自己决定要验证的声音。 沈悦没有跟上来。她在电梯口被一个穿灰蓝工作服的人拦住，那人把手里的平板举到她面前，她只看了一眼，眉心就皱起来。林子轩趁着这个空当往食堂方向走，不是想去吃饭，而是那里人杂，他需要几秒不被特意注视的时间。食堂后门开合着，餐车轱辘碾过门槛，胖阿姨在人群里提高了声音，说“不是跟你说别把冰柜的插头拔了，里面还冻着明天要用的鱼”。所有声音都照旧，像什么都没发生。 他合上文件夹，对陈景行说：“先不放。我再听一遍周远的观察间录音。那里面可能也有同样的第二层。” 陈景行点点头，没有反对。林子轩把文件夹放进抽屉，手指按在抽屉边缘，好一会儿没有动作。他知道，从今天起",
+  "created_at": "2026-08-24T04:46:40.148321+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_017.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-017-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_017",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 17 章章节摘要",
+  "updated_at": "2026-08-24T04:46:40.148321+00:00",
+  "version": 1
+}

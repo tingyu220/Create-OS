@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "本章出场人物：宇、方晴、林子轩、林正弘、老周、胖阿姨、赵磊、陈景行。",
+  "created_at": "2026-08-24T04:24:22.633964+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_013.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-013-characters",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_013",
+    "character_state",
+    "novel"
+  ],
+  "title": "第 13 章人物状态",
+  "updated_at": "2026-08-24T04:24:22.633964+00:00",
+  "version": 1
+}

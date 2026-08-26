@@ -24,7 +24,13 @@ from creative_os.domains.narrative_decision import (
     OptionalCandidateResolution,
     PressureCurve,
     ProtagonistChoice,
+    PointOfViewPlan,
     ReaderChange,
+    SceneContract,
+    ScenePlan,
+    SupportingAgencyContract,
+    TechnologyContract,
+    TechnologyPlan,
 )
 from creative_os.domains.narrative_evidence import EvidenceLocator, EvidenceRef, EvidenceRole
 
@@ -154,7 +160,7 @@ class NarrativeDecisionCodec:
         contract_id = cls._text(payload["contract_id"], "contract_id")
         contract_version = cls._integer(payload["contract_version"], "contract_version")
         contract = cls._object(payload["chapter_contract"], "chapter_contract")
-        cls._require_fields(
+        cls._require_fields_with_optional(
             contract,
             {
                 "chapter_id",
@@ -171,6 +177,7 @@ class NarrativeDecisionCodec:
                 "optional_candidates",
                 "intent_evidence_bindings",
             },
+            {"scene_plan", "technology_plan", "pov_plan"},
             "chapter_contract",
         )
         choice = cls._decode_v2_choice(cls._object(contract["protagonist_choice"], "protagonist_choice"))
@@ -222,6 +229,9 @@ class NarrativeDecisionCodec:
                 intent_evidence_bindings=cls._decode_bindings(
                     contract["intent_evidence_bindings"], contract_id, contract_version
                 ),
+                scene_plan=cls._decode_scene_plan(contract.get("scene_plan")),
+                technology_plan=cls._decode_technology_plan(contract.get("technology_plan")),
+                pov_plan=cls._decode_pov_plan(contract.get("pov_plan")),
             ),
             legacy_unclassified_evidence=cls._decode_v2_legacy_evidence(
                 payload["legacy_unclassified_evidence"]
@@ -371,6 +381,71 @@ class NarrativeDecisionCodec:
                     binding.field_path: [NarrativeDecisionCodec._encode_evidence(ref) for ref in binding.evidence]
                     for binding in contract.intent_evidence_bindings
                 },
+                "scene_plan": {
+                    "scenes": [
+                        {
+                            "id": item.id,
+                            "order": item.order,
+                            "place_id": item.place_id,
+                            "place_label": item.place_label,
+                            "place_class": item.place_class,
+                            "interior_exterior": item.interior_exterior,
+                            "time_window": item.time_window,
+                            "participants": list(item.participants),
+                            "viewpoint": item.viewpoint,
+                            "ordinary_people_present": item.ordinary_people_present,
+                            "goal": item.goal,
+                            "conflict": item.conflict,
+                            "action": item.action,
+                            "information_change": item.information_change,
+                            "state_change": item.state_change,
+                            "entry_reason": item.entry_reason,
+                            "exit_trigger": item.exit_trigger,
+                            "inherited_from_previous": item.inherited_from_previous,
+                        }
+                        for item in contract.scene_plan.scenes
+                    ],
+                    "chapter_spatial_intent": contract.scene_plan.chapter_spatial_intent,
+                    "required_world_slice": contract.scene_plan.required_world_slice,
+                    "allowed_same_place_run": contract.scene_plan.allowed_same_place_run,
+                    "exception_reason": contract.scene_plan.exception_reason,
+                },
+                "technology_plan": {
+                    "technologies": [
+                        {
+                            "id": item.id,
+                            "name": item.name,
+                            "role": item.role,
+                            "birth_reason": item.birth_reason,
+                            "source": item.source,
+                            "prerequisites": list(item.prerequisites),
+                            "validation_stage": item.validation_stage,
+                            "first_application": item.first_application,
+                            "social_diffusion": list(item.social_diffusion),
+                            "cost": item.cost,
+                            "changed_domains": list(item.changed_domains),
+                        }
+                        for item in contract.technology_plan.technologies
+                    ]
+                },
+                "pov_plan": {
+                    "primary_owner": contract.pov_plan.primary_owner,
+                    "mode": contract.pov_plan.mode,
+                    "protagonist_present": contract.pov_plan.protagonist_present,
+                    "supporting_agency": [
+                        {
+                            "actor": item.actor,
+                            "independent_goal": item.independent_goal,
+                            "resistance": item.resistance,
+                            "choice": item.choice,
+                            "cost": item.cost,
+                            "result": item.result,
+                            "mainline_change": item.mainline_change,
+                        }
+                        for item in contract.pov_plan.supporting_agency
+                    ],
+                    "rationale": contract.pov_plan.rationale,
+                },
             },
             "legacy_unclassified_evidence": [
                 {
@@ -436,6 +511,110 @@ class NarrativeDecisionCodec:
         )
         choice.validate()
         return choice
+
+    @classmethod
+    def _decode_scene_plan(cls, value: object) -> ScenePlan:
+        if value is None:
+            return ScenePlan()
+        payload = cls._object(value, "scene_plan")
+        cls._require_fields(
+            payload,
+            {"scenes", "chapter_spatial_intent", "required_world_slice", "allowed_same_place_run", "exception_reason"},
+            "scene_plan",
+        )
+        scenes = []
+        for raw in cls._objects(payload["scenes"], "scene_plan.scenes"):
+            cls._require_fields(
+                raw,
+                {
+                    "id", "order", "place_id", "place_label", "place_class", "interior_exterior",
+                    "time_window", "participants", "viewpoint", "ordinary_people_present", "goal",
+                    "conflict", "action", "information_change", "state_change", "entry_reason", "exit_trigger",
+                    "inherited_from_previous",
+                },
+                "scene_contract",
+            )
+            scenes.append(SceneContract(
+                id=cls._text(raw["id"], "scene id"),
+                order=cls._integer(raw["order"], "scene order"),
+                place_id=cls._text(raw["place_id"], "scene place_id"),
+                place_label=cls._text(raw["place_label"], "scene place_label"),
+                place_class=cls._text(raw["place_class"], "scene place_class"),
+                interior_exterior=cls._text(raw["interior_exterior"], "scene interior_exterior"),
+                time_window=cls._text(raw["time_window"], "scene time_window"),
+                participants=cls._strings(raw["participants"], "scene participants"),
+                viewpoint=cls._text(raw["viewpoint"], "scene viewpoint"),
+                ordinary_people_present=bool(raw["ordinary_people_present"]),
+                goal=cls._text(raw["goal"], "scene goal"),
+                conflict=cls._text(raw["conflict"], "scene conflict"),
+                action=cls._text(raw["action"], "scene action"),
+                information_change=cls._text(raw["information_change"], "scene information_change"),
+                state_change=cls._text(raw["state_change"], "scene state_change"),
+                entry_reason=cls._text(raw["entry_reason"], "scene entry_reason"),
+                exit_trigger=cls._text(raw["exit_trigger"], "scene exit_trigger"),
+                inherited_from_previous=bool(raw["inherited_from_previous"]),
+            ))
+        return ScenePlan(
+            scenes=tuple(scenes),
+            chapter_spatial_intent=cls._optional_text(payload["chapter_spatial_intent"]) or "",
+            required_world_slice=cls._optional_text(payload["required_world_slice"]) or "",
+            allowed_same_place_run=cls._integer(payload["allowed_same_place_run"], "allowed_same_place_run"),
+            exception_reason=cls._optional_text(payload["exception_reason"]) or "",
+        )
+
+    @classmethod
+    def _decode_technology_plan(cls, value: object) -> TechnologyPlan:
+        if value is None:
+            return TechnologyPlan()
+        payload = cls._object(value, "technology_plan")
+        cls._require_fields(payload, {"technologies"}, "technology_plan")
+        technologies = []
+        for raw in cls._objects(payload["technologies"], "technology_plan.technologies"):
+            cls._require_fields(
+                raw,
+                {"id", "name", "role", "birth_reason", "source", "prerequisites", "validation_stage", "first_application", "social_diffusion", "cost", "changed_domains"},
+                "technology_contract",
+            )
+            technologies.append(TechnologyContract(
+                id=cls._text(raw["id"], "technology id"),
+                name=cls._text(raw["name"], "technology name"),
+                role=cls._text(raw["role"], "technology role"),
+                birth_reason=cls._text(raw["birth_reason"], "technology birth_reason"),
+                source=cls._text(raw["source"], "technology source"),
+                prerequisites=cls._strings(raw["prerequisites"], "technology prerequisites"),
+                validation_stage=cls._text(raw["validation_stage"], "technology validation_stage"),
+                first_application=cls._text(raw["first_application"], "technology first_application"),
+                social_diffusion=cls._strings(raw["social_diffusion"], "technology social_diffusion"),
+                cost=cls._text(raw["cost"], "technology cost"),
+                changed_domains=cls._strings(raw["changed_domains"], "technology changed_domains"),
+            ))
+        return TechnologyPlan(tuple(technologies))
+
+    @classmethod
+    def _decode_pov_plan(cls, value: object) -> PointOfViewPlan:
+        if value is None:
+            return PointOfViewPlan()
+        payload = cls._object(value, "pov_plan")
+        cls._require_fields(payload, {"primary_owner", "mode", "protagonist_present", "supporting_agency", "rationale"}, "pov_plan")
+        agencies = []
+        for raw in cls._objects(payload["supporting_agency"], "pov_plan.supporting_agency"):
+            cls._require_fields(raw, {"actor", "independent_goal", "resistance", "choice", "cost", "result", "mainline_change"}, "supporting_agency")
+            agencies.append(SupportingAgencyContract(
+                actor=cls._text(raw["actor"], "agency actor"),
+                independent_goal=cls._text(raw["independent_goal"], "agency independent_goal"),
+                resistance=cls._text(raw["resistance"], "agency resistance"),
+                choice=cls._text(raw["choice"], "agency choice"),
+                cost=cls._text(raw["cost"], "agency cost"),
+                result=cls._text(raw["result"], "agency result"),
+                mainline_change=cls._text(raw["mainline_change"], "agency mainline_change"),
+            ))
+        return PointOfViewPlan(
+            primary_owner=cls._optional_text(payload["primary_owner"]) or "",
+            mode=cls._optional_text(payload["mode"]) or "",
+            protagonist_present=bool(payload["protagonist_present"]),
+            supporting_agency=tuple(agencies),
+            rationale=cls._optional_text(payload["rationale"]) or "",
+        )
 
     @classmethod
     def _decode_nullable(cls, value: object, name: str) -> NullablePlan:
@@ -728,6 +907,18 @@ class NarrativeDecisionCodec:
         actual = set(payload)
         missing = expected - actual
         unexpected = actual - expected
+        if missing:
+            raise NarrativeValidationError(f"{name} missing field: {sorted(missing)[0]}")
+        if unexpected:
+            raise NarrativeValidationError(f"{name} unexpected field: {sorted(unexpected)[0]}")
+
+    @staticmethod
+    def _require_fields_with_optional(
+        payload: Mapping[str, Any], required: set[str], optional: set[str], name: str
+    ) -> None:
+        actual = set(payload)
+        missing = required - actual
+        unexpected = actual - required - optional
         if missing:
             raise NarrativeValidationError(f"{name} missing field: {sorted(missing)[0]}")
         if unexpected:

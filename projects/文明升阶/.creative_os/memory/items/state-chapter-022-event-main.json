@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"魏诚的声音从喉咙里挤出来，却没有得到立刻的执行。投影机发出“啪”地一声，大屏幕从中间向两边缩成一条白线，又熄成一片灰。可那一幕已经不再依赖屏幕了。林子轩看见对面座位的工程组负责人还抬着头，嘴唇微微张开，像在默算曲线末端的斜率。旁边的记录员僵在键盘前，手指停在半空。角落里的两个安全部人员一个按住耳麦，另一个的手还搭在门禁开关上，似乎在等更具体的命令。\", \"source_chapter\": \"production/final_chapters/chapter_022.md\"}], \"fields\": {\"outcome\": \"魏诚的声音从喉咙里挤出来，却没有得到立刻的执行。投影机发出“啪”地一声，大屏幕从中间向两边缩成一条白线，又熄成一片灰。可那一幕已经不再依赖屏幕了。林子轩看见对面座位的工程组负责人还抬着头，嘴唇微微张开，像在默算曲线末端的斜率。旁边的记录员僵在键盘前，手指停在半空。角落里的两个安全部人员一个按住耳麦，另一个的手还搭在门禁开关上，似乎在等更具体的命令。\"}, \"id\": \"chapter-022-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第22章事件\"}",
+  "created_at": "2026-08-24T06:45:20.369108+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_022.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-022-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 22 章状态：event",
+  "updated_at": "2026-08-24T06:45:20.369108+00:00",
+  "version": 1
+}

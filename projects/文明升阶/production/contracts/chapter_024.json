@@ -1,0 +1,130 @@
+{
+  "arc_goal": "从聚变试验失败走到全球协作和一级文明门槛",
+  "arc_id": "arc-fusion-construction",
+  "arc_phase": "setup",
+  "chapter": 24,
+  "chapter_contract": {
+    "functions": ["让配角接管工程决策", "把旧图问题变成追溯行动"],
+    "dramatic_question": "首堆已经停机，林正弘是否愿意亲手冻结自己参与批准的旧部件批次？",
+    "protagonist_choice": {
+      "actor": "林正弘",
+      "action": "冻结D-0447关联批次并要求全部验收记录回源",
+      "alternatives": ["只更换已发现裂纹的支撑环后恢复联调"],
+      "cost": "承担至少三天延期和旧审批责任追查",
+      "consequence": "首堆从单点抢修转为整条偏滤器受力链复核"
+    },
+    "reader_change": {
+      "before": "读者知道旧图造成偏滤器热应力风险",
+      "after": "读者确认工程问题来自一批无法回源的验收记录，林正弘选择冻结而非遮掩"
+    },
+    "information": {
+      "reveal": ["D-0447并非孤立编号，关联批次缺少原始图纸"],
+      "withhold": ["是谁批准删除或替换原始图纸"],
+      "misdirect": ["供应方把裂纹解释为单次运输磕碰"]
+    },
+    "pressure_curve": {
+      "start": "清晨复盘要求尽快恢复联调",
+      "turn": "林正弘发现自己的旧审批签名出现在批次放行页",
+      "end": "他拉下整批冻结令并承担延期"
+    },
+    "foreshadow_actions": ["旧审批签名", "偏滤器批次追溯"],
+    "ending_shift": "供应链被迫开放原始验收链，首堆进度权从行政节点转到现场复核",
+    "target_chinese_chars": 8000,
+    "forbidden": ["不得让林子轩出场", "不得确认幕后删图者", "不得让首堆恢复点火"],
+    "scene_plan": {
+      "scenes": [
+        {
+          "id": "morning-teardown",
+          "order": 1,
+          "place_id": "gobi-plant-balance-hall",
+          "place_label": "十九号厂房平衡大厅",
+          "place_class": "industrial",
+          "interior_exterior": "interior",
+          "time_window": "第23章次日清晨",
+          "participants": ["林正弘", "韩宁", "齐雨", "检修工人"],
+          "viewpoint": "林正弘",
+          "ordinary_people_present": true,
+          "goal": "确认偏滤器裂纹是否为单点故障",
+          "conflict": "恢复联调时限与扩大拆检范围冲突",
+          "action": "拆开D-0447支撑环并核对验收标记",
+          "information_change": "发现同批编号共享缺失的原始图纸",
+          "state_change": "故障从单点升级为批次风险",
+          "entry_reason": "承接第23章故障树和早班状态追踪",
+          "exit_trigger": "供应方要求只换单件"
+        },
+        {
+          "id": "traceability-decision",
+          "order": 2,
+          "place_id": "gobi-site-quality-room",
+          "place_label": "现场质量室",
+          "place_class": "industrial_governance",
+          "interior_exterior": "interior",
+          "time_window": "同日上午",
+          "participants": ["林正弘", "韩宁", "齐雨", "供应方质检代表"],
+          "viewpoint": "林正弘",
+          "ordinary_people_present": true,
+          "goal": "决定是否冻结关联批次",
+          "conflict": "林正弘的旧审批责任与七年工期压力冲突",
+          "action": "签署批次冻结并要求验收记录回源",
+          "information_change": "旧审批签名进入公开复核链",
+          "state_change": "首堆整条偏滤器受力链暂停安装",
+          "entry_reason": "单件更换无法解释批次共性",
+          "exit_trigger": "原始验收链被要求限时开放"
+        }
+      ],
+      "chapter_spatial_intent": "保持工程现场连续性，用拆检到质量决策的功能切换推进冲突",
+      "required_world_slice": "检修工人与现场质量责任",
+      "allowed_same_place_run": 3,
+      "exception_reason": "连续工程现场用于兑现第23章停机后果"
+    },
+    "technology_plan": {
+      "technologies": [
+        {
+          "id": "divertor-traceability",
+          "name": "偏滤器支撑环追溯",
+          "role": "supporting",
+          "birth_reason": "D-0447裂纹与缺失原图使单件抢修无法证明安全",
+          "source": "第23章故障树、现场拆检和验收记录",
+          "prerequisites": ["焊缝内窥镜", "批次编号", "原始图纸"],
+          "validation_stage": "拆检与批次交叉核验",
+          "first_application": "西北一号综合试验堆偏滤器受力链",
+          "social_diffusion": ["供应链质量追溯", "现场工人停工保护"],
+          "cost": "至少三天延期、批次返工和审批责任暴露",
+          "changed_domains": ["ordinary_life", "faction_relations"]
+        }
+      ]
+    },
+    "pov_plan": {
+      "primary_owner": "林正弘",
+      "mode": "limited",
+      "protagonist_present": false,
+      "rationale": "由曾参与旧审批的人亲手冻结批次，使配角选择直接改变首堆主线",
+      "supporting_agency": [
+        {
+          "actor": "林正弘",
+          "independent_goal": "查清偏滤器批次风险并保住现场人员",
+          "resistance": "七年工期、供应方施压和自己的旧审批签名",
+          "choice": "冻结D-0447关联批次",
+          "cost": "承担延期与审批责任追查",
+          "result": "整条偏滤器受力链暂停安装",
+          "mainline_change": "首堆由单点抢修转入供应链追溯"
+        },
+        {
+          "actor": "韩宁",
+          "independent_goal": "保住检修班组免于带病联调",
+          "resistance": "供应方要求只换单件并立即复工",
+          "choice": "拒绝在复工单上签字并提交隐藏照片",
+          "cost": "承担违抗排程和班组停工责任",
+          "result": "批次共性风险获得现场证据",
+          "mainline_change": "迫使林正弘签署整批冻结"
+        }
+      ]
+    }
+  },
+  "future_pressures": ["供应链质量追溯扩大", "首堆延期影响普通家庭与国际协作"],
+  "inherited_pressure": "第23章首堆因偏滤器旧图风险停机，D-0447只有验收结论没有原始图纸。",
+  "kind": "narrative_decision",
+  "profile_id": "文明升阶-production-profile",
+  "schema_version": 2,
+  "volume_id": "volume-1-key"
+}

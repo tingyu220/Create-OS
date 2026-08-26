@@ -47,6 +47,9 @@ def save_chapter_candidates(project_root: str | Path, chapter_number: int) -> li
         except ValueError:
             item = store.get(item.id)
         saved.append(item)
+    # POV 候选只在状态物化完成后失效；延迟导入避免领域初始化环。
+    from creative_os.domains.pov_strategy_recompute import on_chapter_materialized
+    on_chapter_materialized(root, chapter_number)
     return saved
 
 

@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"走廊里的灯带把林子轩的影子投在浅灰色的地面上，那影子随着他脚步的节奏一截一截地往前挪。方晴没有跟上来。他听见她在身后关掉水房的门，又和走廊服务台的值班员低声说了几句。空气里有一股很淡的消毒水味，混着从食堂方向飘来的隔夜面食气，沉在地下建筑恒定的温度里，像一层洗不掉的膜。\", \"source_chapter\": \"production/final_chapters/chapter_014.md\"}], \"fields\": {\"outcome\": \"走廊里的灯带把林子轩的影子投在浅灰色的地面上，那影子随着他脚步的节奏一截一截地往前挪。方晴没有跟上来。他听见她在身后关掉水房的门，又和走廊服务台的值班员低声说了几句。空气里有一股很淡的消毒水味，混着从食堂方向飘来的隔夜面食气，沉在地下建筑恒定的温度里，像一层洗不掉的膜。\"}, \"id\": \"chapter-014-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第14章事件\"}",
+  "created_at": "2026-08-24T04:31:44.805046+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_014.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-014-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 14 章状态：event",
+  "updated_at": "2026-08-24T04:31:44.805046+00:00",
+  "version": 1
+}

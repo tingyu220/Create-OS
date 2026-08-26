@@ -305,6 +305,49 @@ def _messages(task: ContinuationTask, context: object, previous_issues: list[str
             f"结尾新失衡：{contract.ending_shift}\n"
             f"禁止项：{'；'.join(contract.forbidden)}"
         )
+        scene_plan = contract.scene_plan
+        if scene_plan.scenes:
+            scene_lines = []
+            for scene in scene_plan.scenes:
+                scene_lines.append(
+                    f"{scene.order}. {scene.place_label}（{scene.place_id}，{scene.time_window}，"
+                    f"{scene.interior_exterior}）；人物：{'、'.join(scene.participants)}；"
+                    f"目标：{scene.goal}；冲突：{scene.conflict}；行动：{scene.action}；"
+                    f"信息变化：{scene.information_change or '无'}；状态变化：{scene.state_change or '无'}；"
+                    f"进入理由：{scene.entry_reason}；退出触发：{scene.exit_trigger}"
+                )
+            prompt += (
+                "\n\n场景结构合同（必须按顺序戏剧化，不得只提及地名）：\n"
+                f"空间意图：{scene_plan.chapter_spatial_intent}\n"
+                f"外部世界/社会切面：{scene_plan.required_world_slice or '本章无强制项'}\n"
+                + "\n".join(scene_lines)
+            )
+        technologies = contract.technology_plan.technologies
+        if technologies:
+            technology_lines = []
+            for technology in technologies:
+                technology_lines.append(
+                    f"{technology.name}（{technology.role}）：诞生原因={technology.birth_reason}；"
+                    f"来源={technology.source}；前置={'、'.join(technology.prerequisites)}；"
+                    f"验证阶段={technology.validation_stage}；首次应用={technology.first_application}；"
+                    f"社会扩散={'、'.join(technology.social_diffusion)}；代价={technology.cost}"
+                )
+            prompt += "\n\n技术发展合同（必须写出应用、验证或扩散，不得只报技术名）：\n" + "\n".join(technology_lines)
+        pov_plan = contract.pov_plan
+        if pov_plan.primary_owner:
+            agency_lines = []
+            for agency in pov_plan.supporting_agency:
+                agency_lines.append(
+                    f"{agency.actor}：独立目标={agency.independent_goal}；阻力={agency.resistance}；"
+                    f"选择={agency.choice}；代价={agency.cost}；结果={agency.result}；"
+                    f"对主线的直接改变={agency.mainline_change}"
+                )
+            prompt += (
+                "\n\nPOV与配角能动性合同（必须执行，禁止章末只向主角汇报）：\n"
+                f"主视角：{pov_plan.primary_owner}（{pov_plan.mode}）\n"
+                f"主角是否出场：{'是' if pov_plan.protagonist_present else '否'}\n"
+                f"视角理由：{pov_plan.rationale}\n" + "\n".join(agency_lines)
+            )
     if previous_issues:
         prompt += f"\n\n上一版未通过质量门禁：{'；'.join(previous_issues)}。"
         if "duplicate_reader_paragraph" in previous_issues:

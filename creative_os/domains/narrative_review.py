@@ -114,6 +114,53 @@ def review_narrative(
     for forbidden in chapter.forbidden:
         if forbidden and forbidden in text:
             issues.append(NarrativeIssue("forbidden_information_revealed", "high", forbidden))
+
+    scene_plan = chapter.scene_plan
+    dramatized_scene_ids: set[str] = set()
+    for scene in scene_plan.scenes:
+        place_present = _evidence_match(scene.place_label, text) or scene.place_id in text
+        dramatic_markers = (
+            scene.goal, scene.conflict, scene.action, scene.information_change,
+            scene.state_change, scene.entry_reason, scene.exit_trigger,
+        )
+        marker_hits = sum(bool(marker and _evidence_match(marker, text)) for marker in dramatic_markers)
+        if place_present and marker_hits >= 2:
+            dramatized_scene_ids.add(scene.id)
+        else:
+            issues.append(NarrativeIssue(
+                "declared_location_not_dramatized", "high", f"{scene.id}: {scene.place_label}",
+            ))
+    ordinary_slice_dramatized = any(
+        scene.id in dramatized_scene_ids
+        and scene.ordinary_people_present
+        and any(participant != scene.viewpoint and _evidence_match(participant, text) for participant in scene.participants)
+        for scene in scene_plan.scenes
+    )
+    if scene_plan.required_world_slice and not ordinary_slice_dramatized:
+        issues.append(NarrativeIssue(
+            "external_world_slice_missing", "high", scene_plan.required_world_slice,
+        ))
+
+    for technology in chapter.technology_plan.technologies:
+        engineering_markers = (
+            technology.validation_stage,
+            technology.first_application,
+            *technology.social_diffusion,
+        )
+        engineering_hits = sum(bool(marker and _evidence_match(marker, text)) for marker in engineering_markers)
+        if not _evidence_match(technology.name, text) or engineering_hits < 2:
+            issues.append(NarrativeIssue(
+                "technology_application_missing", "high", f"{technology.id}: {technology.first_application}",
+            ))
+    for agency in chapter.pov_plan.supporting_agency:
+        agency_markers = (
+            agency.independent_goal, agency.resistance, agency.choice,
+            agency.cost, agency.result, agency.mainline_change,
+        )
+        if agency.actor not in text or sum(_evidence_match(marker, text) for marker in agency_markers) < 3:
+            issues.append(NarrativeIssue(
+                "supporting_agency_not_dramatized", "high", f"{agency.actor}: {agency.mainline_change}",
+            ))
     for progression_issue in evaluate_progression(contract, recent_contracts).issues:
         issues.append(NarrativeIssue(
             progression_issue.code, progression_issue.severity, progression_issue.evidence,
@@ -127,6 +174,18 @@ def _opening(text: str) -> str:
         if value and not value.startswith("#"):
             return value[:120]
     return ""
+
+
+def _evidence_match(marker: str, text: str) -> bool:
+    """Match concise contract evidence without requiring prose to copy whole clauses verbatim."""
+    value = marker.strip()
+    if not value:
+        return False
+    if value in text:
+        return True
+    compact = "".join(character for character in value if character.isalnum())
+    chunks = {compact[index:index + 2] for index in range(max(0, len(compact) - 1))}
+    return len(chunks) >= 2 and sum(chunk in text for chunk in chunks) >= min(3, len(chunks))
 
 
 def _replay_issue(

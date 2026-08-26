@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":22,\"chapter_contract\":{\"dramatic_question\":\"当九年窗口缩短为七年，各方是否愿意把争论改成公开工程排程？\",\"ending_shift\":\"七年倒计时进入执行计划，林子轩推动第一座试验堆\",\"forbidden\":[\"不得出现两年倒计时\",\"不得把第一座试验堆写成已经成功\"],\"foreshadow_actions\":[\"七个观测站\",\"第一座试验堆\"],\"functions\":[\"统一七年口径\",\"从政治争论转入工程执行\"],\"information\":{\"reveal\":[\"七年倒计时\"],\"withhold\":[\"窗口缩短的深层原因\"],\"misdirect\":[\"安全部试图把观测曲线归为来源不明\"]},\"pressure_curve\":{\"start\":\"投影被切断\",\"turn\":\"七个观测站完成交叉验证\",\"end\":\"第一座试验堆被写入立即执行计划\"},\"protagonist_choice\":{\"actor\":\"林子轩\",\"action\":\"要求把七年倒计时和第一座试验堆写入公开执行计划\",\"alternatives\":[\"等待安全部批准数据\"],\"cost\":\"失去保密空间并承担工程失败责任\",\"consequence\":\"准备阶段结束，工程排程启动\"},\"reader_change\":{\"before\":\"读者知道时间压力存在\",\"after\":\"读者确认人类只有七年且必须立即建设\"},\"target_chinese_chars\":7000,\"scene_plan\":{\"scenes\":[{\"id\":\"joint-meeting\",\"order\":1,\"place_id\":\"federal-joint-meeting-room\",\"place_label\":\"联邦联合会议室\",\"place_class\":\"governance\",\"interior_exterior\":\"interior\",\"time_window\":\"当日午后\",\"participants\":[\"林子轩\",\"魏诚\",\"工程组负责人\",\"记录员\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"让七年曲线进入正式记录\",\"conflict\":\"安全部切断投影并禁止讨论\",\"action\":\"要求七个观测站现场交叉验证\",\"information_change\":\"确认窗口由九年缩短为七年\",\"state_change\":\"七年倒计时进入会议记录\",\"entry_reason\":\"承接第21章旧方案缺口公开\",\"exit_trigger\":\"联合执行草案获准起草\",\"inherited_from_previous\":true},{\"id\":\"execution-desk\",\"order\":2,\"place_id\":\"longyuan-core-decoding-room\",\"place_label\":\"龙渊核心解码室\",\"place_class\":\"research\",\"interior_exterior\":\"interior\",\"time_window\":\"当夜\",\"participants\":[\"林子轩\",\"宇\",\"苏晚晴\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"把倒计时转为首堆行动\",\"conflict\":\"身体代价与审批延迟\",\"action\":\"发出第一座试验堆联调要求\",\"information_change\":\"明确首堆仍处于联调准备\",\"state_change\":\"第一座试验堆进入立即执行\",\"entry_reason\":\"会议形成七年共识\",\"exit_trigger\":\"工程组接收联调要求\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"以决策空间收束旧阶段并把下一章推出基地到戈壁现场\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"本章承担阶段决策收束，外部工程现场在第23章兑现\"},\"technology_plan\":{\"technologies\":[{\"id\":\"fusion-pilot-program\",\"name\":\"第一座聚变试验堆\",\"role\":\"core\",\"birth_reason\":\"七年窗口迫使聚变方案从论证转入实机验证\",\"source\":\"CMB方案与人类旧工程设计结合\",\"prerequisites\":[\"旧方案缺口复核\",\"观测数据交叉验证\"],\"validation_stage\":\"联调准备\",\"first_application\":\"戈壁第一座试验堆\",\"social_diffusion\":[\"全球工程排程\",\"供应链动员\"],\"cost\":\"公开失败风险与资源集中\",\"changed_domains\":[\"faction_relations\",\"ordinary_life\"]}]},\"forbidden\":[\"不得出现两年倒计时\",\"不得把第一座试验堆写成已经成功\"]},\"future_pressures\":[\"首堆现场故障\",\"全球供应链分配\"],\"inherited_pressure\":\"旧方案缺少民用层验证和位置屏蔽，新的中微子数据必须公开核验。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T06:39:36.355336+00:00",
+  "evidence": [
+    {
+      "note": "第22章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第21章正文",
+      "source_id": "production/final_chapters/chapter_021.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-022",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_022",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 22 章叙事合同",
+  "updated_at": "2026-08-24T06:39:36.364516+00:00",
+  "version": 1
+}

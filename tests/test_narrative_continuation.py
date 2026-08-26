@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -10,10 +11,15 @@ from creative_os.domains.narrative_decision import (
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
+    SceneContract,
+    ScenePlan,
+    TechnologyContract,
+    TechnologyPlan,
 )
 from creative_os.domains.narrative_memory import save_narrative_candidate
 from creative_os.domains.novel_continuation import ContinuationBlockedError, build_next_chapter
-from creative_os.novel_continuation_runner import continue_one_chapter, promote_passing_draft
+from creative_os.domains.writer_admission import AdmittedContractProjection
+from creative_os.novel_continuation_runner import _messages, continue_one_chapter, promote_passing_draft
 from creative_os.memory.approval import approve_candidate
 from creative_os.memory.model import MemoryEvidence
 from creative_os.memory.store import JsonMemoryStore
@@ -113,3 +119,31 @@ def test_legacy_contracts_cannot_bypass_prepared_run_for_next_chapter(tmp_path):
     with pytest.raises(TypeError, match="PreparedWriterRun"):
         continue_one_chapter(project, client=type("Client", (), {"complete": lambda self, *_args, **_kwargs: "# 第3章\n" + "正文" * 1600})())
     assert not (project / "production/final_chapters/chapter_003.md").exists()
+
+
+def test_writer_prompt_contains_approved_scene_and_technology_contract(tmp_path):
+    project = _project(tmp_path)
+    _approved_contract(project)
+    store = JsonMemoryStore(project / ".creative_os" / "memory")
+    item = store.get("narrative-chapter-002")
+    payload = json.loads(item.content)
+    payload["schema_version"] = 2
+    payload["chapter_contract"]["scene_plan"] = {
+        "scenes": [{"id":"s1","order":1,"place_id":"gobi","place_label":"西北试验场","place_class":"field","interior_exterior":"exterior","time_window":"深夜","participants":["林子轩","工人"],"viewpoint":"林子轩","ordinary_people_present":True,"goal":"查故障","conflict":"工期冲突","action":"现场停机","information_change":"旧图缺失","state_change":"试验暂停","entry_reason":"远程数据不足","exit_trigger":"复盘完成","inherited_from_previous":False}],
+        "chapter_spatial_intent":"现场行动","required_world_slice":"工程劳动者","allowed_same_place_run":2,"exception_reason":""
+    }
+    payload["chapter_contract"]["technology_plan"] = {"technologies":[{"id":"fusion","name":"偏滤器","role":"supporting","birth_reason":"解决热流烧蚀","source":"人类工程化","prerequisites":["耐热材料"],"validation_stage":"现场试验","first_application":"试验堆","social_diffusion":["工业热交换"],"cost":"延期","changed_domains":["ordinary_life"]}]}
+    store.replace(replace(item, content=json.dumps(payload, ensure_ascii=False)))
+
+    task, context = build_next_chapter(project)
+    canonical = NarrativeDecision.from_json(json.dumps(payload, ensure_ascii=False)).to_json()
+    task = replace(
+        task,
+        contract_projection=AdmittedContractProjection(
+            "narrative-chapter-002", 1, "a" * 64, canonical,
+        ),
+    )
+    prompt = _messages(task, context)[-1].content
+
+    assert "场景结构合同" in prompt and "西北试验场" in prompt
+    assert "技术发展合同" in prompt and "偏滤器" in prompt

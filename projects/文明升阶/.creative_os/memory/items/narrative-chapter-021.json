@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":21,\"chapter_contract\":{\"dramatic_question\":\"公开方案中存在缺口，林子轩是否应该承认它？\",\"ending_shift\":\"林子轩选择先守住可验证性\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"公开漏洞\",\"责任归属\"],\"functions\":[\"推进公共冲突\",\"让主角承担政治后果\"],\"information\":{\"misdirect\":[\"暂不一次解释公布的漏洞背后的全部真相\"],\"reveal\":[\"方案缺口\"],\"withhold\":[\"缺口能否补齐\"]},\"pressure_curve\":{\"end\":\"项目失去部分政治保护\",\"start\":\"暴露\",\"turn\":\"质疑从技术层面转向责任层面\"},\"protagonist_choice\":{\"action\":\"在发布会上主动说明方案缺少民用层验证\",\"actor\":\"林子轩\",\"alternatives\":[\"让团队先补齐数据\"],\"consequence\":\"公布方案被迫暂停一部分权限\",\"cost\":\"承担延迟行动和引发市场恐慌的责任\"},\"reader_change\":{\"after\":\"读者开始关注谁能承担失败\",\"before\":\"读者看到真相公开不等于解决问题\"},\"target_chinese_chars\":10000,\"scene_plan\":{\"scenes\":[{\"id\":\"evidence-transfer\",\"order\":1,\"place_id\":\"shielding-material-store\",\"place_label\":\"屏蔽材料库\",\"place_class\":\"warehouse\",\"interior_exterior\":\"interior\",\"time_window\":\"黎明前\",\"participants\":[\"林子轩\",\"方晴\",\"林正弘\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"核验并转运旧方案原始记录\",\"conflict\":\"安全部追踪与旧方案政治责任\",\"action\":\"从现实存储介质打印密钥并分路转运\",\"information_change\":\"确认旧方案删除了滤波场\",\"state_change\":\"证据进入苏晚琴独立复算链\",\"entry_reason\":\"承接第20章方晴携盒接应\",\"exit_trigger\":\"安全部接近材料库\",\"inherited_from_previous\":true},{\"id\":\"public-review-meeting\",\"order\":2,\"place_id\":\"public-plan-review-room\",\"place_label\":\"会议室\",\"place_class\":\"governance\",\"interior_exterior\":\"interior\",\"time_window\":\"当天\",\"participants\":[\"林子轩\",\"魏诚\",\"工程组负责人\",\"记录员\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":true,\"goal\":\"公开民用层验证缺口\",\"conflict\":\"安全部用伪造影像压制证据\",\"action\":\"要求把验证缺口写入公开记录\",\"information_change\":\"旧方案缺口从内部秘密变成公共责任\",\"state_change\":\"项目失去部分政治保护\",\"entry_reason\":\"现实证据完成第一轮复算\",\"exit_trigger\":\"新曲线切入主屏\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"让现实证据完成转运并进入公开责任冲突\",\"required_world_slice\":\"材料库与工程执行人员\",\"allowed_same_place_run\":3,\"exception_reason\":\"\"},\"technology_plan\":{\"technologies\":[{\"id\":\"particle-filter-field\",\"name\":\"可探测粒子滤波场\",\"role\":\"supporting\",\"birth_reason\":\"聚变点火脉冲可能暴露地球坐标\",\"source\":\"现实存储介质中的CMB原始方案\",\"prerequisites\":[\"原始存储介质\",\"脉冲衰减曲线\"],\"validation_stage\":\"苏晚琴独立复算\",\"first_application\":\"第一代聚变方案位置屏蔽\",\"social_diffusion\":[\"民用层验证\",\"公开方案审查\"],\"cost\":\"旧堆返工十六个月与政治保护下降\",\"changed_domains\":[\"faction_relations\",\"ordinary_life\"]}]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T06:18:34.229089+00:00",
+  "evidence": [
+    {
+      "note": "第21章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第20章正文",
+      "source_id": "production/final_chapters/chapter_020.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-021",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_021",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 21 章叙事合同",
+  "updated_at": "2026-08-24T06:18:34.241092+00:00",
+  "version": 1
+}

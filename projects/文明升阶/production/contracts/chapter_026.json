@@ -1,0 +1,130 @@
+{
+  "arc_goal": "从聚变试验失败走到全球协作和一级文明门槛",
+  "arc_id": "arc-fusion-construction",
+  "arc_phase": "setup",
+  "chapter": 26,
+  "chapter_contract": {
+    "functions": ["让境外团队主动改变七地样本协作方式", "把首堆追溯经验转化为互惠校验规则"],
+    "dramatic_question": "封存命令与七地样本分歧同时压来，境外值班工程师是否敢拒交完整密钥并提出可相互约束的联合校验？",
+    "protagonist_choice": {
+      "actor": "马库斯",
+      "action": "拒绝交出完整密钥，只开放校验摘要并要求建立双向见证的跨站校验协议",
+      "alternatives": ["按安全命令把原始样本和完整密钥全部封存"],
+      "cost": "承担违抗封存流程的调查风险，并暴露本阵列设备时钟漂移",
+      "consequence": "七地团队获得不交换原始密钥也能复核样本差异的共同接口"
+    },
+    "reader_change": {
+      "before": "读者知道七地听到的主信息版本不同，境外团队只发送过一次校验摘要",
+      "after": "读者看到境外工程人员以互惠规则而非单向索取推动全球协作，并把设备误差与信息差异分开验证"
+    },
+    "information": {
+      "reveal": ["同一时间戳的差异不能仅用设备时钟漂移解释", "首堆批次追溯格式可改造成跨站校验的责任链"],
+      "withhold": ["七地版本为何不同", "谁触发过统一时间戳集群读取"],
+      "misdirect": ["安全部门把全部差异归因于境外阵列校时故障"]
+    },
+    "pressure_curve": {
+      "start": "冻雨中自动封存模块开始倒计时，值班工程师被要求交出完整密钥",
+      "turn": "他用设备时钟漂移复算后仍发现无法消除的版本差异，并收到首堆追溯摘要",
+      "end": "境外团队先签署自身误差与责任字段，迫使联合校验窗口按互惠条件开启"
+    },
+    "foreshadow_actions": ["七地样本差异", "双向见证字段", "统一时间戳异常读取"],
+    "ending_shift": "国际协作从各自封存转为可审计的跨站互证，但第一个联合结果证明差异来自信号本身而非单一设备",
+    "target_chinese_chars": 8000,
+    "forbidden": ["不得让林子轩出场", "不得确定七地版本差异的最终原因", "不得公开或交换完整密钥", "不得恢复首堆点火"],
+    "scene_plan": {
+      "scenes": [
+        {
+          "id": "array-seal-resistance",
+          "order": 1,
+          "place_id": "overseas-radio-array-platform",
+          "place_label": "境外射电阵列露天检修平台",
+          "place_class": "international_engineering_field",
+          "interior_exterior": "exterior",
+          "time_window": "第25章次日清晨",
+          "participants": ["马库斯", "伊莲娜", "罗曼", "利奥"],
+          "viewpoint": "马库斯",
+          "ordinary_people_present": true,
+          "goal": "在封存前证明版本差异不是单纯校时故障",
+          "conflict": "完整密钥封存命令与保留最小互证能力冲突",
+          "action": "拔下自动封存模块光纤并复算设备时钟漂移",
+          "information_change": "校正漂移后仍存在无法消除的频谱差异",
+          "state_change": "境外团队从被动封存转为提出校验条件",
+          "entry_reason": "承接第18章境外阵列只发校验摘要的未决行动",
+          "exit_trigger": "首堆批次追溯摘要到达控制室"
+        },
+        {
+          "id": "reciprocal-validation-window",
+          "order": 2,
+          "place_id": "overseas-array-control-room",
+          "place_label": "境外射电阵列控制室",
+          "place_class": "international_coordination",
+          "interior_exterior": "interior",
+          "time_window": "同日上午",
+          "participants": ["马库斯", "伊莲娜", "七地远程校验员"],
+          "viewpoint": "马库斯",
+          "ordinary_people_present": true,
+          "goal": "建立不交换完整密钥的双向联合校验",
+          "conflict": "各方希望验证他人数据却不愿先暴露自身误差与责任字段",
+          "action": "先公开本阵列校时偏差与摘要生成链，再要求各站对等签署",
+          "information_change": "首轮互证排除单一阵列故障，却确认七地版本仍不一致",
+          "state_change": "七地联合校验窗口被正式开启",
+          "entry_reason": "现场复算需要跨站数据才能区分设备误差与信号差异",
+          "exit_trigger": "首个跨站结果写入共同责任链"
+        }
+      ],
+      "chapter_spatial_intent": "由冻雨中的设备处置进入控制室规则博弈，让国际协作由工程证据而非会议口号推动",
+      "required_world_slice": "境外一线工程人员与跨国协作责任",
+      "allowed_same_place_run": 2,
+      "exception_reason": ""
+    },
+    "technology_plan": {
+      "technologies": [
+        {
+          "id": "cross-site-validation-protocol",
+          "name": "跨站校验协议",
+          "role": "supporting",
+          "birth_reason": "七地版本不同且各站不能交换完整密钥，需要先排除设备误差再比较信号差异",
+          "source": "第18章频谱校验摘要、设备时钟漂移和第24章批次追溯责任链",
+          "prerequisites": ["频谱校验摘要", "设备时钟漂移记录", "阵列编号", "双向见证字段"],
+          "validation_stage": "七地摘要交叉复算",
+          "first_application": "七地CMB样本差异复核",
+          "social_diffusion": ["国际科研数据互认", "关键基础设施责任审计"],
+          "cost": "各站必须暴露自身误差、签署责任字段并接受对等复核",
+          "changed_domains": ["faction_relations", "information_access"]
+        }
+      ]
+    },
+    "pov_plan": {
+      "primary_owner": "马库斯",
+      "mode": "limited",
+      "protagonist_present": false,
+      "rationale": "由第18章已出现的境外一线工程人员主动设定互惠协作规则，使国际线直接改变主线验证能力",
+      "supporting_agency": [
+        {
+          "actor": "马库斯",
+          "independent_goal": "证明本阵列没有伪造样本并保住跨站复核能力",
+          "resistance": "自动封存倒计时、安全命令和设备时钟漂移嫌疑",
+          "choice": "拒交完整密钥并先公开本阵列误差字段",
+          "cost": "接受流程调查并暴露本阵列缺陷",
+          "result": "其他站点被迫按同一字段提供校验摘要",
+          "mainline_change": "七地团队获得可审计的联合验证通道"
+        },
+        {
+          "actor": "伊莲娜",
+          "independent_goal": "在保护各站密钥的前提下确认信息差异是否真实",
+          "resistance": "各方互不信任并要求单向调取数据",
+          "choice": "拒绝单向交付并签署双向见证规则",
+          "cost": "承担延误封存与国际问责风险",
+          "result": "首轮七地摘要完成互证",
+          "mainline_change": "排除单一设备故障，确认必须继续追查信号版本差异"
+        }
+      ]
+    }
+  },
+  "future_pressures": ["七地版本差异的来源", "联合校验结果如何影响首堆复工"],
+  "inherited_pressure": "第25章普通家庭迫使首堆返工排班进入可追溯规则；第18章境外阵列只发校验摘要，七地样本差异尚未验证。",
+  "kind": "narrative_decision",
+  "profile_id": "文明升阶-production-profile",
+  "schema_version": 2,
+  "volume_id": "volume-1-key"
+}

@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":13,\"chapter_contract\":{\"dramatic_question\":\"林子轩能否在父母的隐瞒与文明方案之间保留自己的判断？\",\"ending_shift\":\"林子轩决定继续查记录而不是接受现成方案\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"旧方案来源\",\"父亲的隐瞒\"],\"functions\":[\"推进核聚变方案\",\"建立家庭与项目的双重压力\"],\"information\":{\"misdirect\":[\"暂不一次解释双重钥匙背后的全部真相\"],\"reveal\":[\"核聚变旧方案\"],\"withhold\":[\"删改者身份\"]},\"pressure_curve\":{\"end\":\"家庭秘密重新变成现实风险\",\"start\":\"压迫\",\"turn\":\"旧记录与现行方案发生冲突\"},\"protagonist_choice\":{\"action\":\"要求父亲交出旧方案的完整来源记录\",\"actor\":\"林子轩\",\"alternatives\":[\"暂缓行动\"],\"consequence\":\"旧方案出现被人为删改的段落\",\"cost\":\"被迫承认家庭秘密仍在影响项目\"},\"reader_change\":{\"after\":\"读者开始怀疑删改来自项目内部\",\"before\":\"读者知道核聚变方案并非完整答案\"},\"target_chinese_chars\":9000,\"scene_plan\":{\"scenes\":[{\"id\":\"canteen-key\",\"order\":1,\"place_id\":\"longyuan-canteen\",\"place_label\":\"食堂\",\"place_class\":\"service\",\"interior_exterior\":\"interior\",\"time_window\":\"当天\",\"participants\":[\"林子轩\",\"方晴\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"确认父亲隐瞒的旧方案入口\",\"conflict\":\"家庭信任与项目保密冲突\",\"action\":\"比对双重密钥线索\",\"information_change\":\"旧方案存在第二重来源记录\",\"state_change\":\"林子轩决定追查原始记录\",\"entry_reason\":\"承接老周的现实质疑\",\"exit_trigger\":\"获得进入解码记录的权限\",\"inherited_from_previous\":true},{\"id\":\"decode-old-plan\",\"order\":2,\"place_id\":\"longyuan-decoding-room\",\"place_label\":\"解码室\",\"place_class\":\"research\",\"interior_exterior\":\"interior\",\"time_window\":\"稍后\",\"participants\":[\"林子轩\",\"林正弘\",\"宇\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"要求交出旧方案来源记录\",\"conflict\":\"父亲保护性隐瞒与林子轩自主判断冲突\",\"action\":\"拒绝接受现成方案并索要原始记录\",\"information_change\":\"核聚变旧方案来源受到质疑\",\"state_change\":\"父子关系进入证据核验阶段\",\"entry_reason\":\"双重密钥指向旧记录\",\"exit_trigger\":\"林子轩决定继续查记录\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"从生活空间进入旧方案证据核对\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"本章以家庭与项目双重密钥的封闭核验为核心\"},\"technology_plan\":{\"technologies\":[{\"id\":\"dt-seven-compensation-segments\",\"name\":\"七个镜面段\",\"role\":\"core\",\"birth_reason\":\"旧DT方案缺失共振补偿会在点火后失稳\",\"source\":\"双重密钥与旧方案记录复核\",\"prerequisites\":[\"双重密钥\",\"西北施工图\"],\"validation_stage\":\"双重密钥\",\"first_application\":\"旧方案\",\"social_diffusion\":[\"全球核聚变路线\"],\"cost\":\"父子信任破裂与工程返工\",\"changed_domains\":[\"faction_relations\"]}]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T04:16:35.544809+00:00",
+  "evidence": [
+    {
+      "note": "第13章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第12章正文",
+      "source_id": "production/final_chapters/chapter_012.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-013",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_013",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 13 章叙事合同",
+  "updated_at": "2026-08-24T04:16:35.555841+00:00",
+  "version": 1
+}

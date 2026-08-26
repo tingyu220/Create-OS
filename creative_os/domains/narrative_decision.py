@@ -388,6 +388,132 @@ class EngagementObligation:
 
 
 @dataclass(frozen=True, slots=True)
+class SceneContract:
+    id: str
+    order: int
+    place_id: str
+    place_label: str
+    place_class: str
+    interior_exterior: str
+    time_window: str
+    participants: tuple[str, ...]
+    viewpoint: str
+    ordinary_people_present: bool
+    goal: str
+    conflict: str
+    action: str
+    information_change: str
+    state_change: str
+    entry_reason: str
+    exit_trigger: str
+    inherited_from_previous: bool = False
+
+    def validate(self) -> None:
+        for name in ("id", "place_id", "place_label", "place_class", "interior_exterior", "time_window", "viewpoint", "goal", "conflict", "action", "entry_reason", "exit_trigger"):
+            _require_text(str(getattr(self, name)), f"scene {name}")
+        if self.order < 1:
+            raise NarrativeValidationError("scene order must be positive")
+        _require_items(self.participants, "scene participants")
+        if not self.information_change.strip() and not self.state_change.strip():
+            raise NarrativeValidationError("scene requires information_change or state_change")
+
+
+@dataclass(frozen=True, slots=True)
+class ScenePlan:
+    scenes: tuple[SceneContract, ...] = ()
+    chapter_spatial_intent: str = ""
+    required_world_slice: str = ""
+    allowed_same_place_run: int = 3
+    exception_reason: str = ""
+
+    def validate(self, *, required: bool = False) -> None:
+        if required and not self.scenes:
+            raise NarrativeValidationError("scene plan requires scenes")
+        if not self.scenes:
+            return
+        _require_text(self.chapter_spatial_intent, "scene plan chapter_spatial_intent")
+        if self.allowed_same_place_run < 1:
+            raise NarrativeValidationError("scene plan allowed_same_place_run must be positive")
+        orders = []
+        for scene in self.scenes:
+            scene.validate()
+            orders.append(scene.order)
+        if orders != list(range(1, len(self.scenes) + 1)):
+            raise NarrativeValidationError("scene orders must be unique and contiguous")
+
+
+@dataclass(frozen=True, slots=True)
+class TechnologyContract:
+    id: str
+    name: str
+    role: str
+    birth_reason: str
+    source: str
+    prerequisites: tuple[str, ...]
+    validation_stage: str
+    first_application: str
+    social_diffusion: tuple[str, ...]
+    cost: str
+    changed_domains: tuple[str, ...]
+
+    def validate(self) -> None:
+        for field_name in ("id", "name", "role", "birth_reason", "source", "validation_stage", "first_application", "cost"):
+            _require_text(str(getattr(self, field_name)), f"technology {field_name}")
+        if self.role not in {"core", "supporting", "background"}:
+            raise NarrativeValidationError("technology role must be core, supporting, or background")
+        if self.role in {"core", "supporting"}:
+            _require_items(self.prerequisites, "technology prerequisites")
+            _require_items(self.social_diffusion, "technology social_diffusion")
+            _require_items(self.changed_domains, "technology changed_domains")
+
+
+@dataclass(frozen=True, slots=True)
+class TechnologyPlan:
+    technologies: tuple[TechnologyContract, ...] = ()
+
+    def validate(self) -> None:
+        for technology in self.technologies:
+            technology.validate()
+
+
+@dataclass(frozen=True, slots=True)
+class SupportingAgencyContract:
+    actor: str
+    independent_goal: str
+    resistance: str
+    choice: str
+    cost: str
+    result: str
+    mainline_change: str
+
+    def validate(self) -> None:
+        for field_name in (
+            "actor", "independent_goal", "resistance", "choice", "cost", "result", "mainline_change",
+        ):
+            _require_text(str(getattr(self, field_name)), f"supporting agency {field_name}")
+
+
+@dataclass(frozen=True, slots=True)
+class PointOfViewPlan:
+    primary_owner: str = ""
+    mode: str = ""
+    protagonist_present: bool = True
+    supporting_agency: tuple[SupportingAgencyContract, ...] = ()
+    rationale: str = ""
+
+    def validate(self, *, required: bool = False) -> None:
+        if not self.primary_owner and not required:
+            return
+        _require_text(self.primary_owner, "POV primary_owner")
+        if self.mode not in {"limited", "first_person", "omniscient_limited"}:
+            raise NarrativeValidationError("POV mode is invalid")
+        _require_text(self.rationale, "POV rationale")
+        if required and not self.supporting_agency:
+            raise NarrativeValidationError("POV requires supporting agency")
+        for agency in self.supporting_agency:
+            agency.validate()
+
+@dataclass(frozen=True, slots=True)
 class ChapterContract:
     functions: tuple[str, ...]
     dramatic_question: str
@@ -403,6 +529,9 @@ class ChapterContract:
     optional_candidates: tuple[OptionalCandidateResolution, ...] = ()
     intent_evidence_bindings: tuple[FieldEvidenceBinding, ...] = ()
     engagement_obligations: tuple[EngagementObligation, ...] = ()
+    scene_plan: ScenePlan = ScenePlan()
+    technology_plan: TechnologyPlan = TechnologyPlan()
+    pov_plan: PointOfViewPlan = PointOfViewPlan()
 
     def __post_init__(self) -> None:
         if isinstance(self.foreshadow_actions, tuple):
@@ -469,6 +598,15 @@ class ChapterContract:
             if contract_id is None or contract_version is None:
                 raise NarrativeValidationError("contract identity is required for engagement obligations")
             obligation.validate(contract_id, contract_version)
+        if not isinstance(self.scene_plan, ScenePlan):
+            raise NarrativeValidationError("scene_plan must be a ScenePlan")
+        if not isinstance(self.technology_plan, TechnologyPlan):
+            raise NarrativeValidationError("technology_plan must be a TechnologyPlan")
+        if not isinstance(self.pov_plan, PointOfViewPlan):
+            raise NarrativeValidationError("pov_plan must be a PointOfViewPlan")
+        self.scene_plan.validate()
+        self.technology_plan.validate()
+        self.pov_plan.validate()
 
 
 @dataclass(frozen=True, slots=True)
@@ -509,6 +647,10 @@ class NarrativeDecision:
                         chapter_id=f"chapter_{self.chapter:03d}",
                         optional_candidates=self.chapter_contract.optional_candidates,
                         intent_evidence_bindings=self.chapter_contract.intent_evidence_bindings,
+                        engagement_obligations=self.chapter_contract.engagement_obligations,
+                        scene_plan=self.chapter_contract.scene_plan,
+                        technology_plan=self.chapter_contract.technology_plan,
+                        pov_plan=self.chapter_contract.pov_plan,
                     ),
                 )
 

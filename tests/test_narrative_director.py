@@ -11,9 +11,13 @@ from creative_os.domains.narrative_decision import (
     PressureCurve,
     ProtagonistChoice,
     ReaderChange,
+    SceneContract,
+    ScenePlan,
     StoryArc,
     StoryContract,
     StoryVolume,
+    PointOfViewPlan,
+    SupportingAgencyContract,
 )
 from creative_os.domains.narrative_director import DirectorInput, NarrativeDirector, NarrativeDirectorBlockedError
 
@@ -55,6 +59,33 @@ def _decision(chapter: int = 7) -> NarrativeDecision:
     )
 
 
+def _v2_decision(chapter=7, *, place_id="base-room", ordinary=True, allowed=2, exception=""):
+    decision = _decision(chapter)
+    return replace(
+        decision,
+        schema_version=2,
+        chapter_contract=replace(
+            decision.chapter_contract,
+            scene_plan=ScenePlan(
+                scenes=(SceneContract(
+                    "scene-1", 1, place_id, "基地房间", "base", "interior", "夜晚",
+                    ("林子轩", "工人"), "林子轩", ordinary, "查故障", "工期冲突", "现场停机",
+                    "确认旧图缺失", "试验暂停", "远程数据不足", "完成复盘",
+                ),),
+                chapter_spatial_intent="现场行动",
+                required_world_slice="普通劳动者",
+                allowed_same_place_run=allowed,
+                exception_reason=exception,
+            ),
+            pov_plan=PointOfViewPlan(
+                "工人", "limited", False,
+                (SupportingAgencyContract("工人", "查故障", "工期冲突", "现场停机", "承担延期", "试验暂停", "旧图进入复盘"),),
+                "配角主导工程现场",
+            ),
+        ),
+    )
+
+
 def _input(**overrides) -> DirectorInput:
     values = {
         "project_root": "projects/文明升阶",
@@ -70,9 +101,9 @@ def _input(**overrides) -> DirectorInput:
 
 
 def test_director_accepts_a_contract_aligned_with_profile_and_facts():
-    decision = NarrativeDirector().propose(_input(), _decision())
+    decision = NarrativeDirector().propose(_input(), _v2_decision())
 
-    assert decision == _decision()
+    assert decision == _v2_decision()
     assert decision.contract_id == "narrative-chapter-007"
     assert decision.chapter_contract.chapter_id == "chapter_007"
     assert decision.chapter_contract.target_chinese_chars == 7000

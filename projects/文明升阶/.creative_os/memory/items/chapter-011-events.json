@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "他不知道自己是什么时候真的睡着的。 后来意识回笼时，他先听见的是墙上的敲击声，三短两长，轻得像是从另一段睡眠里浮起来的。然后才是方晴的声音，隔着门板，不像催促，倒像在对着一个已经累到不知道该怎么醒来的人说：“条件性地醒一醒。外面已经变了。” 他敲回去，三短两长。 然后他躺下来，把被子拉到胸口。黑暗中，那枚金属扣贴着他的皮肤，像一颗被体温慢慢焐热的莲子。他心说，如果话语权有重量，那它现在不在他嘴里，而在西北戈壁某个还没停下的扳手上。",
+  "created_at": "2026-08-23T23:25:42.912815+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_011.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-011-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_011",
+    "event",
+    "novel"
+  ],
+  "title": "第 11 章关键事件",
+  "updated_at": "2026-08-23T23:25:42.912815+00:00",
+  "version": 1
+}

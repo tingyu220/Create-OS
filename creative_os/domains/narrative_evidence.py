@@ -147,6 +147,39 @@ class EvidenceRef:
                 object.__setattr__(self, name, None)
             return
 
+        authority_only = source_id is not None and all(
+            value is None for value in (evidence_id, contract_id, contract_version, field_path, role, asserted_value)
+        )
+        if authority_only:
+            for name, value in (
+                ("source_id", source_id),
+                ("source_version", source_version),
+                ("source_content_hash", source_content_hash),
+                ("assertion", assertion),
+            ):
+                _require_text(value, name)
+            if len(source_content_hash or "") != 64 or any(
+                char not in "0123456789abcdef" for char in (source_content_hash or "").lower()
+            ):
+                raise ValueError("source_content_hash must be sha256")
+            if not isinstance(locator, EvidenceLocator):
+                raise ValueError("locator must be an EvidenceLocator")
+            object.__setattr__(self, "source_type", None)
+            object.__setattr__(self, "source_ref", None)
+            object.__setattr__(self, "excerpt", excerpt or assertion or "")
+            object.__setattr__(self, "evidence_id", None)
+            object.__setattr__(self, "contract_id", None)
+            object.__setattr__(self, "contract_version", None)
+            object.__setattr__(self, "field_path", None)
+            object.__setattr__(self, "role", None)
+            object.__setattr__(self, "source_id", source_id)
+            object.__setattr__(self, "source_version", source_version)
+            object.__setattr__(self, "source_content_hash", source_content_hash)
+            object.__setattr__(self, "locator", locator)
+            object.__setattr__(self, "assertion", assertion)
+            object.__setattr__(self, "asserted_value", None)
+            return
+
         for name in (
             "evidence_id",
             "contract_id",
@@ -185,11 +218,21 @@ class EvidenceRef:
     def is_legacy_replay_ref(self) -> bool:
         return self.source_type is not None
 
+    @property
+    def is_authority_ref(self) -> bool:
+        return self.source_id is not None and self.contract_id is None
+
     def validate(self) -> None:
         if self.is_legacy_replay_ref:
             _require_text(self.source_type, "source_type")
             _require_text(self.source_ref, "source_ref")
             _require_text(self.excerpt, "excerpt")
+            return
+        if self.is_authority_ref:
+            for name in ("source_id", "source_version", "source_content_hash", "assertion"):
+                _require_text(getattr(self, name), name)
+            if not isinstance(self.locator, EvidenceLocator):
+                raise ValueError("locator must be an EvidenceLocator")
             return
         for name in (
             "evidence_id",
@@ -213,8 +256,8 @@ class EvidenceRef:
 
     @property
     def deduplication_key(self) -> tuple[str, int, str, EvidenceRole, str, str, EvidenceLocator, str]:
-        if self.is_legacy_replay_ref:
-            raise ValueError("legacy replay evidence has no contract deduplication key")
+        if self.is_legacy_replay_ref or self.is_authority_ref:
+            raise ValueError("unbound evidence has no contract deduplication key")
         assert self.contract_id is not None
         assert self.contract_version is not None
         assert self.field_path is not None

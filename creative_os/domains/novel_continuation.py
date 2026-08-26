@@ -79,6 +79,9 @@ def build_next_chapter(
             f"missing approved narrative decision for chapter {continuation.chapter_number}"
         )
     if narrative_contract is not None:
+        if (root / ".creative_os" / "pov_strategy_policy.json").exists():
+            from creative_os.pov_strategy_admission import admit_active_pov_strategy
+            admit_active_pov_strategy(root, narrative_contract)
         contract = narrative_contract.chapter_contract
         continuation = replace(
             continuation,
@@ -110,7 +113,10 @@ def build_next_chapter(
         [JsonMemoryStore(root / ".creative_os" / "memory")],
         limit=16,
     )
-    retained_memory = [item for item in memory.items if not _is_legacy_state_memory(item)]
+    retained_memory = [
+        item for item in memory.items
+        if not _is_legacy_state_memory(item) and not _is_pov_strategy_memory(item)
+    ]
     memory = MemoryRetrievalResult(
         items=retained_memory,
         reasons={item.id: memory.reasons[item.id] for item in retained_memory},
@@ -158,6 +164,12 @@ def build_next_chapter(
         max_chars=20000,
     )
     return continuation, compiled
+
+
+def _is_pov_strategy_memory(item: object) -> bool:
+    item_id = str(getattr(item, "id", ""))
+    tags = set(getattr(item, "tags", ()))
+    return item_id.startswith("pov-strategy-") or "pov_strategy_candidate" in tags
 
 
 def _continuation_task(
