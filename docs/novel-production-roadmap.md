@@ -28,6 +28,7 @@
 # Phase E 状态
 
 - E-A Reader Engagement Foundation：已完成并通过离线 Gate。
-- E-B 逐章生产编排：已完成离线十章与故障矩阵 Gate（Tasks 0–8）。
-- E-B 文档/运维证据收口：进行中（Task 9）。
-- E-D 真实 7–16 章校准：未启动，必须等待人工合同审批、质量阅读与模型调用授权。
+- E-B 逐章生产编排：已完成离线 Gate，并与场景、技术、POV 门禁整合。
+- E-C 真实生产校准：第7–26章已完成；第7–23章为 Scene/Technology 历史合同，第24–26章为完整多视角实验合同。
+- 当前生产边界：第27章正文不存在；必须先审批 POV 输入事实、系统候选和完整 Chapter Contract。
+- 下一阶段：验证 POVStrategyPlanner 在真实第26章状态上给出可解释建议，再逐章生产第27章。
