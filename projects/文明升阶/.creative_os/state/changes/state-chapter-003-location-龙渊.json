@@ -1,0 +1,36 @@
+{
+  "memory_id": "state-chapter-003-location-龙渊",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“龙渊，地下一层，A区控制室。”林正弘说，停顿了一下，“我就在你楼上。”",
+        "source_chapter": "production/final_chapters/chapter_003.md"
+      }
+    ],
+    "fields": {
+      "access_constraints": [
+        "绝密档案室需掌纹和虹膜验证"
+      ],
+      "anchors": [
+        "CMB全息投影",
+        "监测屏",
+        "红色应急灯"
+      ],
+      "current_areas": [
+        "地下一层A区控制室",
+        "环形大厅",
+        "绝密档案室"
+      ],
+      "present_characters": [
+        "林子轩",
+        "林正弘",
+        "苏晚晴"
+      ]
+    },
+    "id": "chapter-003-location-龙渊",
+    "kind": "location",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "龙渊"
+  }
+}

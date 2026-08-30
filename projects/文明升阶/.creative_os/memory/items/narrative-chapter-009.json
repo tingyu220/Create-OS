@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"escalation\",\"chapter\":9,\"chapter_contract\":{\"dramatic_question\":\"在末日倒计时中，普通人的生活还剩下什么？\",\"ending_shift\":\"普通生活成为后续选择的情感尺度\",\"forbidden\":[\"不得凭空解决全球恐慌\"],\"foreshadow_actions\":[\"全球公布后的反应\"],\"functions\":[\"提供日常缓冲\",\"连接普通人\"],\"information\":{\"misdirect\":[\"暂不一次解释胖阿姨的红烧肉背后的全部真相\"],\"reveal\":[\"普通人并不知道完整真相\",\"老周和胖阿姨成为民间视角\"],\"withhold\":[\"主角最终能救下谁\"]},\"pressure_curve\":{\"end\":\"饭后他无法再把人类只看成统计量\",\"start\":\"缓和\",\"turn\":\"日常对话刺破宏大叙事\"},\"protagonist_choice\":{\"action\":\"暂时放下技术争论，接受食堂里一顿普通饭并听见他人的担忧\",\"actor\":\"林子轩\",\"alternatives\":[\"继续工作不休息\"],\"consequence\":\"林子轩第一次意识到公布影响的是具体的人\",\"cost\":\"面对普通人的具体恐惧而无法用技术立即解决\"},\"reader_change\":{\"after\":\"读者重新感到危机会落到饭桌和家庭\",\"before\":\"读者沉浸在技术危机\"},\"target_chinese_chars\":7000,\"scene_plan\":{\"scenes\":[{\"id\":\"canteen-meal\",\"order\":1,\"place_id\":\"longyuan-canteen\",\"place_label\":\"食堂\",\"place_class\":\"service\",\"interior_exterior\":\"interior\",\"time_window\":\"深夜\",\"participants\":[\"林子轩\",\"胖阿姨\",\"老周\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":true,\"goal\":\"吃下一顿普通饭并听见他人担忧\",\"conflict\":\"宏大危机无法回答具体家庭问题\",\"action\":\"停下工作接受红烧肉并倾听\",\"information_change\":\"普通人尚不知道完整真相\",\"state_change\":\"具体的人取代统计量成为选择尺度\",\"entry_reason\":\"长期工作后身体饥饿\",\"exit_trigger\":\"饭菜凉透而林子轩作出回应\",\"inherited_from_previous\":true}],\"chapter_spatial_intent\":\"用一顿饭恢复普通生活尺度\",\"required_world_slice\":\"基地食堂劳动者\",\"allowed_same_place_run\":3,\"exception_reason\":\"\"},\"technology_plan\":{\"technologies\":[]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-23T23:06:47.322322+00:00",
+  "evidence": [
+    {
+      "note": "第9章大纲与项目主线",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第8章正式正文",
+      "source_id": "production/final_chapters/chapter_008.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-009",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_009",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 9 章叙事合同",
+  "updated_at": "2026-08-23T23:06:47.340136+00:00",
+  "version": 1
+}

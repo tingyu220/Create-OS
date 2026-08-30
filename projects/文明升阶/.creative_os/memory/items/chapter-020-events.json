@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "“那段数据是什么？”魏诚的声音不高，却像一根细针刺进审讯室里已经凝固的空气。 林子轩没有立刻回答。他的视线落在桌面上自己右手的指节上，那里有一小块皮肤因为长时间贴着束缚带而发白。他试图让呼吸保持平稳，但鼻子里似乎还残留着一点苦杏仁被烧焦的气味，像是从信息室带出来的鬼魂。 她没穿安全部的制服，而是一身灰白色的实验室罩衣。她的眼睛布满血丝，像是很久没睡。她怀里抱着一个手掌大的黑色金属盒。她看见了门缝后的林子轩，嘴唇动了动，没有发声，只用口型说了一句： “别出声。跟我来。”",
+  "created_at": "2026-08-24T06:17:01.367117+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_020.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-020-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_020",
+    "event",
+    "novel"
+  ],
+  "title": "第 20 章关键事件",
+  "updated_at": "2026-08-24T06:17:01.367117+00:00",
+  "version": 1
+}

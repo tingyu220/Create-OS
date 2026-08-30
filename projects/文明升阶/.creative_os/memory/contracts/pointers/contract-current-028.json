@@ -1,0 +1,19 @@
+{
+  "activation_binding_hash": "85b1dfeca2a6afe136e9003676e5899b24fc2af218a888715ca6d140459e9c00",
+  "approval_record_hash": "bc8de8887a8ef79c8cb5f36162be2f95ee81f07ff94a57dfc167aa8d4c369fb7",
+  "approval_record_id": "approval-narrative-chapter-028-v0001-d2326650613b00eb1cdf27a0d22c6cfb76830841c807a2934a4bf984eec24890-c3ecb15e5416b2ee6f5b7547d922f8c3c4288c3373705434d423dacea272eb70",
+  "baseline_fingerprint": "c3ecb15e5416b2ee6f5b7547d922f8c3c4288c3373705434d423dacea272eb70",
+  "content_hash": "d2326650613b00eb1cdf27a0d22c6cfb76830841c807a2934a4bf984eec24890",
+  "contract_version": 1,
+  "disposition_set_hash": "7ac5ab5283d7ac43965925db4cf9e0a9388e5f5e96c48a44387d7a355241a116",
+  "physical_key": "narrative-chapter-028-v0001",
+  "reviewer_result_hash": "478b7489d830fd437387e26bce03d87763efdef0d3733b8be69bc5cd9e736431",
+  "reviewer_result_id": "review-narrative-chapter-028-v0001-478b7489d830fd437387e26bce03d87763efdef0d3733b8be69bc5cd9e736431",
+  "ruleset_version": "prewrite-v1",
+  "semantic_asset_versions": [
+    [
+      "function_semantics",
+      "v1"
+    ]
+  ]
+}

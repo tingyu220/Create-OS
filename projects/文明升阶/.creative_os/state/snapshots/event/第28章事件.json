@@ -1,0 +1,21 @@
+{
+  "evidence": [
+    {
+      "excerpt": "脚步声在管廊尽头停下来。不是一组人来带他们走，而是三组。两组穿安全部深色工装，一组穿运维灰蓝外套。领头的是安全审计员顾长明，个子不高，颧骨很高，走路时左臂不摆，像把肩胛骨别在腰后。他走近陈景行，把一份线上流转单递到对方面前。",
+      "source_chapter": "production/final_chapters/chapter_028.md"
+    }
+  ],
+  "field_sources": {
+    "outcome": {
+      "change_id": "state-chapter-028-event-main",
+      "chapter": 28
+    }
+  },
+  "fields": {
+    "outcome": "脚步声在管廊尽头停下来。不是一组人来带他们走，而是三组。两组穿安全部深色工装，一组穿运维灰蓝外套。领头的是安全审计员顾长明，个子不高，颧骨很高，走路时左臂不摆，像把肩胛骨别在腰后。他走近陈景行，把一份线上流转单递到对方面前。"
+  },
+  "kind": "event",
+  "latest_change": "state-chapter-028-event-main",
+  "schema_version": 2,
+  "subject": "第28章事件"
+}

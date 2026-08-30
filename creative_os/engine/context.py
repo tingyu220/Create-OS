@@ -59,6 +59,12 @@ class ContextBuilder:
             size_chars=size_chars,
         )
 
+    def build_compiled(self, request: object) -> object:
+        """Build the additive memory-aware context without changing V1 callers."""
+        from creative_os.memory.context_compiler import ContextCompiler
+
+        return ContextCompiler().compile(request, max_chars=self.max_chars)
+
     def _estimate_size(
         self,
         user_input: str,

@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准连续生成第28至32章并授权本章合同\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"新超算能否在对等误差链约束下完成第二次解码，而不把异常误判为算力胜利？\",\"chapter_contract.ending_shift\":\"新超算在隔离DR-17写入权限后达到有效算力门槛，第二次解码成功，但输出要求人类用全球能源实践证明结果\",\"chapter_contract.forbidden.values[0]\":\"不得把DR-17直接定性为收割者行为\",\"chapter_contract.forbidden.values[1]\":\"不得写成新超算无代价自动成功\",\"chapter_contract.forbidden.values[2]\":\"不得提前完成十二座聚变电站点火\",\"chapter_contract.forbidden.values[3]\":\"不得泄露完整密钥或七地原始数据\",\"chapter_contract.foreshadow_actions.values[0]\":\"第二次解码要求全球能源验证\",\"chapter_contract.foreshadow_actions.values[1]\":\"林子轩短暂看见非设备产生的光冕残像\",\"chapter_contract.functions[0]\":\"追查DR-17写入者\",\"chapter_contract.functions[1]\":\"承接共同审计代价\",\"chapter_contract.functions[2]\":\"推进授时异常主线\",\"chapter_contract.information.misdirect.values[0]\":\"初始监控把算力抖动归因于新超算冷却负载\",\"chapter_contract.information.reveal[0]\":\"DR-17具有跨节点写入痕迹而非普通缓存残留\",\"chapter_contract.information.reveal[1]\":\"新超算在有效算力超过15%后完成第二次解码\",\"chapter_contract.information.reveal[2]\":\"第二层信息要求以全球能源能力作为可验证回应\",\"chapter_contract.information.withhold[0]\":\"DR-17写入者身份\",\"chapter_contract.information.withhold[1]\":\"第二层完整技术包与那个声音的最终目的\",\"chapter_contract.pressure_curve.end\":\"林子轩选择降算力隔离DR-17，七地共同复算后第二次解码仍然成功\",\"chapter_contract.pressure_curve.start\":\"新超算上线窗口只剩四十分钟，DR-17权限来源仍未查清\",\"chapter_contract.pressure_curve.turn\":\"运维团队发现移除补偿会损失算力，但保留它会让解码结果不可验证\",\"chapter_contract.protagonist_choice.action\":\"公开DR-17后门嫌疑并接受降算力隔离，以可验证结果代替最快结果\",\"chapter_contract.protagonist_choice.actor\":\"林子轩\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"保留DR-17补偿并先完成解码\",\"chapter_contract.protagonist_choice.consequence\":\"新超算以较低算力完成可信解码，全球聚变点火成为下一项公开验证\",\"chapter_contract.protagonist_choice.cost\":\"失去抢先解码优势，个人生物密钥与安全调查同时进入共同审计\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者确认算力突破必须建立在可审计误差链上，并得知解码结果把下一步推向全球聚变点火\",\"chapter_contract.reader_change.before\":\"读者知道DR-17可能是人为写入后门，新超算尚未完成可信联调\",\"future_pressures[0]\":\"第二次解码将把工程成功转为文明级选择\",\"future_pressures[1]\":\"十二座聚变电站仍需真实点火验证\",\"inherited_pressure\":\"DR-17补偿缓存可能是可写后门；新超算上线必须接受七地共同误差链约束。\"}},\"facts\":[{\"fields\":{\"status\":\"待确认写入者与写入时间\"},\"kind\":\"event\",\"subject\":\"DR-17写入调查\"},{\"fields\":{\"pov_pressure\":\"必须在可信解码与最快解码之间选择\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-26T18:21:55.123919+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-028",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-028-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_028"
+  ],
+  "title": "冻结第28章事实与字段意图",
+  "updated_at": "2026-08-26T18:21:55.123919+00:00",
+  "version": 1
+}

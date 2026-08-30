@@ -1,0 +1,25 @@
+{
+  "memory_id": "state-chapter-004-event-告别普通生活",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“我还有些东西在宿舍。衣服，书，电脑。”林子轩顿了一下，“还有赵磊。”",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "outcome": "林子轩从宿舍带走个人物品，与赵磊告别并正式入驻龙渊，普通学生生活被切断。",
+      "participants": [
+        "林子轩",
+        "赵磊",
+        "沈玥",
+        "陈景行"
+      ]
+    },
+    "id": "chapter-004-event-告别普通生活",
+    "kind": "event",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "告别普通生活"
+  }
+}

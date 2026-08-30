@@ -1,0 +1,32 @@
+{
+  "evidence": [
+    {
+      "excerpt": "“右下角的绿色波形，是你的前额皮质θ波。”林正弘说，他的声音重新变得平稳了，又回到了那个报告者的角色，“再看这里。”他指着一组闪烁的红点，“这些，就是你的电极。一共一百二十八枚。从覆盖区域来看，你大脑中有三个区域处于人工接管状态：海马体的前部、前扣带回的中段、额叶皮层的两个节点。”",
+      "source_chapter": "production/final_chapters/chapter_003.md"
+    }
+  ],
+  "field_sources": {
+    "knows": {
+      "change_id": "state-chapter-003-information-读者",
+      "chapter": 3
+    },
+    "must_not_assume": {
+      "change_id": "state-chapter-003-information-读者",
+      "chapter": 3
+    }
+  },
+  "fields": {
+    "knows": [
+      "父母参与设计且长期挣扎",
+      "林子轩theta波异常"
+    ],
+    "must_not_assume": [
+      "苏晚晴完整动机",
+      "神秘短信来源"
+    ]
+  },
+  "kind": "information_boundary",
+  "latest_change": "state-chapter-003-information-读者",
+  "schema_version": 2,
+  "subject": "读者"
+}

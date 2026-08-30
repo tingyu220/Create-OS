@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"arcs\": [{\"goal\": \"揭开信号、家庭秘密和神经干预之间的关系\", \"id\": \"arc-key-and-cost\", \"phase\": \"escalation\", \"volume_id\": \"volume-1-key\"}, {\"goal\": \"从聚变试验失败走到全球协作和一级文明门槛\", \"id\": \"arc-fusion-construction\", \"phase\": \"setup\", \"volume_id\": \"volume-1-key\"}], \"id\": \"文明升阶-production-profile\", \"story_contract\": {\"core_question\": \"林子轩能否在被设计成钥匙之后，仍然成为主动选择的人？\", \"invariants\": [\"林子轩不是全知者。\", \"宇提供能力但不能替代人的选择。\", \"技术突破必须伴随社会与个人代价。\"], \"reader_promise\": [\"每次解码都会带来现实推进，也会让主角付出个人代价。\", \"宏大文明进程必须通过普通人的具体生活落地。\"], \"theme_conflict\": \"命运设计与自主选择\"}, \"volumes\": [{\"goal\": \"从发现信号走到接受钥匙身份的代价\", \"id\": \"volume-1-key\", \"irreversible_change\": \"林子轩失去普通生活并主动进入文明计划\"}]}",
+  "created_at": "2026-08-27T07:25:18.852002+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-031",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-profile-chapter-031-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_031"
+  ],
+  "title": "冻结第31章 Profile",
+  "updated_at": "2026-08-27T07:25:18.852002+00:00",
+  "version": 1
+}

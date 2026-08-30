@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -869,7 +870,7 @@ def compose_final_chapter(chapter_path: str | Path) -> str:
     return text
 
 
-def write_composed_final_artifacts(root: str | Path) -> dict[str, object]:
+def _build_validation_fixture_composed_artifacts(root: str | Path) -> dict[str, object]:
     project_root = Path(root)
     chapter_dirs = sorted(project_root.glob("chapter_*"))
     if len(chapter_dirs) < 36:
@@ -908,7 +909,11 @@ def write_composed_final_artifacts(root: str | Path) -> dict[str, object]:
     return run_record
 
 
-def validate_reader_facing_text(text: str) -> list[str]:
+def validate_reader_facing_text(
+    text: str,
+    *,
+    relation_constraints: tuple[tuple[str, str, str], ...] = (),
+) -> list[str]:
     checks = {
         "hard_scene_heading": "## Scene",
         "system_term_context": "Context",
@@ -937,7 +942,42 @@ def validate_reader_facing_text(text: str) -> list[str]:
         issues.append("reader_subheading")
     if _has_duplicate_reader_paragraph(text):
         issues.append("duplicate_reader_paragraph")
+    if _has_reversed_dialogue_reference(text):
+        issues.append("dialogue_reference_mismatch")
+    if _has_character_relation_mismatch(text, relation_constraints):
+        issues.append("character_relation_mismatch")
+    if _has_truncated_sentence_ending(text):
+        issues.append("truncated_sentence_ending")
     return issues
+
+
+def _has_reversed_dialogue_reference(text: str) -> bool:
+    exchanges = re.findall(r"“([^”]+)”[^\n]{0,32}(?:说|问|答|道|回应|声音)", text)
+    for previous, current in zip(exchanges, exchanges[1:]):
+        match = re.search(r"我们([^。！？，,]{1,12})你", previous)
+        if match and re.search(rf"不是[^。！？，,]*{re.escape(match.group(1))}我", current):
+            return True
+    return False
+
+
+def _has_character_relation_mismatch(
+    text: str,
+    constraints: tuple[tuple[str, str, str], ...],
+) -> bool:
+    for parent, child, forbidden_reference in constraints:
+        if not parent.strip() or not child.strip() or not forbidden_reference.strip():
+            raise ValueError("character_relation_constraint_invalid")
+        pattern = rf"{re.escape(parent)}[^。！？]{{0,100}}{re.escape(forbidden_reference)}"
+        if child in text and re.search(pattern, text):
+            return True
+    return False
+
+
+def _has_truncated_sentence_ending(text: str) -> bool:
+    stripped = text.rstrip()
+    if not stripped:
+        return True
+    return stripped.count("“") != stripped.count("”") or stripped.count("‘") != stripped.count("’")
 
 
 def compose_final_chapter_from_text(source_text: str) -> str:
@@ -972,11 +1012,11 @@ def write_final_chapter_v2_text(chapter_number: int, title: str, source_text: st
     return text
 
 
-def write_final_chapter_v2_artifacts(root: str | Path) -> dict[str, object]:
+def _build_validation_fixture_final_v2_artifacts(root: str | Path) -> dict[str, object]:
     project_root = Path(root)
     source_dir = project_root / "final_chapters"
     if not source_dir.exists():
-        write_composed_final_artifacts(project_root)
+        _build_validation_fixture_composed_artifacts(project_root)
     output_dir = project_root / "final_chapters_v2"
     all_parts = ["# 雾城回声\n"]
     chapter_issues: dict[str, list[str]] = {}

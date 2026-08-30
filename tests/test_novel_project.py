@@ -27,4 +27,4 @@ def test_create_novel_project_uses_title_as_project_folder(tmp_path):
     assert (project_path / "production_log.jsonl").exists()
     assert (project_path / "production" / "drafts").is_dir()
     assert (project_path / "production" / "final_chapters").is_dir()
-    assert (project_path / "production" / "final_chapters_v2").is_dir()
+    assert (project_path / ".creative_os" / "llm_writer").is_dir()

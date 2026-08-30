@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"turn\",\"chapter\":10,\"chapter_contract\":{\"dramatic_question\":\"一个二十一岁的年轻人能否在全世界面前说出真相？\",\"ending_shift\":\"主角获得话语权也失去隐身处\",\"forbidden\":[\"不得写成冷静的说明会\"],\"foreshadow_actions\":[\"全球协作\",\"社会恐慌\"],\"functions\":[\"完成第一次公开高潮\",\"改变世界状态\"],\"information\":{\"misdirect\":[\"暂不一次解释全球公布背后的全部真相\"],\"reveal\":[\"太阳衰变\",\"核聚变方案\",\"主角身份\"],\"withhold\":[\"文明计划全部内幕\"]},\"pressure_curve\":{\"end\":\"公开不可撤回，社会进入余波阶段\",\"start\":\"恐惧\",\"turn\":\"直播中出现失误但主角继续说完\"},\"protagonist_choice\":{\"action\":\"亲自站上直播台公布太阳风险和可行方案\",\"actor\":\"林子轩\",\"alternatives\":[\"把发言交给专家\"],\"consequence\":\"全世界知道太阳正在衰变且存在解决路径\",\"cost\":\"暴露个人身份并承担全球恐慌的责任\"},\"reader_change\":{\"after\":\"读者进入公开后的新世界\",\"before\":\"读者等待真相被说出\"},\"target_chinese_chars\":12000,\"scene_plan\":{\"scenes\":[{\"id\":\"broadcast-stage\",\"order\":1,\"place_id\":\"longyuan-broadcast-hall\",\"place_label\":\"小型发布厅\",\"place_class\":\"media\",\"interior_exterior\":\"interior\",\"time_window\":\"直播时\",\"participants\":[\"林子轩\",\"方晴\",\"导播\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"向全球说出太阳风险\",\"conflict\":\"恐惧、删改稿与全球直播不可撤回\",\"action\":\"脱离安全稿完成公开发言\",\"information_change\":\"全球获知太阳风险与聚变路径\",\"state_change\":\"林子轩失去匿名身份\",\"entry_reason\":\"公布倒计时开始\",\"exit_trigger\":\"直播信号切断\",\"inherited_from_previous\":true},{\"id\":\"public-reaction\",\"order\":2,\"place_id\":\"global-public-slices\",\"place_label\":\"通州普通小区\",\"place_class\":\"civilian\",\"interior_exterior\":\"interior\",\"time_window\":\"直播同时\",\"participants\":[\"女孩\",\"工业园工人\",\"海外学生\"],\"viewpoint\":\"女孩\",\"ordinary_people_present\":true,\"goal\":\"理解直播与自身生活的关系\",\"conflict\":\"宏大风险缺乏可操作答案\",\"action\":\"停下早餐和夜班观看直播\",\"information_change\":\"普通人第一次听见太阳风险\",\"state_change\":\"公布开始改变家庭、工厂与校园\",\"entry_reason\":\"直播信号抵达公共终端\",\"exit_trigger\":\"各地观众开始行动和联络\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"让全球公布同时发生在发布端与普通人接收端\",\"required_world_slice\":\"普通家庭、工人和海外公众\",\"allowed_same_place_run\":3,\"exception_reason\":\"\"},\"technology_plan\":{\"technologies\":[]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-23T23:18:43.005427+00:00",
+  "evidence": [
+    {
+      "note": "第10章大纲与项目主线",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第9章正式正文",
+      "source_id": "production/final_chapters/chapter_009.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-010",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_010",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 10 章叙事合同",
+  "updated_at": "2026-08-23T23:18:43.016535+00:00",
+  "version": 1
+}

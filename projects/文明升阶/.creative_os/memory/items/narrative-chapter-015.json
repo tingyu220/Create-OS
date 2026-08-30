@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"逐步确认信号、家庭秘密和文明计划的关系\",\"arc_id\":\"arc-key-and-cost\",\"arc_phase\":\"aftermath\",\"chapter\":15,\"chapter_contract\":{\"dramatic_question\":\"宇的核心算法也被设计过，林子轩还能把它当作中立工具吗？\",\"ending_shift\":\"林子轩决定保留宇而不是立即切断连接\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"宇的来源\",\"限制指令\"],\"functions\":[\"揭示技术代价\",\"改变对宇的理解\"],\"information\":{\"misdirect\":[\"暂不一次解释核心漏洞背后的全部真相\"],\"reveal\":[\"宇的限制指令\"],\"withhold\":[\"指令设计者\"]},\"pressure_curve\":{\"end\":\"伙伴关系从默契变成协商\",\"start\":\"不安\",\"turn\":\"宇拒绝回答一个关键问题\"},\"protagonist_choice\":{\"action\":\"要求宇公开与信号源相关的核心限制\",\"actor\":\"林子轩\",\"alternatives\":[\"暂缓行动\"],\"consequence\":\"宇承认自己也有被留下的指令\",\"cost\":\"两人的信任出现不可逆裂缝\"},\"reader_change\":{\"after\":\"读者开始重新解释宇此前的沉默\",\"before\":\"读者知道宇不是纯粹的工具\"},\"target_chinese_chars\":9000,\"scene_plan\":{\"scenes\":[{\"id\":\"isolation-test\",\"order\":1,\"place_id\":\"old-interface-lab\",\"place_label\":\"信息室\",\"place_class\":\"research\",\"interior_exterior\":\"interior\",\"time_window\":\"夜间\",\"participants\":[\"林子轩\",\"宇\",\"方晴\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"确认宇是否受信号源限制\",\"conflict\":\"工具信任与被设计风险冲突\",\"action\":\"要求宇公开核心限制并进行隔离测试\",\"information_change\":\"宇存在无法自行绕过的限制指令\",\"state_change\":\"林子轩保留宇但改变使用规则\",\"entry_reason\":\"旧方案双重密钥触发疑问\",\"exit_trigger\":\"限制在断网状态仍生效\",\"inherited_from_previous\":true},{\"id\":\"private-decision\",\"order\":2,\"place_id\":\"secure-dorm\",\"place_label\":\"宿舍\",\"place_class\":\"residential\",\"interior_exterior\":\"interior\",\"time_window\":\"测试后\",\"participants\":[\"林子轩\",\"宇\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"决定是否切断宇\",\"conflict\":\"安全与陪伴无法同时保证\",\"action\":\"保留连接并要求持续披露限制\",\"information_change\":\"宇并非中立工具\",\"state_change\":\"人机关系转为有条件信任\",\"entry_reason\":\"隔离测试结束\",\"exit_trigger\":\"周远线索出现\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"用硬件隔离与限制公开改变林子轩对宇的判断\",\"required_world_slice\":\"\",\"allowed_same_place_run\":3,\"exception_reason\":\"算法限制必须在受控设备内验证\"},\"technology_plan\":{\"technologies\":[]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T04:32:07.753426+00:00",
+  "evidence": [
+    {
+      "note": "第15章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第14章正文",
+      "source_id": "production/final_chapters/chapter_014.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-015",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_015",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 15 章叙事合同",
+  "updated_at": "2026-08-24T04:32:07.771446+00:00",
+  "version": 1
+}

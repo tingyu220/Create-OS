@@ -1,0 +1,95 @@
+{
+  "evidence": [
+    {
+      "excerpt": "# 第 30 章：受控解锁",
+      "source_chapter": "production/final_chapters/chapter_030.md"
+    }
+  ],
+  "field_sources": {
+    "current_goal": {
+      "change_id": "state-chapter-005-character-林子轩",
+      "chapter": 5
+    },
+    "emotional_state": {
+      "change_id": "state-chapter-005-character-林子轩",
+      "chapter": 5
+    },
+    "known_facts": {
+      "change_id": "state-chapter-005-character-林子轩",
+      "chapter": 5
+    },
+    "location": {
+      "change_id": "state-chapter-005-character-林子轩",
+      "chapter": 5
+    },
+    "pov_pressure": {
+      "change_id": "state-chapter-030-character-林子轩-pov-pressure",
+      "chapter": 30
+    },
+    "unknown_facts": {
+      "change_id": "state-chapter-003-character-林子轩",
+      "chapter": 3
+    }
+  },
+  "fields": {
+    "current_goal": "确认九年窗口和隐藏声音的意图",
+    "emotional_state": [
+      "恐惧",
+      "警觉",
+      "不愿服从"
+    ],
+    "known_facts": [
+      "父母参与龙渊项目",
+      "出生后72小时接受D-7神经介入",
+      "自己与CMB解码密钥有关",
+      "生日20030717是第一层密钥的一部分",
+      "神秘短信不是林正弘所发",
+      "自己将长期留在龙渊",
+      "离开校园会被项目以正常信息流掩盖",
+      "太阳窗口为九年",
+      "隐藏信息说过不要一个人走",
+      "必须主动与信息对话"
+    ],
+    "location": "龙渊核心解码室与安全宿舍",
+    "pov_pressure": {
+      "agency_capabilities": [
+        {
+          "id": "test-corona-vision",
+          "serves_functions": [
+            "让林子轩承受点火后的光冕幻觉",
+            "区分主观体验与可验证信号",
+            "把一级文明成功转成更大的宇宙疑问"
+          ],
+          "target_state_ref": "点火光冕从私人幻觉转为保留未知、拥有可重复测试条件的线索"
+        }
+      ],
+      "pending_choices": [
+        {
+          "id": "disclose-corona-vision",
+          "value": "是否公开自己反复看见宇宙边界般光冕，并接受神经与信号双重测试"
+        }
+      ],
+      "unfinished_goals": [
+        {
+          "id": "separate-vision-from-signal",
+          "value": "确认光冕是D-7神经效应、设备串扰还是尚不可解释现象"
+        }
+      ],
+      "unpaid_costs": [
+        {
+          "id": "lose-exclusive-interpretation",
+          "value": "公开幻觉会使林子轩失去对自身体验的解释权并进入医学监测"
+        }
+      ]
+    },
+    "unknown_facts": [
+      "神秘短信发送者",
+      "D-7完整代价与设计目的",
+      "林正弘未说完的项目历史"
+    ]
+  },
+  "kind": "character",
+  "latest_change": "state-chapter-030-character-林子轩-pov-pressure",
+  "schema_version": 2,
+  "subject": "林子轩"
+}

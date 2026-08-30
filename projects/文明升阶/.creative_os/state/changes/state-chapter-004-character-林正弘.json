@@ -1,0 +1,19 @@
+{
+  "memory_id": "state-chapter-004-character-林正弘",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "林正弘站了起来，绕过桌子，走到墙边那面巨大的显示屏前。他抬起手，手指在屏幕边缘轻轻一划，整面墙无声地亮了起来。林子轩看见了自己的大脑。",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "observed_in_chapter": 4
+    },
+    "id": "chapter-004-character-林正弘",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "林正弘"
+  }
+}

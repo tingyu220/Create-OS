@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"他不知道自己是什么时候真的睡着的。\", \"source_chapter\": \"production/final_chapters/chapter_011.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第11章内\"}, \"id\": \"chapter-011-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第11章之后\"}",
+  "created_at": "2026-08-23T23:25:42.975333+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_011.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-011-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 11 章状态：timeline",
+  "updated_at": "2026-08-23T23:25:42.975333+00:00",
+  "version": 1
+}

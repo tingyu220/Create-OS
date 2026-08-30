@@ -1,0 +1,26 @@
+{
+  "evidence": [
+    {
+      "excerpt": "六个小时后，龙渊神经医疗观察舱只剩一盏浅黄的灯。林子轩仰躺在监测椅里，后颈和两侧太阳穴贴着电极，左臂内侧埋着一次性采血针。那圈光冕又来了。",
+      "source_chapter": "production/final_chapters/chapter_031.md"
+    }
+  ],
+  "field_sources": {
+    "precision": {
+      "change_id": "state-chapter-031-timeline-order",
+      "chapter": 31
+    },
+    "relative_order": {
+      "change_id": "state-chapter-031-timeline-order",
+      "chapter": 31
+    }
+  },
+  "fields": {
+    "precision": "chapter_only",
+    "relative_order": "发生在第31章内"
+  },
+  "kind": "timeline",
+  "latest_change": "state-chapter-031-timeline-order",
+  "schema_version": 2,
+  "subject": "第31章之后"
+}

@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"六个小时后，龙渊神经医疗观察舱只剩一盏浅黄的灯。林子轩仰躺在监测椅里，后颈和两侧太阳穴贴着电极，左臂内侧埋着一次性采血针。那圈光冕又来了。\", \"source_chapter\": \"production/final_chapters/chapter_031.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第31章内\"}, \"id\": \"chapter-031-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第31章之后\"}",
+  "created_at": "2026-08-27T07:32:11.062699+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_031.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-031-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 31 章状态：timeline",
+  "updated_at": "2026-08-27T07:32:31.857769+00:00",
+  "version": 1
+}

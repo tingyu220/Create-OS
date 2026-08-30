@@ -1,0 +1,30 @@
+{
+  "memory_id": "state-chapter-005-character-林子轩",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“你不再只是听。你要和它对话。”陈景行看了他一眼，“如果你能问出那个问题的答案，我们就能知道，九年到底是从什么时候开始算的。”",
+        "source_chapter": "production/final_chapters/chapter_005.md"
+      }
+    ],
+    "fields": {
+      "current_goal": "确认九年窗口和隐藏声音的意图",
+      "emotional_state": [
+        "恐惧",
+        "警觉",
+        "不愿服从"
+      ],
+      "known_facts": [
+        "太阳窗口为九年",
+        "隐藏信息说过不要一个人走",
+        "必须主动与信息对话"
+      ],
+      "location": "龙渊核心解码室与安全宿舍"
+    },
+    "id": "chapter-005-character-林子轩",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "林子轩"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准第27章合同设计并授权连续生产\",\"source_content_hash\":\"ae5cc0f985907eae32f9fa4852e0f7904c1e585a6e8bed30ce94af38880840ae\",\"source_id\":\"baseline-facts-chapter-027-v0001\",\"source_version\":\"v0001\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"林子轩是否接受对等公开本地误差，把跨站校验责任链接入首堆与新超算节点？\",\"chapter_contract.ending_shift\":\"七地互证从境外协作工具变成约束龙渊核心工程的共同审计链，并首次检出同向提前偏移\",\"chapter_contract.forbidden.values[0]\":\"不得交换完整密钥或核心原始数据\",\"chapter_contract.forbidden.values[1]\":\"不得解释提前偏移的最终来源\",\"chapter_contract.forbidden.values[2]\":\"不得宣布首堆点火成功或一级文明达成\",\"chapter_contract.forbidden.values[3]\":\"不得把境外节点写成单向索取者\",\"chapter_contract.foreshadow_actions.values[0]\":\"统一时间戳提前偏移\",\"chapter_contract.foreshadow_actions.values[1]\":\"新超算节点与林子轩生物密钥的后续冲突\",\"chapter_contract.functions[0]\":\"承接七地校验后果\",\"chapter_contract.functions[1]\":\"改变核心人物选择条件\",\"chapter_contract.information.misdirect.values[0]\":\"陈景行起初认为境外节点可能借互证索取核心原始数据\",\"chapter_contract.information.reveal[0]\":\"七地误差在统一复算后呈同一方向、不同幅度的提前偏移\",\"chapter_contract.information.reveal[1]\":\"龙渊本地时间戳读取同样存在可被外部复核的缺口\",\"chapter_contract.information.withhold[0]\":\"提前偏移的最终来源\",\"chapter_contract.information.withhold[1]\":\"该异常是否由收割者或建造者主动触发\",\"chapter_contract.pressure_curve.end\":\"林子轩签署有限开放方案，互证链随即检出同向提前偏移\",\"chapter_contract.pressure_curve.start\":\"七地节点要求龙渊先公开本地误差样本，否则关闭联合校验窗口\",\"chapter_contract.pressure_curve.turn\":\"接口工程师证明封闭排查会错过首堆与新超算的共同时间窗口\",\"chapter_contract.protagonist_choice.action\":\"接受对等审计，只开放可验证误差链，并把七地互证接口接入首堆与新超算节点\",\"chapter_contract.protagonist_choice.actor\":\"林子轩\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"继续由龙渊封闭排查并拒绝境外节点接入\",\"chapter_contract.protagonist_choice.consequence\":\"七地协议首次成为首堆与新超算的共同验证边界\",\"chapter_contract.protagonist_choice.cost\":\"龙渊失去单方面解释权，本地缺陷进入国际同行的对等审计\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者确认林子轩选择以暴露本地缺陷换取可信互证，且异常呈同向不同幅度的提前偏移\",\"chapter_contract.reader_change.before\":\"读者知道七地差异不是单一设备故障，但林子轩尚未承接这一后果\",\"future_pressures[0]\":\"龙渊公开本地误差后将失去单方面解释权\",\"future_pressures[1]\":\"统一提前偏移可能指向更深层时间戳异常\",\"inherited_pressure\":\"七地互证已排除单一设备故障，但其结果尚未改变龙渊对首堆与新超算接口的决策。\"}},\"facts\":[{\"fields\":{\"status\":\"排除单一设备故障但未改变林子轩选择\"},\"kind\":\"event\",\"subject\":\"七地联合校验后果\"},{\"fields\":{\"pov_pressure\":\"必须决定是否公开本地误差并接入互证链\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-26T07:52:20.492741+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-027",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-027-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_027"
+  ],
+  "title": "冻结第27章事实与字段意图",
+  "updated_at": "2026-08-26T07:52:20.492741+00:00",
+  "version": 1
+}

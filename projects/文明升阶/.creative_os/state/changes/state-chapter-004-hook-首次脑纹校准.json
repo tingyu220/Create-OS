@@ -1,0 +1,21 @@
+{
+  "memory_id": "state-chapter-004-hook-首次脑纹校准",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "“你的神经兴奋水平还在下降。”陈景行说，“这顿饭吃完，回房间睡四个小时。下午四点，去核心解码室做第一次脑纹校准。”",
+        "source_chapter": "production/final_chapters/chapter_004.md"
+      }
+    ],
+    "fields": {
+      "holder": "林子轩",
+      "question": "首次脑纹校准会如何影响林子轩的解码和自主性？",
+      "status": "open"
+    },
+    "id": "chapter-004-hook-首次脑纹校准",
+    "kind": "hook",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "首次脑纹校准"
+  }
+}

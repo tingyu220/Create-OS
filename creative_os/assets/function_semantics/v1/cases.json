@@ -1,0 +1,1 @@
+{"schema_version":1,"version":"v1","cases":[{"left":"建立主角调查","right":"塑造主角追查","relation":"repeated"},{"left":"建立主角调查","right":"升级主角追查","relation":"progression"},{"left":"量子跃迁主角","right":"量子跃迁主角","relation":"uncertain"}]}

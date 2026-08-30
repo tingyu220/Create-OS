@@ -1,0 +1,48 @@
+{
+  "evidence": [
+    {
+      "excerpt": "“我还有些东西在宿舍。衣服，书，电脑。”林子轩顿了一下，“还有赵磊。”",
+      "source_chapter": "production/final_chapters/chapter_004.md"
+    }
+  ],
+  "field_sources": {
+    "current_goal": {
+      "change_id": "state-chapter-004-character-赵磊",
+      "chapter": 4
+    },
+    "emotional_state": {
+      "change_id": "state-chapter-004-character-赵磊",
+      "chapter": 4
+    },
+    "knows": {
+      "change_id": "state-chapter-004-character-赵磊",
+      "chapter": 4
+    },
+    "location": {
+      "change_id": "state-chapter-004-character-赵磊",
+      "chapter": 4
+    },
+    "must_not_assume": {
+      "change_id": "state-chapter-004-character-赵磊",
+      "chapter": 4
+    }
+  },
+  "fields": {
+    "current_goal": "等待林子轩说明去向",
+    "emotional_state": [
+      "担心",
+      "不解"
+    ],
+    "knows": [
+      "林子轩参加紧急项目并将离开一段时间"
+    ],
+    "location": "北华大学宿舍",
+    "must_not_assume": [
+      "龙渊、CMB、神经介入和太阳倒计时"
+    ]
+  },
+  "kind": "character",
+  "latest_change": "state-chapter-004-character-赵磊",
+  "schema_version": 2,
+  "subject": "赵磊"
+}

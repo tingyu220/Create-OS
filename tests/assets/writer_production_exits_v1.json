@@ -1,0 +1,11 @@
+[
+  {"file":"creative_os/novel_continuation_runner.py","symbol":"creative_os.novel_continuation_runner.continue_one_chapter","signature":"continue_one_chapter(prepared,*,client,dry_run,max_attempts,runtime_runner)","kind":"public_model_and_final_exit"},
+  {"file":"creative_os/novel_continuation_runner.py","symbol":"creative_os.novel_continuation_runner.promote_passing_draft","signature":"promote_passing_draft(prepared)","kind":"public_promotion_exit"},
+  {"file":"creative_os/llm_writer.py","symbol":"creative_os.llm_writer.run_llm_writer_pilot","signature":"run_llm_writer_pilot(prepared,client,max_attempts,use_local_repair,runtime_runner)","kind":"public_model_exit"},
+  {"file":"creative_os/llm_writer.py","symbol":"creative_os.llm_writer.promote_llm_writer_pilot_to_final","signature":"promote_llm_writer_pilot_to_final(prepared)","kind":"public_promotion_exit"},
+  {"file":"creative_os/runtime/runner.py","symbol":"creative_os.runtime.runner.RuntimeRunner.execute","signature":"RuntimeRunner.execute(self,request,adapter)","kind":"model_client_sink"},
+  {"file":"creative_os/novel_continuation_runner.py","symbol":"creative_os.novel_continuation_runner._continue_one_chapter_impl","signature":"_continue_one_chapter_impl(prepared,*,_guard,client,dry_run,max_attempts,runtime_runner)","kind":"final_chapter_write_sink"},
+  {"file":"creative_os/novel_continuation_runner.py","symbol":"creative_os.novel_continuation_runner._promote_passing_draft_impl","signature":"_promote_passing_draft_impl(prepared,*,_guard)","kind":"final_chapter_write_sink"},
+  {"file":"creative_os/llm_writer.py","symbol":"creative_os.llm_writer._promote_llm_writer_pilot_to_final_impl","signature":"_promote_llm_writer_pilot_to_final_impl(project_root,chapters,*,_guard)","kind":"final_chapter_write_sink"},
+  {"file":"creative_os/importing/materializer.py","symbol":"creative_os.importing.materializer.materialize_project","signature":"materialize_project(project_root)","kind":"human_approved_import_sink"}
+]

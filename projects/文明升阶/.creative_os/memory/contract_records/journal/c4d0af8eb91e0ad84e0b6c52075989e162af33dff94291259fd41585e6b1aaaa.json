@@ -1,0 +1,28 @@
+{
+  "entry_hash": "a412027cea0012af23f19cf84cbe8db01167a473963aa02aa54e61f126d3687c",
+  "envelope": {
+    "payload": {
+      "baseline_fingerprint": "c3ecb15e5416b2ee6f5b7547d922f8c3c4288c3373705434d423dacea272eb70",
+      "contract_content_hash": "d2326650613b00eb1cdf27a0d22c6cfb76830841c807a2934a4bf984eec24890",
+      "contract_id": "narrative-chapter-028",
+      "contract_version": 1,
+      "issues": [],
+      "result_hash": "478b7489d830fd437387e26bce03d87763efdef0d3733b8be69bc5cd9e736431",
+      "result_id": "review-narrative-chapter-028-v0001",
+      "ruleset_version": "prewrite-v1",
+      "semantic_asset_versions": [
+        [
+          "function_semantics",
+          "v1"
+        ]
+      ]
+    },
+    "payload_hash": "f36f5981304e956d694c327bd9f5d9560fa0ed41ef5973a408431a552378356f",
+    "record_type": "reviewer_result",
+    "schema_version": 1
+  },
+  "journal_version": 1,
+  "record_id": "review-narrative-chapter-028-v0001-478b7489d830fd437387e26bce03d87763efdef0d3733b8be69bc5cd9e736431",
+  "record_type": "reviewer_result",
+  "state": "committed"
+}

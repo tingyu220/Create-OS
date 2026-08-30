@@ -1,4 +1,8 @@
 import pytest
+import hashlib
+import json
+from dataclasses import asdict
+from types import SimpleNamespace
 
 from creative_os.llm_writer import (
     ChapterRewriteInput,
@@ -6,12 +10,78 @@ from creative_os.llm_writer import (
     OpenAICompatibleClient,
     build_chapter_rewrite_input,
     build_writer_messages,
-    promote_llm_writer_pilot_to_final,
+    promote_llm_writer_pilot_to_final as _secure_promote_llm_writer_pilot_to_final,
     revalidate_llm_writer_pilot,
-    run_llm_writer_pilot,
+    run_llm_writer_pilot as _secure_run_llm_writer_pilot,
     validate_llm_rewrite,
 )
-from creative_os.validation_runtime import write_v11_acceptance_artifacts
+from creative_os.validation_runtime import (
+    _build_validation_fixture_final_v2_artifacts,
+    write_v11_acceptance_artifacts as _write_v11_acceptance_artifacts,
+)
+from creative_os.memory.context_compiler import CompiledContext
+from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
+from creative_os.domains.writer_admission import AdmittedContractProjection, WriterAdmissionService, WriterAdmissionToken
+from creative_os.novel_continuation_runner import PreparedWriterRun
+from creative_os.domains.novel_continuation import ContinuationTask
+
+
+def write_v11_acceptance_artifacts(root):
+    result = _write_v11_acceptance_artifacts(root)
+    _build_validation_fixture_final_v2_artifacts(root)
+    return result
+
+
+@pytest.fixture(autouse=True)
+def _unit_writer_handoff(monkeypatch):
+    monkeypatch.setattr(WriterAdmissionService, "validate_token",
+                        lambda self, _token, _run_id, _fingerprint, *, handoff: handoff())
+
+
+def _prepared(root, chapter, context=None):
+    original_context = context
+    fingerprint = getattr(context, "fingerprint", f"{chapter:064x}")
+    memory = getattr(context, "memory", [])
+    projection = AdmittedContractProjection(f"contract-{chapter}", 1, "a" * 64, "{}")
+    projection_hash = hashlib.sha256(json.dumps(asdict(projection), sort_keys=True,
+                                                separators=(",", ":")).encode()).hexdigest()
+    token = WriterAdmissionToken(
+        "writer_admission_token", "grant", root.name, f"chapter_{chapter:03d}", projection.contract_id,
+        1, "a" * 64, "b" * 64, "c" * 64, "d" * 64, "e" * 64, "f" * 64, "rules", (),
+        "1" * 64, projection_hash, "2" * 64, fingerprint, "test-run",
+        "2026-08-22T00:00:00+00:00", "2026-08-23T00:00:00+00:00", "signature",
+    )
+    task = ContinuationTask(chapter, chapter - 1, "test-goal", [], [], [], "ending", [],
+                            7000, 5250, projection)
+    task_body = hashlib.sha256(json.dumps(asdict(task), ensure_ascii=False, sort_keys=True,
+                                         separators=(",", ":")).encode()).hexdigest()
+    context = SimpleNamespace(fingerprint=fingerprint, memory=memory,
+                              task=SimpleNamespace(id=f"chapter-{chapter:03d}", goal="test-goal"),
+                              knowledge=[SimpleNamespace(id=f"writer-task:chapter:{chapter:03d}", body=task_body)])
+    return PreparedWriterRun(root, "test-run", task, context, projection, token,
+                             WriterAdmissionService(root, object()))
+
+
+def run_llm_writer_pilot(root, client, chapters=None, max_attempts=2, use_local_repair=False,
+                         compiled_contexts=None, runtime_runner=None):
+    selected = chapters or [4, 5, 6]
+    records = [
+        _secure_run_llm_writer_pilot(
+            _prepared(root, chapter, (compiled_contexts or {}).get(chapter)), client,
+            max_attempts=max_attempts, use_local_repair=use_local_repair, runtime_runner=runtime_runner,
+        )
+        for chapter in selected
+    ]
+    if len(records) == 1:
+        return records[0]
+    merged = dict(records[-1])
+    merged["chapters"] = selected
+    return merged
+
+
+def promote_llm_writer_pilot_to_final(root, chapters):
+    assert len(chapters) == 1
+    return _secure_promote_llm_writer_pilot_to_final(_prepared(root, chapters[0]))
 
 
 def test_openai_compatible_client_reads_env(monkeypatch):
@@ -24,6 +94,17 @@ def test_openai_compatible_client_reads_env(monkeypatch):
     assert client.base_url == "https://api.example.test/v1"
     assert client.api_key == "sk-test"
     assert client.model == "writer-model"
+    assert client.timeout_seconds == 300.0
+
+
+def test_openai_compatible_client_reads_configurable_timeout(monkeypatch):
+    monkeypatch.setenv("CREATIVE_OS_LLM_API_KEY", "sk-test")
+    monkeypatch.setenv("CREATIVE_OS_LLM_MODEL", "writer-model")
+    monkeypatch.setenv("CREATIVE_OS_LLM_TIMEOUT_SECONDS", "420")
+
+    client = OpenAICompatibleClient.from_env(None)
+
+    assert client.timeout_seconds == 420.0
 
 
 def test_openai_compatible_client_requires_api_key(monkeypatch):
@@ -224,6 +305,44 @@ def test_run_llm_writer_pilot_writes_chapters_four_to_six(tmp_path):
     assert (tmp_path / "llm_writer_pilot" / "reviews" / "chapter_004_review.json").exists()
     chapter_004 = (tmp_path / "llm_writer_pilot" / "chapters" / "chapter_004.md").read_text(encoding="utf-8")
     assert not chapter_004.splitlines()[2].startswith(("凌晨", "清晨", "上午", "中午", "下午", "傍晚", "夜", "深夜"))
+
+
+def test_run_record_tracks_compiled_context_memory_sources(tmp_path):
+    write_v11_acceptance_artifacts(tmp_path)
+    memory = MemoryItem.new_candidate(
+        id="exp-transition",
+        kind=MemoryKind.EXPERIENCE,
+        scope=MemoryScope.DOMAIN,
+        scope_id="novel",
+        title="自然转场",
+        content="转场服务动作。",
+        evidence=[MemoryEvidence(source_type="review", source_id="review-1")],
+    ).activate(actor="tingyu")
+    context = CompiledContext(
+        user_input="续写",
+        task=None,  # type: ignore[arg-type]
+        state=None,  # type: ignore[arg-type]
+        working=[],
+        knowledge=[],
+        memory=[memory],
+        rules=[],
+        sources=[],
+        size_chars=4,
+        compiler_version="1",
+        fingerprint="context-fingerprint",
+    )
+
+    record = run_llm_writer_pilot(
+        tmp_path,
+        FakeWriterClient(),
+        chapters=[4],
+        compiled_contexts={4: context},
+    )
+
+    assert record["context_usage"]["chapter_004"] == {
+        "fingerprint": "context-fingerprint",
+        "memory_ids": ["exp-transition"],
+    }
 
 
 class RetryAwareFakeWriterClient:

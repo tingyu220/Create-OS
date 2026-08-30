@@ -1,0 +1,30 @@
+{
+  "evidence": [
+    {
+      "excerpt": "首轮互证排除单一阵列故障，却确认七地版本仍不一致。",
+      "source_chapter": "production/final_chapters/chapter_026.md"
+    }
+  ],
+  "field_sources": {
+    "pov_consequence": {
+      "change_id": "state-chapter-026-event-pov-consequence",
+      "chapter": 26
+    }
+  },
+  "fields": {
+    "pov_consequence": {
+      "affects_protagonist": true,
+      "id": "chapter-026-cross-site-result",
+      "materialized_after_chapter": 26,
+      "owner_ids": [
+        "林子轩"
+      ],
+      "status": "unclaimed",
+      "value": "七地联合校验已排除单一设备故障，但版本差异原因未明；该结果尚未改变林子轩的知识与选择条件。"
+    }
+  },
+  "kind": "event",
+  "latest_change": "state-chapter-026-event-pov-consequence",
+  "schema_version": 2,
+  "subject": "七地联合校验后果"
+}

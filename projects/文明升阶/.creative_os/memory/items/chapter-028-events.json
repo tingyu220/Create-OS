@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "脚步声在管廊尽头停下来。不是一组人来带他们走，而是三组。两组穿安全部深色工装，一组穿运维灰蓝外套。领头的是安全审计员顾长明，个子不高，颧骨很高，走路时左臂不摆，像把肩胛骨别在腰后。他走近陈景行，把一份线上流转单递到对方面前。 “申请已被七地联合响应，DR-17补偿缓存读取提前进入并行审计。”顾长明说，“但新超算上线窗口只剩四十分钟。授权没下来之前，你们不能碰DR-17，也不能关闭这条连廊里的任何监控。冷却与供电先回现场。” “保持住。”她对系统低声说，也对在场的每一个人。 时间只剩二十八分钟。外面的世界还什么都不知道。",
+  "created_at": "2026-08-26T18:29:38.562372+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_028.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-028-events",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_028",
+    "event",
+    "novel"
+  ],
+  "title": "第 28 章关键事件",
+  "updated_at": "2026-08-26T18:29:38.562372+00:00",
+  "version": 1
+}

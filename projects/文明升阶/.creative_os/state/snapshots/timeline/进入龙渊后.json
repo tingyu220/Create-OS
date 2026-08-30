@@ -1,0 +1,26 @@
+{
+  "evidence": [
+    {
+      "excerpt": "“新生儿林子轩，出生72小时。已实施神经介入方案D-7。介入结果：成功。皮层响应测试通过。预期目标：待持续观察。”",
+      "source_chapter": "production/final_chapters/chapter_003.md"
+    }
+  ],
+  "field_sources": {
+    "precision": {
+      "change_id": "state-chapter-003-timeline-进入龙渊后",
+      "chapter": 3
+    },
+    "relative_order": {
+      "change_id": "state-chapter-003-timeline-进入龙渊后",
+      "chapter": 3
+    }
+  },
+  "fields": {
+    "precision": "relative_only",
+    "relative_order": "第3章内，林子轩进入龙渊并与父母摊牌之后"
+  },
+  "kind": "timeline",
+  "latest_change": "state-chapter-003-timeline-进入龙渊后",
+  "schema_version": 2,
+  "subject": "进入龙渊后"
+}

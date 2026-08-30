@@ -1,0 +1,23 @@
+{
+  "memory_id": "state-chapter-005-character-陈景行",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "陈景行说“四点”，林子轩回到那间地下深处的小房间，在模拟屏幕永远灿烂的假阳光里躺了下去。他以为自己会睡不着。他没有做梦，只是陷进了一片很深的、没有尽头的东西里。",
+        "source_chapter": "production/final_chapters/chapter_005.md"
+      }
+    ],
+    "fields": {
+      "current_goal": "完成林子轩的脑纹校准并推动第三段解码",
+      "knows": [
+        "林子轩神经状态异常且需要校准"
+      ],
+      "location": "龙渊核心解码室"
+    },
+    "id": "chapter-005-character-陈景行",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "陈景行"
+  }
+}

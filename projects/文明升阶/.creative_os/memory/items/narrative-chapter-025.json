@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\": \"从聚变试验失败走到全球协作和一级文明门槛\", \"arc_id\": \"arc-fusion-construction\", \"arc_phase\": \"setup\", \"chapter\": 25, \"chapter_contract\": {\"dramatic_question\": \"停工与七年倒计时同时压来，老周妻子是否愿意用丈夫的安全换取更快复工？\", \"ending_shift\": \"首堆复工不再只由工程节点决定，普通家庭获得一项可执行的安全条件\", \"forbidden\": [\"不得让林子轩出场\", \"不得让家属发现新的宇宙或技术秘密\", \"不得让首堆恢复点火\"], \"foreshadow_actions\": [\"工人家庭风险告知\", \"停工收入与社会分配\"], \"functions\": [\"展示首堆停工对普通家庭的即时影响\", \"让家属选择改变现场用工规则\"], \"information\": {\"misdirect\": [\"家属服务窗口把签字描述为普通补充手续\"], \"reveal\": [\"连续夜班和临时免责被当作抢工手段\"], \"withhold\": [\"冻结批次何时完成复核\"]}, \"pov_plan\": {\"mode\": \"limited\", \"primary_owner\": \"陈玉兰\", \"protagonist_present\": false, \"rationale\": \"由承担收入与安全后果的普通家属改变复工条件\", \"supporting_agency\": [{\"actor\": \"陈玉兰\", \"choice\": \"拒绝家属免责并写入夜班轮换要求\", \"cost\": \"失去部分加班收入并承担拖慢工程的指责\", \"independent_goal\": \"让老周活着完成工程而不是靠连续值守赌命\", \"mainline_change\": \"夜班轮换和家属风险告知进入首堆复工条件\", \"resistance\": \"加班收入损失、项目工期和免责文件压力\", \"result\": \"家属文件被退回质量室重新审核\"}, {\"actor\": \"老周\", \"choice\": \"支持妻子拒签并交出连续夜班名单\", \"cost\": \"放弃优先加班资格\", \"independent_goal\": \"留下参与返工同时保住班组\", \"mainline_change\": \"质量室必须重排返工班次\", \"resistance\": \"停工收入下降和抢工排程\", \"result\": \"隐藏的连续值守安排被公开\"}]}, \"pressure_curve\": {\"end\": \"她拒签并迫使轮换条款进入复工清单\", \"start\": \"停工消息传到家属与附近生活区\", \"turn\": \"老周妻子发现文件要求家属承担连续值守风险\"}, \"protagonist_choice\": {\"action\": \"拒绝家属免责并要求夜班轮换写入复工条件\", \"actor\": \"陈玉兰\", \"alternatives\": [\"签字让老周继续连续值守\"], \"consequence\": \"现场复工条件增加强制轮换和家属风险告知\", \"cost\": \"家庭失去停工期间的加班收入并承受项目延期指责\"}, \"reader_change\": {\"after\": \"读者看到延期、收入和家庭安全必须由具体普通人共同承担\", \"before\": \"读者知道冻结令保护现场人员但会造成延期\"}, \"scene_plan\": {\"allowed_same_place_run\": 2, \"chapter_spatial_intent\": \"从交通抵达转入服务窗口选择，让空间变化承载家庭压力到制度改变\", \"exception_reason\": \"\", \"required_world_slice\": \"工人家庭与停工收入\", \"scenes\": [{\"action\": \"带着药和儿子的土木课本赶到家属服务点\", \"conflict\": \"停工传言、交通延误和收入焦虑\", \"entry_reason\": \"冻结令传到工人家庭\", \"exit_trigger\": \"服务人员要求补签连续值守免责\", \"goal\": \"确认老周是否安全并把药送到生活区\", \"id\": \"family-arrival\", \"information_change\": \"家属只收到停工通知，没有风险原因\", \"inherited_from_previous\": false, \"interior_exterior\": \"exterior\", \"order\": 1, \"ordinary_people_present\": true, \"participants\": [\"陈玉兰\", \"老周儿子\", \"停工工人家属\"], \"place_class\": \"civilian_transport\", \"place_id\": \"gobi-nearby-town-station\", \"place_label\": \"红柳湾镇\", \"state_change\": \"工程冻结转化为家庭行动\", \"time_window\": \"第24章当日下午\", \"viewpoint\": \"陈玉兰\"}, {\"action\": \"划掉免责条款并写入夜班轮换要求\", \"conflict\": \"加班收入、七年工期与连续值守安全冲突\", \"entry_reason\": \"服务窗口要求家属签补充文件\", \"exit_trigger\": \"质量室接收被修改的家属文件\", \"goal\": \"拒绝用家属免责换取抢工\", \"id\": \"family-liaison-choice\", \"information_change\": \"连续夜班是复工草案的隐藏代价\", \"inherited_from_previous\": false, \"interior_exterior\": \"interior\", \"order\": 2, \"ordinary_people_present\": true, \"participants\": [\"陈玉兰\", \"老周\", \"家属联络员\", \"其他工人家属\"], \"place_class\": \"civilian_service\", \"place_id\": \"site-family-liaison-hall\", \"place_label\": \"项目家属服务厅\", \"state_change\": \"强制轮换和风险告知进入复工条件\", \"time_window\": \"同日傍晚\", \"viewpoint\": \"陈玉兰\"}]}, \"target_chinese_chars\": 7000, \"technology_plan\": {\"technologies\": []}}, \"future_pressures\": [\"停工成本如何在社会中分配\", \"国际团队要求共享首堆故障数据\"], \"inherited_pressure\": \"第24章冻结D-0447关联批次，现场工人停工等待，复工条件尚未确定。\", \"kind\": \"narrative_decision\", \"profile_id\": \"文明升阶-production-profile\", \"schema_version\": 2, \"volume_id\": \"volume-1-key\"}",
+  "created_at": "2026-08-25T06:50:52.459277+00:00",
+  "evidence": [
+    {
+      "note": "第24章整批冻结与现场停工",
+      "source_id": "production/final_chapters/chapter_024.md",
+      "source_type": "chapter"
+    },
+    {
+      "note": "总控批准第25章家庭普通人POV实验",
+      "source_id": "controller:pov-experiment-24-26",
+      "source_type": "approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-025",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_025",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 25 章叙事合同",
+  "updated_at": "2026-08-25T07:02:25.777613+00:00",
+  "version": 2
+}

@@ -8,9 +8,9 @@ from creative_os.validation_runtime import (
     write_full_draft_artifacts,
     write_full_review_artifacts,
     write_v11_acceptance_artifacts,
-    write_composed_final_artifacts,
+    _build_validation_fixture_composed_artifacts as write_composed_final_artifacts,
     validate_reader_facing_text,
-    write_final_chapter_v2_artifacts,
+    _build_validation_fixture_final_v2_artifacts as write_final_chapter_v2_artifacts,
 )
 
 
@@ -165,6 +165,29 @@ def test_reader_facing_quality_gate_rejects_system_and_template_language():
     assert "template_phrase_jumianbeipo" in issues
     assert "template_phrase_jumianjintuidao" in issues
     assert "duplicate_reader_paragraph" in issues
+
+
+def test_reader_facing_quality_gate_rejects_reversed_dialogue_reference():
+    text = "“所以我们找到了你。”林子轩说。\n\n“不是找到了我。”林正弘说，“是在你出生前，我们就知道你可能是唯一解。”"
+
+    issues = validate_reader_facing_text(text)
+
+    assert "dialogue_reference_mismatch" in issues
+
+
+def test_reader_facing_quality_gate_rejects_wrong_father_child_gender():
+    text = "林正弘看着林子轩，像是想把这些字在女儿面前摆稳一些。"
+
+    assert "character_relation_mismatch" in validate_reader_facing_text(
+        text,
+        relation_constraints=(("林正弘", "林子轩", "女儿"),),
+    )
+
+
+def test_reader_facing_quality_gate_rejects_truncated_sentence_ending():
+    text = "# 第25章：家属服务厅\n\n老周抬起头说：“我这一班，夜"
+
+    assert "truncated_sentence_ending" in validate_reader_facing_text(text)
 
 
 def test_final_chapter_v2_artifacts_remove_ai_flavor_and_scene_stitching(tmp_path):

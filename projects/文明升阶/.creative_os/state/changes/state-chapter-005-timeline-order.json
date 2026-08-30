@@ -1,0 +1,20 @@
+{
+  "memory_id": "state-chapter-005-timeline-order",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "陈景行说“四点”，林子轩回到那间地下深处的小房间，在模拟屏幕永远灿烂的假阳光里躺了下去。他以为自己会睡不着。他没有做梦，只是陷进了一片很深的、没有尽头的东西里。",
+        "source_chapter": "production/final_chapters/chapter_005.md"
+      }
+    ],
+    "fields": {
+      "precision": "chapter_only",
+      "relative_order": "发生在第5章内"
+    },
+    "id": "chapter-005-timeline-order",
+    "kind": "timeline",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "第5章之后"
+  }
+}

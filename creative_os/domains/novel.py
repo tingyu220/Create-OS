@@ -4,11 +4,14 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from creative_os.domains.base import DomainPackage
+from creative_os.domains.novel_capabilities import NOVEL_CAPABILITY_NAMES
 
 
 class NovelSchemaKind(StrEnum):
     CHARACTER = "character"
     WORLD = "world"
+    LOCATION = "location"
+    EVENT = "event"
     CHAPTER = "chapter"
     SCENE = "scene"
     TIMELINE = "timeline"
@@ -16,6 +19,7 @@ class NovelSchemaKind(StrEnum):
     FORESHADOW = "foreshadow"
     CONFLICT = "conflict"
     STYLE = "style"
+    NARRATIVE_DECISION = "narrative_decision"
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +41,16 @@ class NovelDomainPackage(DomainPackage):
                 name="World",
                 required_fields=["rule", "scope", "limit", "evidence"],
                 optional_fields=["source", "risk"],
+            ),
+            NovelSchemaKind.LOCATION: NovelSchemaDefinition(
+                name="Location",
+                required_fields=["name", "role", "state"],
+                optional_fields=["anchors", "access_constraints", "evidence"],
+            ),
+            NovelSchemaKind.EVENT: NovelSchemaDefinition(
+                name="Event",
+                required_fields=["event", "participants", "outcome", "evidence"],
+                optional_fields=["chapter", "impact"],
             ),
             NovelSchemaKind.CHAPTER: NovelSchemaDefinition(
                 name="Chapter",
@@ -73,6 +87,11 @@ class NovelDomainPackage(DomainPackage):
                 required_fields=["tone", "pace", "constraints"],
                 optional_fields=["examples"],
             ),
+            NovelSchemaKind.NARRATIVE_DECISION: NovelSchemaDefinition(
+                name="NarrativeDecision",
+                required_fields=["chapter", "arc", "chapter_contract", "target_chinese_chars"],
+                optional_fields=["reader_change", "pressure_curve", "foreshadow_actions"],
+            ),
         }
         self._rules_by_area = {
             "review": [
@@ -81,6 +100,10 @@ class NovelDomainPackage(DomainPackage):
                 "timeline_consistency",
                 "foreshadow_tracking",
                 "relationship_consistency",
+                "narrative_contract_required",
+                "reader_state_tracking",
+                "foreshadow_lifecycle",
+                "outline_change_requires_approval",
             ],
             "workflow": [
                 "proposal_before_world",
@@ -92,6 +115,8 @@ class NovelDomainPackage(DomainPackage):
                 "scene_conflict_required",
                 "character_state_required",
                 "world_rule_must_be_respected",
+                "protagonist_choice_required",
+                "information_boundary_required",
             ],
         }
         templates = {
@@ -122,6 +147,29 @@ class NovelDomainPackage(DomainPackage):
             ],
             templates=templates,
         )
+        self._skills = [
+            "story-design",
+            "character-design",
+            "world-building",
+            "plot-design",
+            "chapter-planning",
+            "scene-planning",
+            "scene-writing",
+            "dialogue-writing",
+            "revision",
+        ]
+        self._production_workflow = [
+            "Idea",
+            "Proposal",
+            "Story Bible",
+            "Outline",
+            "Chapter Plan",
+            "Scene Plan",
+            "Draft",
+            "Review",
+            "Compile",
+            "Final",
+        ]
 
     def schema_definition(self, kind: NovelSchemaKind | str) -> NovelSchemaDefinition:
         schema_kind = NovelSchemaKind(kind)
@@ -134,3 +182,16 @@ class NovelDomainPackage(DomainPackage):
         if name not in self.templates:
             raise KeyError(name)
         return self.templates[name]
+
+    @property
+    def skills(self) -> list[str]:
+        return list(self._skills)
+
+    @property
+    def production_workflow(self) -> list[str]:
+        return list(self._production_workflow)
+
+    @property
+    def capability_names(self) -> tuple[str, ...]:
+        """返回领域可执行能力；具体实现由 NovelDomainService 组合。"""
+        return NOVEL_CAPABILITY_NAMES

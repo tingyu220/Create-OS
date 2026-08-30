@@ -1,0 +1,20 @@
+{
+  "memory_id": "state-chapter-030-timeline-order",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "陈景行没有看林子轩。他最后把目光从主屏上那行小字移开，像关掉一个刚刚成形的档案。然后他绕过控制台，从北侧安全门走进清洁空气更冷的走廊。",
+        "source_chapter": "production/final_chapters/chapter_030.md"
+      }
+    ],
+    "fields": {
+      "precision": "chapter_only",
+      "relative_order": "发生在第30章内"
+    },
+    "id": "chapter-030-timeline-order",
+    "kind": "timeline",
+    "schema_version": 2,
+    "status": "candidate",
+    "subject": "第30章之后"
+  }
+}

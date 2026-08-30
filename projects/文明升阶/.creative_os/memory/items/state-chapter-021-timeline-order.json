@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"林子轩没有动。门缝外的冷光像一条细细的刀刃，把他和方晴的影子同时切成两半。她的嘴唇又动了一次，这次他看清了：“别出声。跟我来。”\", \"source_chapter\": \"production/final_chapters/chapter_021.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第21章内\"}, \"id\": \"chapter-021-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第21章之后\"}",
+  "created_at": "2026-08-24T06:39:12.440140+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_021.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-021-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 21 章状态：timeline",
+  "updated_at": "2026-08-24T06:39:12.440140+00:00",
+  "version": 1
+}

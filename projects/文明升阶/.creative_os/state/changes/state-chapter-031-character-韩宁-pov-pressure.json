@@ -1,0 +1,49 @@
+{
+  "memory_id": "state-chapter-031-character-韩宁-pov-pressure",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "# 第 31 章：主观信号",
+        "source_chapter": "production/final_chapters/chapter_031.md"
+      }
+    ],
+    "fields": {
+      "pov_pressure": {
+        "agency_capabilities": [
+          {
+            "id": "verify-harvester-praise",
+            "serves_functions": [
+              "验证那个声音对人类的礼赞",
+              "证明人类值得活下去来自共同选择而非服从",
+              "保留收割者与建造者动机疑问"
+            ],
+            "target_state_ref": "无主短促节律从未知附件转为可审计礼赞，同时人类拒绝把生存价值交给声音裁定"
+          }
+        ],
+        "pending_choices": [
+          {
+            "id": "publish-praise-with-raw-audit",
+            "value": "是否公开声音与全部校验失败记录，并拒绝剪辑成胜利宣言"
+          }
+        ],
+        "unfinished_goals": [
+          {
+            "id": "verify-unowned-rhythm",
+            "value": "确认未知节律是否能跨七地独立重建且不来自林子轩主观体验"
+          }
+        ],
+        "unpaid_costs": [
+          {
+            "id": "refuse-propaganda-control",
+            "value": "公开原始记录会失去对礼赞叙事的宣传控制并暴露动机未知"
+          }
+        ]
+      }
+    },
+    "id": "chapter-031-character-韩宁-pov-pressure",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "approved",
+    "subject": "韩宁"
+  }
+}

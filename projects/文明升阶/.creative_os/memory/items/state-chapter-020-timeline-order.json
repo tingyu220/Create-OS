@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“那段数据是什么？”魏诚的声音不高，却像一根细针刺进审讯室里已经凝固的空气。\", \"source_chapter\": \"production/final_chapters/chapter_020.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第20章内\"}, \"id\": \"chapter-020-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第20章之后\"}",
+  "created_at": "2026-08-24T06:17:01.450567+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_020.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-020-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 20 章状态：timeline",
+  "updated_at": "2026-08-24T06:17:01.450567+00:00",
+  "version": 1
+}

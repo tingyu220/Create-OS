@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "林子轩醒来的时候，房间里那片假阳光已经调到了某个不知是清晨还是深夜的亮度。他躺在床上，四肢沉得像被人灌进去很湿的沙子。梦里的水还残留在他后颈的皮肤上，凉丝丝的，像真的趟过一片灰白色的浅滩。他没有立刻坐起来，只是把眼睛睁开一条缝，看着天花板上模拟出来的光缓慢地移，像在照一面没有波纹的湖。 “不要一个人走。” 林子轩盯着那行字。他的呼吸一点点慢下来。房间里的假阳光照在他背上，暖洋洋的，像一张永远不会破的皮。他一直站在那儿，手指离手机屏幕只有半厘米，像在确认什么，又像是在拒绝什么。他忽然明白，这条短信不是警告。它是从里面伸出来的一只手。而这只手，很可能会在明天九点，在核心解码室里，轻轻地碰一下他的后颈，然后从他嘴里，说出第一句它自己的话。 窗外没有月亮。",
+  "created_at": "2026-08-17T15:45:10.425076+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_006.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-006-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_006",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 6 章章节摘要",
+  "updated_at": "2026-08-17T15:45:10.425076+00:00",
+  "version": 1
+}

@@ -1,0 +1,38 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": "user-approved",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_id\":\"arc-fusion-construction\",\"arc_phase\":\"setup\",\"chapter\":23,\"chapter_contract\":{\"dramatic_question\":\"第一座聚变堆点火前，谁来承担最先的风险？\",\"ending_shift\":\"林子轩留下参与复盘\",\"forbidden\":[\"不得提前解释全部文明真相\",\"不得让阶段性成功消除后续风险\"],\"foreshadow_actions\":[\"第一座试验堆\",\"旧设计\"],\"functions\":[\"开启建设阶段\",\"让宏大目标落到现场\"],\"information\":{\"misdirect\":[\"暂不一次解释聚变堆的第一夜背后的全部真相\"],\"reveal\":[\"现场故障\"],\"withhold\":[\"旧设计责任人\"]},\"pressure_curve\":{\"end\":\"计划第一次被现实打断\",\"start\":\"紧张\",\"turn\":\"调试失败迫使团队停机\"},\"protagonist_choice\":{\"action\":\"亲自进入夜间调试现场而不是只看远程数据\",\"actor\":\"林子轩\",\"alternatives\":[\"暂缓行动\"],\"consequence\":\"他发现关键故障来自被忽略的旧设计\",\"cost\":\"暴露在设备故障和舆论压力中\"},\"reader_change\":{\"after\":\"读者开始关心现场人员而非只有主角\",\"before\":\"读者看到文明工程由具体劳动组成\"},\"target_chinese_chars\":8000,\"scene_plan\":{\"scenes\":[{\"id\":\"remote-demand\",\"order\":1,\"place_id\":\"longyuan-core-decoding-room\",\"place_label\":\"核心解码室\",\"place_class\":\"research\",\"interior_exterior\":\"interior\",\"time_window\":\"深夜\",\"participants\":[\"林子轩\",\"宇\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":false,\"goal\":\"取得第一座试验堆联调进度\",\"conflict\":\"三个执行机构尚未确认\",\"action\":\"拒绝只看远程状态并前往现场\",\"information_change\":\"首堆尚在联调而非成功点火\",\"state_change\":\"林子轩离开基地决策端\",\"entry_reason\":\"七年执行计划启动\",\"exit_trigger\":\"抵达戈壁厂房\",\"inherited_from_previous\":true},{\"id\":\"gobi-commissioning\",\"order\":2,\"place_id\":\"gobi-pilot-plant\",\"place_label\":\"十九号厂房\",\"place_class\":\"industrial\",\"interior_exterior\":\"interior\",\"time_window\":\"夜班至清晨\",\"participants\":[\"林子轩\",\"韩宁\",\"工人\"],\"viewpoint\":\"林子轩\",\"ordinary_people_present\":true,\"goal\":\"查明联调故障\",\"conflict\":\"工期压力要求继续而旧设计出现热流故障\",\"action\":\"今晚停机并留下复盘\",\"information_change\":\"旧图把热应力集中在偏滤器外缘\",\"state_change\":\"联调停机并建立故障树\",\"entry_reason\":\"远程数据不足\",\"exit_trigger\":\"早班接管并形成复盘任务\",\"inherited_from_previous\":false}],\"chapter_spatial_intent\":\"从远程数据真正进入戈壁首堆现场\",\"required_world_slice\":\"现场工人\",\"allowed_same_place_run\":3,\"exception_reason\":\"\"},\"technology_plan\":{\"technologies\":[{\"id\":\"divertor-support-ring\",\"name\":\"偏滤器支撑环\",\"role\":\"supporting\",\"birth_reason\":\"旧图造成热应力集中，首次联调前必须停机\",\"source\":\"现场检查、旧图与D-0447验收标记\",\"prerequisites\":[\"原始图纸\",\"焊缝内窥镜\",\"故障树\"],\"validation_stage\":\"故障树与焊缝复查\",\"first_application\":\"西北一号综合试验堆\",\"social_diffusion\":[\"验收记录回源\",\"早班复盘任务\"],\"cost\":\"首堆停机、工期延期与现场责任\",\"changed_domains\":[\"ordinary_life\",\"protagonist_capability\"]}]}},\"future_pressures\":[\"神经干预代价将被具体揭示\",\"全球公布会把私人发现变成公共危机\"],\"inherited_pressure\":\"林子轩已经发现信号并被带入龙渊，无法回到完全不知情的普通生活。\",\"kind\":\"narrative_decision\",\"profile_id\":\"文明升阶-production-profile\",\"schema_version\":2,\"volume_id\":\"volume-1-key\"}",
+  "created_at": "2026-08-24T06:45:37.643043+00:00",
+  "evidence": [
+    {
+      "note": "第23章大纲",
+      "source_id": "import:02_Plot/Plot_Outline.md",
+      "source_type": "knowledge"
+    },
+    {
+      "note": "第22章正文",
+      "source_id": "production/final_chapters/chapter_022.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "narrative-chapter-023",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "chapter_023",
+    "narrative",
+    "narrative_decision",
+    "novel"
+  ],
+  "title": "第 23 章叙事合同",
+  "updated_at": "2026-08-24T06:45:37.653048+00:00",
+  "version": 1
+}

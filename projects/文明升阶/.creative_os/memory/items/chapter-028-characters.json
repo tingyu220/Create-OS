@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "本章出场人物：林子轩、陈景行。",
+  "created_at": "2026-08-26T18:29:38.562372+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_028.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-028-characters",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_028",
+    "character_state",
+    "novel"
+  ],
+  "title": "第 28 章人物状态",
+  "updated_at": "2026-08-26T18:29:38.562372+00:00",
+  "version": 1
+}

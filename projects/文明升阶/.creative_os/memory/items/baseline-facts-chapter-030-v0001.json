@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准连续生成第28至32章并授权第30章合同\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"人类能否在不把一次点火误当永久胜利的前提下确认一级文明，并安全接收亚光速航行与冬眠技术？\",\"chapter_contract.ending_shift\":\"陈景行确认卡尔达肖夫指数达到1.0并将社会代价写入判定，人类获准受控读取亚光速航行与冬眠技术，但所有应用仍被冻结等待验证\",\"chapter_contract.forbidden.values[0]\":\"不得把一次点火峰值写成永久稳定能源\",\"chapter_contract.forbidden.values[1]\":\"不得让林子轩出场或替陈景行完成判定\",\"chapter_contract.forbidden.values[2]\":\"不得写成亚光速飞船或冬眠舱已经造出\",\"chapter_contract.forbidden.values[3]\":\"不得把技术包无审计分发给全球\",\"chapter_contract.forbidden.values[4]\":\"不得提前确认光冕为宇宙边界\",\"chapter_contract.foreshadow_actions.values[0]\":\"亚光速技术包首先要求验证推进系统能量闭环\",\"chapter_contract.foreshadow_actions.values[1]\":\"冬眠技术包首先要求验证长期神经损伤边界\",\"chapter_contract.foreshadow_actions.values[2]\":\"判定完成时监测系统记录到不属于能源网的短暂光冕噪声\",\"chapter_contract.functions[0]\":\"独立判定卡尔达肖夫指数达到1.0\",\"chapter_contract.functions[1]\":\"解锁并约束第二层技术信息\",\"chapter_contract.functions[2]\":\"把能源胜利转化为新的文明选择\",\"chapter_contract.information.misdirect.values[0]\":\"全球媒体把十二站同秒点火直接等同于一级文明完成\",\"chapter_contract.information.reveal[0]\":\"卡尔达肖夫指数必须计入持续能源能力与公开社会代价\",\"chapter_contract.information.reveal[1]\":\"人类指数在审计修正后仍达到1.0\",\"chapter_contract.information.reveal[2]\":\"第二层包含亚光速航行与冬眠技术两类可验证技术包\",\"chapter_contract.information.withhold[0]\":\"两类技术的完整工程参数\",\"chapter_contract.information.withhold[1]\":\"光冕幻觉与宇宙边界的真实性\",\"chapter_contract.information.withhold[2]\":\"那个声音为何把技术交给人类\",\"chapter_contract.pressure_curve.end\":\"他拒绝无条件宣布，补入社会代价与稳定性边界后确认1.0，并把第二层技术锁在验证沙箱\",\"chapter_contract.pressure_curve.start\":\"全球庆祝倒逼判定中心立刻宣布一级文明，能源曲线却只有峰值没有长期稳定性\",\"chapter_contract.pressure_curve.turn\":\"陈景行发现若不计入停电、断暖和轨道余量，指数会被漂亮数字虚高\",\"chapter_contract.protagonist_choice.action\":\"先公开能源峰值的社会代价与稳定性缺口，再确认一级文明并限制第二层技术只能在沙箱读取\",\"chapter_contract.protagonist_choice.actor\":\"陈景行\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"先宣布一级文明并立即向工程系统分发技术包\",\"chapter_contract.protagonist_choice.consequence\":\"一级文明判定可信成立，亚光速与冬眠技术进入受控验证而非直接应用\",\"chapter_contract.protagonist_choice.cost\":\"承受全球舆论与决策层对延迟庆功的压力，并承担技术封锁责任\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者确认一级文明成立并看到第二层两类技术信息解锁，同时理解解锁不等于掌握或可立即应用\",\"chapter_contract.reader_change.before\":\"读者知道全球点火共同事实已经形成，但一级文明边界尚未判定\",\"future_pressures[0]\":\"第二层技术将改变人类离开太阳系的时间尺度\",\"future_pressures[1]\":\"林子轩可能在光冕幻觉中接触无法验证的宇宙边界\",\"inherited_pressure\":\"十二站共同点火证据已经齐备，但一级文明边界仍需独立判定；任何提前庆功都会把一次峰值误写成永久能力。\"}},\"facts\":[{\"fields\":{\"status\":\"各节点需独立签署后同步点火\"},\"kind\":\"event\",\"subject\":\"十二站全球点火\"},{\"fields\":{\"pov_pressure\":\"必须在中央强制与分布式共同决定之间选择\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-27T07:12:51.498232+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-030",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-030-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_030"
+  ],
+  "title": "冻结第30章事实与字段意图",
+  "updated_at": "2026-08-27T07:12:51.498232+00:00",
+  "version": 1
+}

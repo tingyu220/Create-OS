@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“我还有些东西在宿舍。衣服，书，电脑。”林子轩顿了一下，“还有赵磊。”\", \"source_chapter\": \"production/final_chapters/chapter_004.md\"}], \"fields\": {\"outcome\": \"林子轩从宿舍带走个人物品，与赵磊告别并正式入驻龙渊，普通学生生活被切断。\", \"participants\": [\"林子轩\", \"赵磊\", \"沈玥\", \"陈景行\"]}, \"id\": \"chapter-004-event-告别普通生活\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"告别普通生活\"}",
+  "created_at": "2026-08-17T15:56:34.978701+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_004.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-004-event-告别普通生活",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 4 章状态：event",
+  "updated_at": "2026-08-17T15:56:35.138409+00:00",
+  "version": 1
+}

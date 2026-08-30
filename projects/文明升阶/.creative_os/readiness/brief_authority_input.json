@@ -1,0 +1,16 @@
+{
+  "actor": "tingyu",
+  "reason": "按已批准项目事实补齐 readiness 所需 genre 与 logline；仅复用原始小说目录权威内容，不新增设定。",
+  "decision": "approved",
+  "fields": {
+    "brief.genre": "科幻 / 类三体",
+    "brief.logline": "林子轩在宇宙微波背景辐射中发现来自138亿年前的编码信息，在强人工智能“宇”的辅助下，必须带领人类在太阳氦闪倒计时内攀升文明等级，同时查明“建造者”与“收割者”的真实目的。"
+  },
+  "evidence_refs": [
+    {"field_path": "brief.genre", "source_path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\Novel_README.md", "source_content_hash": "d20d9f45607da966d4ef0b0a1c381300832a4491ffdec4ef9e0d4205337a9855"},
+    {"field_path": "brief.logline", "source_path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\Novel_README.md", "source_content_hash": "d20d9f45607da966d4ef0b0a1c381300832a4491ffdec4ef9e0d4205337a9855"},
+    {"field_path": "brief.logline", "source_path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\00_Worldview\\Main_Worldview.md", "source_content_hash": "a1428b042ae0d5cd0979eb09eb7e35c631eb56bdc2ab9773c1b8265071255ada"},
+    {"field_path": "brief.logline", "source_path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\核心框架.md", "source_content_hash": "d8bb85825562ed50921bcbe575915665934c49097294bfeb21fb74bedda2f429"},
+    {"field_path": "brief.logline", "source_path": "D:\\田雨\\AI写作助手\\NovelProject\\Novels\\文明升阶\\02_Plot\\Plot_Outline.md", "source_content_hash": "a230a00b62407c4379d0efda1f57beab0c15c2e94fbac07aa5430df0399c59ee"}
+  ]
+}

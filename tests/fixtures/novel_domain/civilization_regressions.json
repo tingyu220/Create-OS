@@ -1,0 +1,23 @@
+[
+  {
+    "case_id": "short_answer_between_question_and_reaction",
+    "estimated_chinese_chars": 449,
+    "dialogue_closed": false,
+    "dramatic_unit_closed": false,
+    "expected_codes": ["dialogue_cut", "dramatic_unit_incomplete", "fragment_chapter"]
+  },
+  {
+    "case_id": "negotiation_cut_before_response",
+    "estimated_chinese_chars": 1162,
+    "dialogue_closed": false,
+    "dramatic_unit_closed": false,
+    "expected_codes": ["dialogue_cut", "dramatic_unit_incomplete", "fragment_chapter"]
+  },
+  {
+    "case_id": "choice_question_without_outcome",
+    "estimated_chinese_chars": 1957,
+    "dialogue_closed": true,
+    "dramatic_unit_closed": false,
+    "expected_codes": ["dramatic_unit_incomplete", "fragment_chapter"]
+  }
+]

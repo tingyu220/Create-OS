@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\": [{\"excerpt\": \"# 第 28 章：可信运行态\", \"source_chapter\": \"production/final_chapters/chapter_028.md\"}], \"fields\": {\"pov_pressure\": {\"agency_capabilities\": [{\"id\": \"coordinate-global-fusion-ignition\", \"serves_functions\": [\"完成十二座聚变电站同步点火\", \"让全球普通人承担文明跃迁代价\", \"检验第二次解码给出的能源验证\"], \"target_state_ref\": \"十二座聚变电站由准备态进入可验证的同步点火结果\"}], \"pending_choices\": [{\"id\": \"global-ignition-go-no-go\", \"value\": \"是否在各节点风险不均时维持同步点火\"}], \"unfinished_goals\": [{\"id\": \"prove-global-energy-capability\", \"value\": \"用十二座聚变电站的真实点火回应第二次解码\"}], \"unpaid_costs\": [{\"id\": \"auditable-global-command\", \"value\": \"龙渊必须把点火判断交给各地现场共同签署\"}]}}, \"id\": \"chapter-028-character-林子轩-pov-pressure\", \"kind\": \"character\", \"schema_version\": 2, \"status\": \"approved\", \"subject\": \"林子轩\"}",
+  "created_at": "2026-08-27T06:25:35.618142+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_028.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-028-character-林子轩-pov-pressure",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "character",
+    "novel",
+    "state"
+  ],
+  "title": "第28章状态：全球点火协调压力",
+  "updated_at": "2026-08-27T06:25:35.768728+00:00",
+  "version": 1
+}

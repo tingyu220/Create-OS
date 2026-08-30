@@ -1,0 +1,31 @@
+{
+  "evidence": [
+    {
+      "excerpt": "林子轩愣住了。他下意思地摸了一下耳朵——那里没有耳机。但他知道父亲说的是什么。手机上那两条“别怕”的短信。",
+      "source_chapter": "production/final_chapters/chapter_003.md"
+    }
+  ],
+  "field_sources": {
+    "holder": {
+      "change_id": "state-chapter-003-hook-神秘短信",
+      "chapter": 3
+    },
+    "question": {
+      "change_id": "state-chapter-003-hook-神秘短信",
+      "chapter": 3
+    },
+    "status": {
+      "change_id": "state-chapter-003-hook-神秘短信",
+      "chapter": 3
+    }
+  },
+  "fields": {
+    "holder": "林子轩",
+    "question": "是谁绕过龙渊渠道向林子轩发送警告？",
+    "status": "open"
+  },
+  "kind": "hook",
+  "latest_change": "state-chapter-003-hook-神秘短信",
+  "schema_version": 2,
+  "subject": "神秘短信来源"
+}

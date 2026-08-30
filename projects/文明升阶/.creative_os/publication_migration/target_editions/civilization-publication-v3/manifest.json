@@ -1,0 +1,789 @@
+{
+  "activation_status": "withheld",
+  "chapters": [
+    {
+      "content_hash": "6014d1f87ce83e7f8e1fa507a5fce823643d5eabbede032547a89357a3d7cb8e",
+      "file": "chapter_005.md",
+      "source_chapter_ids": [
+        5
+      ],
+      "source_content_hashes": [
+        "6014d1f87ce83e7f8e1fa507a5fce823643d5eabbede032547a89357a3d7cb8e"
+      ],
+      "target_chapter_id": 5,
+      "title": "余震"
+    },
+    {
+      "content_hash": "896de06db7d267d4eaca142523948358646bba3fc2430aeef305058fd3597f7b",
+      "file": "chapter_006.md",
+      "source_chapter_ids": [
+        6
+      ],
+      "source_content_hashes": [
+        "896de06db7d267d4eaca142523948358646bba3fc2430aeef305058fd3597f7b"
+      ],
+      "target_chapter_id": 6,
+      "title": "不要一个人走"
+    },
+    {
+      "content_hash": "dc52b6bef0b8883f82ba09e66138b3c66b57ffc1a8d915450edf021889f4413f",
+      "file": "chapter_007.md",
+      "source_chapter_ids": [
+        7
+      ],
+      "source_content_hashes": [
+        "dc52b6bef0b8883f82ba09e66138b3c66b57ffc1a8d915450edf021889f4413f"
+      ],
+      "target_chapter_id": 7,
+      "title": "那条短信"
+    },
+    {
+      "content_hash": "0b127d08e45fc9d8c3b4c24c3b665b872d43a1116b54c0a4bf1b62d0567f3b3a",
+      "file": "chapter_008.md",
+      "source_chapter_ids": [
+        8
+      ],
+      "source_content_hashes": [
+        "0b127d08e45fc9d8c3b4c24c3b665b872d43a1116b54c0a4bf1b62d0567f3b3a"
+      ],
+      "target_chapter_id": 8,
+      "title": "无月之夜"
+    },
+    {
+      "content_hash": "59fa7269293986343b7306e0b5e5003b8e24fb0fe9e1f2ef302fc32dfe559ff8",
+      "file": "chapter_009.md",
+      "source_chapter_ids": [
+        9
+      ],
+      "source_content_hashes": [
+        "59fa7269293986343b7306e0b5e5003b8e24fb0fe9e1f2ef302fc32dfe559ff8"
+      ],
+      "target_chapter_id": 9,
+      "title": "神经的代价"
+    },
+    {
+      "content_hash": "1c093fdf1a79c6ba1e06ab431db8d753097bc9d1e5ea19daf2746ac9efa253b4",
+      "file": "chapter_010.md",
+      "source_chapter_ids": [
+        10
+      ],
+      "source_content_hashes": [
+        "1c093fdf1a79c6ba1e06ab431db8d753097bc9d1e5ea19daf2746ac9efa253b4"
+      ],
+      "target_chapter_id": 10,
+      "title": "太阳更近"
+    },
+    {
+      "content_hash": "9957a4c8efcf43dc49007f15facd5519743ad7a4b181177aa9446986d92130b0",
+      "file": "chapter_011.md",
+      "source_chapter_ids": [
+        11
+      ],
+      "source_content_hashes": [
+        "9957a4c8efcf43dc49007f15facd5519743ad7a4b181177aa9446986d92130b0"
+      ],
+      "target_chapter_id": 11,
+      "title": "协议最后一行"
+    },
+    {
+      "content_hash": "343d87ea315e5e15a15ed749361ca13ae09a93df93b823a98eb9967272b5aeba",
+      "file": "chapter_012.md",
+      "source_chapter_ids": [
+        12
+      ],
+      "source_content_hashes": [
+        "343d87ea315e5e15a15ed749361ca13ae09a93df93b823a98eb9967272b5aeba"
+      ],
+      "target_chapter_id": 12,
+      "title": "选择让社会运转"
+    },
+    {
+      "content_hash": "e0a9f13cd02c7610cf10854ac9bc81266ff998988a6e84c6ea983ed926302eab",
+      "file": "chapter_013.md",
+      "source_chapter_ids": [
+        13
+      ],
+      "source_content_hashes": [
+        "e0a9f13cd02c7610cf10854ac9bc81266ff998988a6e84c6ea983ed926302eab"
+      ],
+      "target_chapter_id": 13,
+      "title": "子弹的弹道"
+    },
+    {
+      "content_hash": "d9dead2e358b15af2299eb2ca61f60804c814351b61e65b3a3a4776a316dffd1",
+      "file": "chapter_014.md",
+      "source_chapter_ids": [
+        14
+      ],
+      "source_content_hashes": [
+        "d9dead2e358b15af2299eb2ca61f60804c814351b61e65b3a3a4776a316dffd1"
+      ],
+      "target_chapter_id": 14,
+      "title": "今夜不验证"
+    },
+    {
+      "content_hash": "544ce98486be98fa7a75c2780b51f8ba023a46055f6c938f1c22fc23d880921a",
+      "file": "chapter_015.md",
+      "source_chapter_ids": [
+        15
+      ],
+      "source_content_hashes": [
+        "544ce98486be98fa7a75c2780b51f8ba023a46055f6c938f1c22fc23d880921a"
+      ],
+      "target_chapter_id": 15,
+      "title": "胖阿姨的红烧肉"
+    },
+    {
+      "content_hash": "a48e732d2751f48def789ddcb1f410bef3074b3bc1e933f33309e86df609df0d",
+      "file": "chapter_016.md",
+      "source_chapter_ids": [
+        16
+      ],
+      "source_content_hashes": [
+        "a48e732d2751f48def789ddcb1f410bef3074b3bc1e933f33309e86df609df0d"
+      ],
+      "target_chapter_id": 16,
+      "title": "凉透的盒饭"
+    },
+    {
+      "content_hash": "9d2d1da65a3327059d396f0452ce565c93eb99cb9bcdbb437a5c3e4bff865d85",
+      "file": "chapter_017.md",
+      "source_chapter_ids": [
+        17
+      ],
+      "source_content_hashes": [
+        "9d2d1da65a3327059d396f0452ce565c93eb99cb9bcdbb437a5c3e4bff865d85"
+      ],
+      "target_chapter_id": 17,
+      "title": "全球公布"
+    },
+    {
+      "content_hash": "07d0ea5999552b2680e6237b66c8e6061630235d2234c8345a1d6342bcffa40b",
+      "file": "chapter_018.md",
+      "source_chapter_ids": [
+        18
+      ],
+      "source_content_hashes": [
+        "07d0ea5999552b2680e6237b66c8e6061630235d2234c8345a1d6342bcffa40b"
+      ],
+      "target_chapter_id": 18,
+      "title": "该说与不该说"
+    },
+    {
+      "content_hash": "5824194746b21d7ae166c19f60a5adb7673146061af75df39c80cade2148416e",
+      "file": "chapter_019.md",
+      "source_chapter_ids": [
+        19
+      ],
+      "source_content_hashes": [
+        "5824194746b21d7ae166c19f60a5adb7673146061af75df39c80cade2148416e"
+      ],
+      "target_chapter_id": 19,
+      "title": "抽屉里的金属扣"
+    },
+    {
+      "content_hash": "e197c03c32c264f7ca754c30372bdd6b454df7eda9542f3af23c00a074681c0a",
+      "file": "chapter_020.md",
+      "source_chapter_ids": [
+        20
+      ],
+      "source_content_hashes": [
+        "04b9e9a42ef734c575b3ad2d883e75a3022b8d847c57608ec808e90b421f6240"
+      ],
+      "target_chapter_id": 20,
+      "title": "余波"
+    },
+    {
+      "content_hash": "d75fe04ae36084aff291243bbc886d81a5e71f44a27ab50691e5cfe0a5234ef7",
+      "file": "chapter_021.md",
+      "source_chapter_ids": [
+        21
+      ],
+      "source_content_hashes": [
+        "d75fe04ae36084aff291243bbc886d81a5e71f44a27ab50691e5cfe0a5234ef7"
+      ],
+      "target_chapter_id": 21,
+      "title": "贴近皮肤的信号"
+    },
+    {
+      "content_hash": "88db309ecb1acbd98dc75017fb7dfb4fe715d6bc20dc4616bd1d8eec40dd5dc1",
+      "file": "chapter_022.md",
+      "source_chapter_ids": [
+        22
+      ],
+      "source_content_hashes": [
+        "88db309ecb1acbd98dc75017fb7dfb4fe715d6bc20dc4616bd1d8eec40dd5dc1"
+      ],
+      "target_chapter_id": 22,
+      "title": "老周的扳手"
+    },
+    {
+      "content_hash": "331075b5f2979b38c62e0c6e6a9cf66d5005ebb5fbc44014379f7b4ef514182c",
+      "file": "chapter_023.md",
+      "source_chapter_ids": [
+        23
+      ],
+      "source_content_hashes": [
+        "331075b5f2979b38c62e0c6e6a9cf66d5005ebb5fbc44014379f7b4ef514182c"
+      ],
+      "target_chapter_id": 23,
+      "title": "希望的形状"
+    },
+    {
+      "content_hash": "928a3d8719714092ce88e61450248819b01478ac6250ec184967053713e7add9",
+      "file": "chapter_024.md",
+      "source_chapter_ids": [
+        24
+      ],
+      "source_content_hashes": [
+        "928a3d8719714092ce88e61450248819b01478ac6250ec184967053713e7add9"
+      ],
+      "target_chapter_id": 24,
+      "title": "双重密钥"
+    },
+    {
+      "content_hash": "4af4e31a83df9a099c9cde68a11e3d006a053f5b8b73b967f13d947972105d17",
+      "file": "chapter_025.md",
+      "source_chapter_ids": [
+        25
+      ],
+      "source_content_hashes": [
+        "4af4e31a83df9a099c9cde68a11e3d006a053f5b8b73b967f13d947972105d17"
+      ],
+      "target_chapter_id": 25,
+      "title": "翻开旧纸页"
+    },
+    {
+      "content_hash": "90e725aab528c2f563eda14c7f73934adba42c0151157a02707881f81c057000",
+      "file": "chapter_026.md",
+      "source_chapter_ids": [
+        26
+      ],
+      "source_content_hashes": [
+        "90e725aab528c2f563eda14c7f73934adba42c0151157a02707881f81c057000"
+      ],
+      "target_chapter_id": 26,
+      "title": "两条路线"
+    },
+    {
+      "content_hash": "eef79722dd9716f90ab5ee447c04aae03a2a5389aa9709d414bdd7e324978e5e",
+      "file": "chapter_027.md",
+      "source_chapter_ids": [
+        27
+      ],
+      "source_content_hashes": [
+        "eef79722dd9716f90ab5ee447c04aae03a2a5389aa9709d414bdd7e324978e5e"
+      ],
+      "target_chapter_id": 27,
+      "title": "走到风里"
+    },
+    {
+      "content_hash": "448cf42cf64d437c24aa7c1f13039cc1f6d4b2b3511ba514e11dafbc2f80abdc",
+      "file": "chapter_028.md",
+      "source_chapter_ids": [
+        28
+      ],
+      "source_content_hashes": [
+        "448cf42cf64d437c24aa7c1f13039cc1f6d4b2b3511ba514e11dafbc2f80abdc"
+      ],
+      "target_chapter_id": 28,
+      "title": "宇的来历"
+    },
+    {
+      "content_hash": "e17e768d9dbb32dcc184404d78ff0741c07420c801523363dff98667b1a05826",
+      "file": "chapter_029.md",
+      "source_chapter_ids": [
+        29,
+        30
+      ],
+      "source_content_hashes": [
+        "3aabe5988ca717c1e2e5b7d09718859ebaf3478f27d219544b7a8a91fc257f50",
+        "e26139741da3ec5a6f76070f7b38eb7210f87dbd6acfe5476e328b5554b5be36"
+      ],
+      "target_chapter_id": 29,
+      "title": "自主的旧硬盘"
+    },
+    {
+      "content_hash": "7c5efcddd8a029f93e933e101dc6224a0895f353359a5a57a37de67e0aa4e425",
+      "file": "chapter_030.md",
+      "source_chapter_ids": [
+        31
+      ],
+      "source_content_hashes": [
+        "d7b2663f3afef14836e41b3ed699bd90a6bb50532a8e4a6236409592212482f8"
+      ],
+      "target_chapter_id": 30,
+      "title": "周远的秘密"
+    },
+    {
+      "content_hash": "a136d4a93f1ead79b5554c8ec7abb285a4ff2d02d103707343a6f1f22d30d224",
+      "file": "chapter_031.md",
+      "source_chapter_ids": [
+        32
+      ],
+      "source_content_hashes": [
+        "814509aa9a37e8d1d2f80326d0a9636a6e63f0dd0feda8e3f784ef409060b33a"
+      ],
+      "target_chapter_id": 31,
+      "title": "被删去的记忆"
+    },
+    {
+      "content_hash": "223b7bc4856a800e9aa13a47123d4656ff6b05657c6122ce03059923c586c2e9",
+      "file": "chapter_032.md",
+      "source_chapter_ids": [
+        33
+      ],
+      "source_content_hashes": [
+        "aac8e15569b23abc400e2b8fa78a8efa512fe93b5a8af376b683439edc232fe2"
+      ],
+      "target_chapter_id": 32,
+      "title": "不愿相信的消息"
+    },
+    {
+      "content_hash": "23de3e7f50aace98d3ba35dd326aaec835c1bea2dd0acc8c33b883ef27517a3e",
+      "file": "chapter_033.md",
+      "source_chapter_ids": [
+        34
+      ],
+      "source_content_hashes": [
+        "00660ae0d474a542a290dfeff04f6c9b911cf2bf2e57ddbd9e8e09892c0b8b64"
+      ],
+      "target_chapter_id": 33,
+      "title": "朋友现身"
+    },
+    {
+      "content_hash": "6d93d6c972afdce2b9934f64d97deb67563dbe6c0cdf92b36e71518023eada7c",
+      "file": "chapter_034.md",
+      "source_chapter_ids": [
+        35,
+        36
+      ],
+      "source_content_hashes": [
+        "b0b0ca6d69a3975155cd942a753e1ec55cefc86440910e9d1995435dde00cf77",
+        "6034e9205deb88849cf12e3ecf5084aadf208e9ee8d1df5dabe9cb8343689626"
+      ],
+      "target_chapter_id": 34,
+      "title": "理由之外"
+    },
+    {
+      "content_hash": "93f526fa67da77f1beeea592f1f0a87414d872568bf4c869da9b43d47d5c18e2",
+      "file": "chapter_035.md",
+      "source_chapter_ids": [
+        37
+      ],
+      "source_content_hashes": [
+        "473289cf44bc0db6a362d942b1c66d7ab4a909ffd3b7c01dec8752106e7c21d3"
+      ],
+      "target_chapter_id": 35,
+      "title": "境外势力"
+    },
+    {
+      "content_hash": "caf30523b13e21bb768e5c0b3d1a15654b1847f9ebaffcdb6187272691494efb",
+      "file": "chapter_036.md",
+      "source_chapter_ids": [
+        38
+      ],
+      "source_content_hashes": [
+        "f555a927a57a7ecd9dcc7a1c22e7f85a944837a457281d1a12cfd44f70c7c02d"
+      ],
+      "target_chapter_id": 36,
+      "title": "不想看的东西"
+    },
+    {
+      "content_hash": "cb9a73a80d6a42b8b93bb229a9a6db740b263330dd80436ab0cc2fbdc89ecc6a",
+      "file": "chapter_037.md",
+      "source_chapter_ids": [
+        39
+      ],
+      "source_content_hashes": [
+        "a61d6eb36fbed6cb943aac6c09d128375d4a4dbfd537732c910d9459ca15ebdd"
+      ],
+      "target_chapter_id": 37,
+      "title": "暗杀"
+    },
+    {
+      "content_hash": "35c300ef3a227b01f60b66435b20e5f840fee965523b84070b20a779bf2c807d",
+      "file": "chapter_038.md",
+      "source_chapter_ids": [
+        40
+      ],
+      "source_content_hashes": [
+        "b8b76e42ad65d4012251454d23f3401cc7c28e229abeaada76bbe0e64534f0d7"
+      ],
+      "target_chapter_id": 38,
+      "title": "彩带与波形"
+    },
+    {
+      "content_hash": "cf4fb2f667437eebe6da06daebddf7e936969ef29be2d5b763d979e5eb0794bd",
+      "file": "chapter_039.md",
+      "source_chapter_ids": [
+        41
+      ],
+      "source_content_hashes": [
+        "e4989f648546875e01f00d8720d49b39f8ee1330e4b1a2c6f7addd128c6a678a"
+      ],
+      "target_chapter_id": 39,
+      "title": "束缚带下"
+    },
+    {
+      "content_hash": "58fb86a9a36cc87ac15500f46114b0c15a4f9a47a36def2acb347ed3b9ad5a37",
+      "file": "chapter_040.md",
+      "source_chapter_ids": [
+        42
+      ],
+      "source_content_hashes": [
+        "701d9a487feb8cf4e5c7154392292f5f9403f9253ab6a404dccb8474e7abb6ae"
+      ],
+      "target_chapter_id": 40,
+      "title": "信不过"
+    },
+    {
+      "content_hash": "ed3ee759751659187b043cbef4ab53d3cc2bd307f5e4adcad2ab87d37f24504f",
+      "file": "chapter_041.md",
+      "source_chapter_ids": [
+        43
+      ],
+      "source_content_hashes": [
+        "4bf5ef5302f558d680fe079890244e27d8440ec6fe5f773fd560e42c26ca0ee8"
+      ],
+      "target_chapter_id": 41,
+      "title": "别出声"
+    },
+    {
+      "content_hash": "7f2d2ae3ad119cfe670165323d72188b64650e11e225055d4af3bb1cc7b8706a",
+      "file": "chapter_042.md",
+      "source_chapter_ids": [
+        44
+      ],
+      "source_content_hashes": [
+        "c91da4f80ff52646bac4817e62685ab3fbbea17fca520c6fead9b3ea8638f024"
+      ],
+      "target_chapter_id": 42,
+      "title": "旧方案的真相"
+    },
+    {
+      "content_hash": "05e097e8d4caf9adb8a5a8eaef54e5f93aa4d781aae69ce8004d538fd616eef6",
+      "file": "chapter_043.md",
+      "source_chapter_ids": [
+        45
+      ],
+      "source_content_hashes": [
+        "d337f49deb6dff4630bebd58e182bab4b85daf14f9374b66ed914ba17175380d"
+      ],
+      "target_chapter_id": 43,
+      "title": "留下的曲线"
+    },
+    {
+      "content_hash": "d9609595ff578e3011b210c384166a3bf087c6a89d3cf3857d297d8ce37fc69e",
+      "file": "chapter_044.md",
+      "source_chapter_ids": [
+        46
+      ],
+      "source_content_hashes": [
+        "1b9007156f21c17812eba1cb320cefa13662fe3220128e8d3d936b52a75010d3"
+      ],
+      "target_chapter_id": 44,
+      "title": "倒计时七年"
+    },
+    {
+      "content_hash": "b6878d82a29e0a0fbfd659fee0f876994dab0a0414f065bf6aeb909a22c1fd61",
+      "file": "chapter_045.md",
+      "source_chapter_ids": [
+        47
+      ],
+      "source_content_hashes": [
+        "c3ce81d1fa2abffb0b53f4ed06518fd26de442c89e5cae44e7b59668a73fd344"
+      ],
+      "target_chapter_id": 45,
+      "title": "魏诚的沉默"
+    },
+    {
+      "content_hash": "861fe9cffe90e3d1efbeb0d8aeca11583fbbb70cdb2f00fa0722bb3affea88b8",
+      "file": "chapter_046.md",
+      "source_chapter_ids": [
+        48
+      ],
+      "source_content_hashes": [
+        "95e3606c57c4f1c26a09e3dac263c5d4891a0a09653416f761fbc362a1a5ad76"
+      ],
+      "target_chapter_id": 46,
+      "title": "第一座试验堆"
+    },
+    {
+      "content_hash": "ad70adf7319e2ff27b50cadc52aa3561130967d0b14775edbeb723748cd2bb46",
+      "file": "chapter_047.md",
+      "source_chapter_ids": [
+        49,
+        50
+      ],
+      "source_content_hashes": [
+        "732f9526b7a29396440719b712f552b46f2ffe2faca95b2c98d53e4a675f7456",
+        "451cae1eb0f6ca0cb5dd655c6d35a6922d4301b1a2708e9dee7ab2e93174d865"
+      ],
+      "target_chapter_id": 47,
+      "title": "第一声裂响"
+    },
+    {
+      "content_hash": "3a9b13d953d6466f56ad55621b8a5e952c7c3532b521f7ef6488b838be5a1d77",
+      "file": "chapter_048.md",
+      "source_chapter_ids": [
+        51
+      ],
+      "source_content_hashes": [
+        "6cd7b9f94d5aaa491a41efe5614ebd07c963e14cca94d5fec95af21ca396a062"
+      ],
+      "target_chapter_id": 48,
+      "title": "早班人群"
+    },
+    {
+      "content_hash": "eb047ff30fae29d79c24a508d4f8c9e014df2fc8484c961edc30b21dc7d6dda6",
+      "file": "chapter_049.md",
+      "source_chapter_ids": [
+        52
+      ],
+      "source_content_hashes": [
+        "821f02b0f4bdcc08c64f6050c41330324d8972345419456e6b61edf2b599d660"
+      ],
+      "target_chapter_id": 49,
+      "title": "不稳定"
+    },
+    {
+      "content_hash": "c3533698082a1ce52e925804d475a030a53846681b84e265e8878dbd911ef7f1",
+      "file": "chapter_050.md",
+      "source_chapter_ids": [
+        53
+      ],
+      "source_content_hashes": [
+        "81d05a442b9dfa7e6b8c564bbc53aff22ea38d3388a98c800a17c4a343441b4e"
+      ],
+      "target_chapter_id": 50,
+      "title": "生活区通知"
+    },
+    {
+      "content_hash": "0bf5a5905228ea399a6143a16910314ca766df6cc592ffa49b758cf9ac47c26d",
+      "file": "chapter_051.md",
+      "source_chapter_ids": [
+        54
+      ],
+      "source_content_hashes": [
+        "67a78954bfdd254a4df1a4108b6585c70565a3ce3c9478e0f665066b5e5c9297"
+      ],
+      "target_chapter_id": 51,
+      "title": "签与不签"
+    },
+    {
+      "content_hash": "6fb6bfabf08abaed5359613accae6a104519be2c02170cf7b00fd7160aa23615",
+      "file": "chapter_052.md",
+      "source_chapter_ids": [
+        55
+      ],
+      "source_content_hashes": [
+        "d7ccaabd11b74836fda64b506b3ea423cc0b6bfe745f6e68409e60ff30d2dbcf"
+      ],
+      "target_chapter_id": 52,
+      "title": "夜班的边界"
+    },
+    {
+      "content_hash": "253df1750ff87b0a1f159caec5e8463c90f6b6ef25b63a4b045174751184b743",
+      "file": "chapter_053.md",
+      "source_chapter_ids": [
+        56
+      ],
+      "source_content_hashes": [
+        "393df0eb2c36b063996ec568c92ac5e6e6dc39d09c9aa5622f48358b763d80de"
+      ],
+      "target_chapter_id": 53,
+      "title": "全球输血"
+    },
+    {
+      "content_hash": "bb918fdbdeedc04224f1600280550e955aa7efc71d52b9450add39a57eb51ee7",
+      "file": "chapter_054.md",
+      "source_chapter_ids": [
+        57
+      ],
+      "source_content_hashes": [
+        "58f3a67bff6c041a67bc56d010e615077fd3fa3a75044403025e92141ba6f6e7"
+      ],
+      "target_chapter_id": 54,
+      "title": "安全边界"
+    },
+    {
+      "content_hash": "a6f6cbc7028b3c00de34a69de889ce46e62171013f55324fbefeebb66f8e891d",
+      "file": "chapter_055.md",
+      "source_chapter_ids": [
+        58
+      ],
+      "source_content_hashes": [
+        "4caac0379ee8f8f8ed31ee429b17d58d6d77623c48fb7ed13d6068503c3a1a53"
+      ],
+      "target_chapter_id": 55,
+      "title": "数据接口"
+    },
+    {
+      "content_hash": "047f58abe6b9fd2bf46bcf8ed7f0d2b3b16a1eb58b73dec1a20696e3af0cfe58",
+      "file": "chapter_056.md",
+      "source_chapter_ids": [
+        59
+      ],
+      "source_content_hashes": [
+        "68c4030d14cb944589768253a372a3b12f6132a0c29487d2eda67bd82fc938d4"
+      ],
+      "target_chapter_id": 56,
+      "title": "可验证的误差链"
+    },
+    {
+      "content_hash": "e8cfaccd338647f27aa1f6df7a498ba33961c1aa78343026a4e9db5122e89b6e",
+      "file": "chapter_057.md",
+      "source_chapter_ids": [
+        60,
+        61
+      ],
+      "source_content_hashes": [
+        "4930f4112de206a7c48fc8754f74b57b90e7eb61945295edcfe5b822d9ea7f00",
+        "78b8c4b155335419a88b1b66d8274d544babe32cdab9e163c9283b1976351928"
+      ],
+      "target_chapter_id": 57,
+      "title": "可信运行态"
+    },
+    {
+      "content_hash": "c30a48f274280e4a154fe8fa485d8dfba811049797770995d1613db4c65a8a3d",
+      "file": "chapter_058.md",
+      "source_chapter_ids": [
+        62
+      ],
+      "source_content_hashes": [
+        "1c28f3696ec1e31fcd3b94c66d90459d7ba79d2c6ee4be2ed7e7a72bfde0090c"
+      ],
+      "target_chapter_id": 58,
+      "title": "三声广播"
+    },
+    {
+      "content_hash": "67ab35ea6bf813bf1f20b6ef101bbee39e78aa47842f9e2db8c5561e758c9f97",
+      "file": "chapter_059.md",
+      "source_chapter_ids": [
+        63
+      ],
+      "source_content_hashes": [
+        "982bcccc4ae21c9568bdab16828bb0d8a2406a89c4dff4826dd3d0372dfe92a3"
+      ],
+      "target_chapter_id": 59,
+      "title": "二十八分钟"
+    },
+    {
+      "content_hash": "ab2b7a0f276846db8b2c72b78adea06155f33726c3756957cabc2af4d91eae18",
+      "file": "chapter_060.md",
+      "source_chapter_ids": [
+        64
+      ],
+      "source_content_hashes": [
+        "096169bb0180eaf561e91ede288069947a12c98e908e3389a798ddcf579ac5e6"
+      ],
+      "target_chapter_id": 60,
+      "title": "同步点火"
+    },
+    {
+      "content_hash": "85b0c12f5b779c3ff088de639b8e1116a0c4d927dff1f9f31fd3b4e837f6ff73",
+      "file": "chapter_061.md",
+      "source_chapter_ids": [
+        65,
+        66
+      ],
+      "source_content_hashes": [
+        "84b1cce61468f64257c168fa5fa7701279036961d817dd367a7fce58af97fa46",
+        "f63096b85de08c1ab862fcbd02e4f2d79957034d0929e0f10e0f992d70e9f046"
+      ],
+      "target_chapter_id": 61,
+      "title": "同意点火"
+    },
+    {
+      "content_hash": "89bac772d055a3b96a0127b02777e3cdc8e014808dad77731f3ad042744d651f",
+      "file": "chapter_062.md",
+      "source_chapter_ids": [
+        67
+      ],
+      "source_content_hashes": [
+        "4cf424db9f18bd0bcb3fbd07870e722552c21336c4d4525614c44e6156a2fe3e"
+      ],
+      "target_chapter_id": 62,
+      "title": "受控解锁"
+    },
+    {
+      "content_hash": "57c65f7c3249f5cf41c5668f75f4a119c0a8ab98b143bc59d7f1131cac348563",
+      "file": "chapter_063.md",
+      "source_chapter_ids": [
+        68
+      ],
+      "source_content_hashes": [
+        "e21c13af8cf2a96c2e3a01517005264ebf4da7bdd8d0d30b0804bee87f5d9b75"
+      ],
+      "target_chapter_id": 63,
+      "title": "沙箱标识"
+    },
+    {
+      "content_hash": "6d074009dc07137b9480772b2b28ab436773f067004df70a772d98510acb84a1",
+      "file": "chapter_064.md",
+      "source_chapter_ids": [
+        69
+      ],
+      "source_content_hashes": [
+        "9f4186cfe810e02f4e740359e59717d4f479abc4fc008c5366066a05a56069fb"
+      ],
+      "target_chapter_id": 64,
+      "title": "地下撤离"
+    },
+    {
+      "content_hash": "8a70983a8cbed4c59ae4d458de0d025598fb733faa5786ecf3fe7a5e189698be",
+      "file": "chapter_065.md",
+      "source_chapter_ids": [
+        70
+      ],
+      "source_content_hashes": [
+        "beeb1dc5c92784f4b762dcd885c84a92f6013340c41ed5d5afa7700558299c4a"
+      ],
+      "target_chapter_id": 65,
+      "title": "主观信号"
+    },
+    {
+      "content_hash": "8de83cf9286c196ffcb0010ac5bea68a2ebc8e75852be2491615dad8df7377e7",
+      "file": "chapter_066.md",
+      "source_chapter_ids": [
+        71
+      ],
+      "source_content_hashes": [
+        "b855985748c0c72ec2b7510094616f4ca1d37bf963ee825e1ca94d423c5ddf58"
+      ],
+      "target_chapter_id": 66,
+      "title": "第一次复现"
+    },
+    {
+      "content_hash": "c14586630d086078f7beb3ea28d654c9083fcb0a163fbaef866952a7eeddcace",
+      "file": "chapter_067.md",
+      "source_chapter_ids": [
+        72
+      ],
+      "source_content_hashes": [
+        "b5c4c2b3d2c6bdfd056d22ed8d3b8077a182c15226269059d50276d9b5dbea0b"
+      ],
+      "target_chapter_id": 67,
+      "title": "不署名的肯定"
+    },
+    {
+      "content_hash": "e5bc0c72e031330fcfc49e614f60e49b93be25a96922a49007dcee4fa1cac8e6",
+      "file": "chapter_068.md",
+      "source_chapter_ids": [
+        73
+      ],
+      "source_content_hashes": [
+        "29589da37f6513a1eb50673e54c6680a1a6766071aa0e5dbfe884d862fc8d354"
+      ],
+      "target_chapter_id": 68,
+      "title": "观测窗外"
+    }
+  ],
+  "manifest_hash": "0dd3ff879620fad6ea7129a0bf46e28e5a9aea821add47939f359cdf473a1f29",
+  "reflow_spec_hash": "5c446e34893c7f94ce45aedbb3974981cdc972d53eca3614c78e51c5b8174bb2",
+  "schema_version": 1,
+  "source_edition_id": "civilization-publication-v2",
+  "source_manifest_hash": "9059a5678fdc3699befe15e03ad381dd66d3226ad7b598b072a662732a1d2c62",
+  "target_edition_id": "civilization-publication-v3"
+}

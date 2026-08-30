@@ -1,0 +1,59 @@
+{
+  "evidence": [
+    {
+      "excerpt": "“从宿舍带出来的东西，会有人帮你送到房间。”沈玥说，“这是你的通行证。以后进出全部凭这个，不要带学生证。”",
+      "source_chapter": "production/final_chapters/chapter_004.md"
+    }
+  ],
+  "field_sources": {
+    "access_constraints": {
+      "change_id": "state-chapter-004-location-龙渊",
+      "chapter": 4
+    },
+    "anchors": {
+      "change_id": "state-chapter-004-location-龙渊",
+      "chapter": 4
+    },
+    "current_areas": {
+      "change_id": "state-chapter-004-location-龙渊",
+      "chapter": 4
+    },
+    "present_characters": {
+      "change_id": "state-chapter-004-location-龙渊",
+      "chapter": 4
+    }
+  },
+  "fields": {
+    "access_constraints": [
+      "绝密档案室需掌纹和虹膜验证",
+      "林子轩进出需通行证和安全组陪同"
+    ],
+    "anchors": [
+      "CMB全息投影",
+      "监测屏",
+      "红色应急灯",
+      "模拟屏幕",
+      "无窗宿舍",
+      "均匀灯带"
+    ],
+    "current_areas": [
+      "地下一层A区控制室",
+      "环形大厅",
+      "绝密档案室",
+      "安全宿舍",
+      "核心解码室",
+      "内部食堂"
+    ],
+    "present_characters": [
+      "林子轩",
+      "林正弘",
+      "苏晚晴",
+      "陈景行",
+      "沈玥"
+    ]
+  },
+  "kind": "location",
+  "latest_change": "state-chapter-004-location-龙渊",
+  "schema_version": 2,
+  "subject": "龙渊"
+}

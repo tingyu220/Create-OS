@@ -1,0 +1,38 @@
+{
+  "payload": {
+    "contract_id": "narrative-chapter-031",
+    "contract_version": 1,
+    "manifest": {
+      "entries": [
+        {
+          "content_hash": "cf369e4396a0d599e6917f295456e69ee135e8d35239b1fd5e84e16e33a779e5",
+          "role": "fact_snapshot",
+          "source_id": "baseline-facts-chapter-031-v0001",
+          "source_version": "v0001"
+        },
+        {
+          "content_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "role": "outline_change",
+          "source_id": "baseline-outline-chapter-031-v0001",
+          "source_version": "v0001"
+        },
+        {
+          "content_hash": "7effdf11552d6df868c6c5a970158f37ee60f5144c985686199ee8ed1ec65dae",
+          "role": "previous_chapter",
+          "source_id": "baseline-previous-chapter-031-v0001",
+          "source_version": "v0001"
+        },
+        {
+          "content_hash": "77987f43d25d9e0692493b20e673e23ff00c9875e0adbef8ec951d0cf5c926ed",
+          "role": "profile",
+          "source_id": "baseline-profile-chapter-031-v0001",
+          "source_version": "v0001"
+        }
+      ],
+      "fingerprint": "38381e358f68756a44e42dd3ae44d4f33381493bf5aaf6fd5091fd81c6dc1878"
+    }
+  },
+  "payload_hash": "09703c696ee05ca2c418c683cdf255932fc6a7e2b7df0ae45d1b274f999c7afb",
+  "record_type": "baseline",
+  "schema_version": 1
+}

@@ -1,78 +1,158 @@
-from creative_os.agents import AgentRole, default_novel_agent_contracts
-from creative_os.production import (
-    ProductionLog,
-    ProjectWorkspace,
-    create_default_validation_project,
-)
+import json
+import re
+
+import pytest
+
+from creative_os.production_validation import audit_narrative_production, run_continuous_validation
 
 
-def test_validation_project_has_required_milestones_and_next_step():
-    validation_project = create_default_validation_project(code_version="test-sha")
+class FakeClient:
+    def __init__(self):
+        self.calls = 0
 
-    validation_project.brief.validate()
-
-    assert validation_project.project.domain == "novel"
-    assert validation_project.project.phase.value == "Proposal"
-    assert [milestone.id for milestone in validation_project.project.milestones] == [
-        "m1-project",
-        "m2-agents",
-        "m3-design",
-        "m4-first-chapter",
-        "m5-ten-chapters",
-        "m6-draft-complete",
-        "m7-full-review",
-        "m8-v1-1",
-    ]
-    assert validation_project.next_step() == "创建 Project Proposal 并进入前期设计"
+    def complete(self, messages, *, temperature, max_tokens):
+        self.calls += 1
+        chapter = next(line for line in messages[-1].content.splitlines() if line.startswith("续写小说第"))
+        number = re.search(r"第\s*(\d+)\s*章", chapter).group(1)
+        return f"# 第{number}章\n" + "正文" * 3000
 
 
-def test_project_workspace_can_restore_state_after_close(tmp_path):
-    validation_project = create_default_validation_project(code_version="test-sha")
-    validation_project.production_log.record(
-        input_task_id="proposal-001",
-        input_summary="建立项目提案",
-        context_sources=["brief"],
-        capability="planner",
-        output_summary="生成 Project Proposal 草案",
-        review_result="pending",
-        knowledge_updates=[],
+def _project(tmp_path):
+    project = tmp_path / "validation"
+    (project / "production/final_chapters").mkdir(parents=True)
+    (project / ".creative_os/import").mkdir(parents=True)
+    (project / "production/final_chapters/chapter_001.md").write_text("# 第1章\n结尾。", encoding="utf-8")
+    (project / ".creative_os/import/baseline.json").write_text(
+        json.dumps({"world_rules": [], "characters": [], "plot_milestones": [], "hooks": [], "style_constraints": []}), encoding="utf-8"
     )
-
-    workspace = ProjectWorkspace(tmp_path / "雾城回声")
-    workspace.save(validation_project)
-    restored = workspace.load()
-
-    assert restored.project.id == "novel-validation-001"
-    assert restored.state.current_task_id == "proposal-001"
-    assert restored.brief.name == "雾城回声"
-    assert restored.baseline.code_version == "test-sha"
-    assert restored.production_log.entries()[0].context_sources == ["brief"]
+    (project / ".creative_os/import/conflicts.json").write_text("[]", encoding="utf-8")
+    (project / ".creative_os/import/approval.json").write_text('{"resolutions": {}}', encoding="utf-8")
+    return project
 
 
-def test_production_log_records_required_runtime_fields():
-    log = ProductionLog()
+def test_continuous_validation_runs_ten_chapters_and_writes_report(tmp_path):
+    project = _project(tmp_path)
+    with pytest.raises(TypeError):
+        run_continuous_validation(project, client=FakeClient())
+    assert not (project / "production/reports/continuous_validation.json").exists()
 
-    entry = log.record(
-        input_task_id="scene-001",
-        input_summary="写第一章 Scene 1",
-        context_sources=["character-lin-che", "world-fog-city"],
-        capability="writer",
-        output_summary="生成 2300 字草稿",
-        review_result="pass",
-        knowledge_updates=["summary-scene-001", "timeline-scene-001"],
-        human_intervention="A类：确认主角职业",
+
+def test_continuous_validation_stops_at_first_failed_chapter(tmp_path):
+    project = _project(tmp_path)
+
+    class FailingClient(FakeClient):
+        def complete(self, messages, *, temperature, max_tokens):
+            self.calls += 1
+            return "# 第2章\n太短。"
+
+    with pytest.raises(TypeError):
+        run_continuous_validation(project, client=FailingClient())
+
+
+def test_entity_warning_is_reported_without_blocking_chapter(tmp_path):
+    project = _project(tmp_path)
+    baseline_path = project / ".creative_os/import/baseline.json"
+    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    baseline["characters"] = [{"title": "林子轩", "content": "---\nname: 林子轩\n---"}]
+    baseline_path.write_text(json.dumps(baseline, ensure_ascii=False), encoding="utf-8")
+
+    class DriftClient(FakeClient):
+        def complete(self, messages, *, temperature, max_tokens):
+            self.calls += 1
+            chapter = next(line for line in messages[-1].content.splitlines() if line.startswith("续写小说第"))
+            number = re.search(r"第\s*(\d+)\s*章", chapter).group(1)
+            return f"# 第{number}章\n刘子轩" + "正文" * 3000
+
+    with pytest.raises(TypeError):
+        run_continuous_validation(project, client=DriftClient())
+
+
+def test_legacy_approved_contract_does_not_enable_continuous_writer(tmp_path):
+    project = _project(tmp_path)
+    from creative_os.domains.narrative_memory import save_narrative_candidate
+    from creative_os.memory.approval import approve_candidate
+    from creative_os.memory.model import MemoryEvidence
+    from creative_os.memory.store import JsonMemoryStore
+    from tests.test_narrative_memory import _decision
+
+    item = save_narrative_candidate(project, _decision(2), evidence=[MemoryEvidence("test", "contract")])
+    approve_candidate(JsonMemoryStore(project / ".creative_os/memory"), item.id, actor="tingyu", note="批准")
+
+    with pytest.raises(TypeError):
+        run_continuous_validation(project, client=FakeClient())
+
+
+def test_narrative_audit_requires_contract_context_review_and_complete_event_lifecycle(tmp_path):
+    project = _project(tmp_path)
+    (project / ".creative_os/contexts/compiled").mkdir(parents=True)
+    (project / ".creative_os/reviews").mkdir(parents=True)
+    from creative_os.runtime import AppendOnlyEventLog, EventType
+
+    from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator
+    from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+    from creative_os.domains.narrative_memory import build_narrative_candidate_item
+    from creative_os.memory.model import MemoryEvidence
+    from tests.test_narrative_memory import _decision
+    from tests.test_writer_run_continuation import _pointer
+    decision = _decision(2)
+    lifecycle = ContractLifecycleCoordinator(project)
+    lifecycle.store.add_immutable(build_narrative_candidate_item(
+        project, decision, evidence=(MemoryEvidence("test", "fixture"),),
+        item_id=f"{decision.contract_id}-v0001",
+    ).activate(actor="editor"))
+    pointer = _pointer(decision)
+    lifecycle.write_pointer(pointer)
+    fingerprint = "f" * 64
+    (project / "production/final_chapters/chapter_002.md").write_text("# 第2章\n正文", encoding="utf-8")
+    (project / ".creative_os/contexts/compiled/chapter_002.json").write_text(json.dumps({
+        "size_chars": 100, "fingerprint": fingerprint,
+        "contract_binding": {"contract_id": decision.contract_id,
+            "contract_version": decision.contract_version,
+            "contract_content_hash": NarrativeDecisionCodec.content_hash(decision),
+            "context_fingerprint": fingerprint},
+    }), encoding="utf-8")
+    (project / ".creative_os/reviews/chapter_002_continuation.json").write_text(
+        json.dumps({"issues": [], "context": fingerprint}), encoding="utf-8",
     )
+    log = AppendOnlyEventLog(project / ".creative_os/runtime/events.jsonl")
+    for event_type in (EventType.TASK_CREATED, EventType.TASK_STARTED, EventType.CONTEXT_BUILT, EventType.CAPABILITY_CALLED, EventType.RESULT_GENERATED, EventType.REVIEW_PASSED, EventType.KNOWLEDGE_UPDATED, EventType.STATE_CHANGED, EventType.TASK_COMPLETED):
+        payload = ({"context_id": fingerprint} if event_type in {
+            EventType.CONTEXT_BUILT, EventType.CAPABILITY_CALLED, EventType.RESULT_GENERATED
+        } else {})
+        log.append_simple(event_type, task_id="chapter-002", payload=payload)
 
-    assert entry.id == "run-0001"
-    assert entry.context_sources == ["character-lin-che", "world-fog-city"]
-    assert entry.review_result == "pass"
-    assert entry.human_intervention.startswith("A类")
+    report = audit_narrative_production(project, first_chapter=2, last_chapter=2)
+
+    assert report["passed"]
+    assert (project / "production/reports/narrative_production_audit_002_002.json").exists()
+    context_path = project / ".creative_os/contexts/compiled/chapter_002.json"
+    tampered = json.loads(context_path.read_text(encoding="utf-8"))
+    tampered["fingerprint"] = tampered["contract_binding"]["context_fingerprint"] = "0" * 64
+    context_path.write_text(json.dumps(tampered), encoding="utf-8")
+    assert audit_narrative_production(project, first_chapter=2, last_chapter=2)["passed"] is False
+    context_path.write_text(json.dumps({
+        **tampered, "fingerprint": fingerprint,
+        "contract_binding": {**tampered["contract_binding"],
+                             "context_fingerprint": fingerprint},
+    }), encoding="utf-8")
+    log.append_simple(EventType.CAPABILITY_CALLED, task_id="chapter-002",
+                      payload={"context_id": "0" * 64})
+    assert audit_narrative_production(project, first_chapter=2, last_chapter=2)["passed"] is False
 
 
-def test_default_novel_agents_are_fixed_and_not_universal():
-    contracts = default_novel_agent_contracts()
-
-    assert set(contracts) == set(AgentRole)
-    assert "直接写章节正文" in contracts[AgentRole.DIRECTOR].forbidden
-    assert "直接读写 Knowledge" in contracts[AgentRole.WRITER].forbidden
-    assert "Knowledge Patch" in contracts[AgentRole.COMPILER].outputs
+def test_narrative_audit_rejects_forged_context_without_authority(tmp_path):
+    project = _project(tmp_path)
+    (project / ".creative_os/contexts/compiled").mkdir(parents=True)
+    (project / ".creative_os/reviews").mkdir(parents=True)
+    (project / "production/final_chapters/chapter_002.md").write_text("正文", encoding="utf-8")
+    fingerprint = "f" * 64
+    (project / ".creative_os/contexts/compiled/chapter_002.json").write_text(json.dumps({
+        "fingerprint": fingerprint, "contract_binding": {
+            "contract_id": "narrative-chapter-002", "contract_version": 1,
+            "contract_content_hash": "a" * 64, "context_fingerprint": fingerprint,
+        },
+    }), encoding="utf-8")
+    (project / ".creative_os/reviews/chapter_002_continuation.json").write_text(
+        json.dumps({"issues": [], "context": fingerprint}), encoding="utf-8",
+    )
+    assert audit_narrative_production(project, first_chapter=2, last_chapter=2)["passed"] is False

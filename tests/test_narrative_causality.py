@@ -1,0 +1,375 @@
+from dataclasses import replace
+
+import pytest
+
+from creative_os.domains.narrative_causality import (
+    CAUSAL_FIELD_PATHS_V1,
+    CausalAnalysisResult,
+    CausalDependencyAnalyzer,
+)
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+from creative_os.domains.narrative_decision import (
+    ArcPhase,
+    CandidateImpact,
+    CandidateValueState,
+    NarrativeDecision,
+    OptionalCandidateResolution,
+)
+from tests.test_narrative_decision import _profile, _v2_decision
+
+
+EXPECTED_CAUSAL_FIELD_PATHS = (
+    "arc_phase",
+    "arc_goal",
+    "inherited_pressure",
+    "future_pressures[*]",
+    "chapter_contract.functions[*]",
+    "chapter_contract.dramatic_question",
+    "chapter_contract.protagonist_choice.status",
+    "chapter_contract.protagonist_choice.actor",
+    "chapter_contract.protagonist_choice.action",
+    "chapter_contract.protagonist_choice.alternatives[*]",
+    "chapter_contract.protagonist_choice.cost",
+    "chapter_contract.protagonist_choice.consequence",
+    "chapter_contract.reader_change.before",
+    "chapter_contract.reader_change.after",
+    "chapter_contract.information.reveal[*]",
+    "chapter_contract.information.withhold[*]",
+    "chapter_contract.information.misdirect.values[*]",
+    "chapter_contract.pressure_curve.start",
+    "chapter_contract.pressure_curve.turn",
+    "chapter_contract.pressure_curve.end",
+    "chapter_contract.foreshadow_actions.values[*]",
+    "chapter_contract.ending_shift",
+    "chapter_contract.forbidden.values[*]",
+)
+
+
+def _analyze(candidate: NarrativeDecision):
+    return CausalDependencyAnalyzer().analyze(
+        candidate,
+        _profile(),
+        fact_snapshots=(),
+        previous_chapter=None,
+        change_requests=(),
+    )
+
+
+def _candidate(
+    *,
+    impact: CandidateImpact,
+    value_state: CandidateValueState,
+    proposed_value: str | None,
+    decided_by: str = "rule",
+    decision_ref: str = "causal-rules-v1",
+) -> OptionalCandidateResolution:
+    return OptionalCandidateResolution(
+        candidate_id="candidate-scene-transition",
+        kind="scene_transition",
+        value_state=value_state,
+        proposed_value=proposed_value,
+        dependency_inputs=("chapter_contract.pressure_curve.end",),
+        affects_current_chapter=impact,
+        rationale="结尾直接落入权限审查。",
+        decided_by=decided_by,
+        decision_ref=decision_ref,
+    )
+
+
+def _with_resolution(decision: NarrativeDecision, resolution: OptionalCandidateResolution) -> NarrativeDecision:
+    return replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, optional_candidates=(resolution,)),
+    )
+
+
+def test_causal_field_paths_cover_outer_arc_pressure_and_all_stable_array_paths():
+    assert CAUSAL_FIELD_PATHS_V1 == EXPECTED_CAUSAL_FIELD_PATHS
+
+
+def test_unbound_causal_result_never_reports_resolved():
+    assert CausalAnalysisResult(resolutions=(), issues=()).is_resolved is False
+
+
+def test_yes_known_direct_candidate_must_be_present_in_a_formal_causal_field():
+    decision = _v2_decision()
+    resolution = _candidate(
+        impact=CandidateImpact.YES,
+        value_state=CandidateValueState.KNOWN,
+        proposed_value=decision.chapter_contract.pressure_curve.end,
+    )
+    candidate = replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, optional_candidates=(resolution,)),
+    )
+
+    result = _analyze(candidate)
+
+    assert result.issues == ()
+    assert result.resolutions == (resolution,)
+    assert result.ruleset_version == "causal-rules-v1"
+    assert result.candidate_content_hash == NarrativeDecisionCodec.content_hash(candidate)
+
+
+def test_causal_result_validation_rejects_stale_candidate_and_wrong_ruleset():
+    candidate = replace(_v2_decision(), chapter_contract=replace(_v2_decision().chapter_contract, optional_candidates=()))
+    analyzer = CausalDependencyAnalyzer()
+    result = _analyze(candidate)
+    stale_candidate = replace(candidate, arc_goal="改变后的剧情段目标")
+
+    stale_issues = analyzer.validate_result(stale_candidate, result)
+    wrong_ruleset_issues = analyzer.validate_result(candidate, replace(result, ruleset_version="causal-rules-v2"))
+
+    assert any(issue.code == "causal_analysis_failed" for issue in stale_issues)
+    assert any(issue.code == "causal_analysis_failed" for issue in wrong_ruleset_issues)
+
+
+def test_causal_result_validation_recomputes_forged_yes_semantics():
+    decision = _v2_decision()
+    resolution = _candidate(
+        impact=CandidateImpact.YES,
+        value_state=CandidateValueState.KNOWN,
+        proposed_value="没有进入正式字段的伪造值",
+    )
+    candidate = _with_resolution(decision, resolution)
+    forged = CausalAnalysisResult(
+        resolutions=(resolution,),
+        issues=(),
+        candidate_content_hash=NarrativeDecisionCodec.content_hash(candidate),
+    )
+
+    issues = CausalDependencyAnalyzer().validate_result(candidate, forged)
+
+    assert any(issue.code == "unresolved_causal_candidate" for issue in issues)
+
+
+def test_yes_candidate_is_blocked_when_known_value_is_not_in_formal_field():
+    decision = _v2_decision()
+    resolution = _candidate(
+        impact=CandidateImpact.YES,
+        value_state=CandidateValueState.KNOWN,
+        proposed_value="未进入合同字段的转场",
+    )
+    candidate = replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, optional_candidates=(resolution,)),
+    )
+
+    result = _analyze(candidate)
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+def test_no_candidate_requires_a_rule_or_human_decision_record():
+    decision = _v2_decision()
+    rule_resolution = _candidate(
+        impact=CandidateImpact.NO,
+        value_state=CandidateValueState.UNKNOWN,
+        proposed_value=None,
+    )
+    human_resolution = replace(rule_resolution, decided_by="human", decision_ref="approval-2026-08-20")
+
+    assert _analyze(_with_resolution(decision, rule_resolution)).issues == ()
+    assert _analyze(_with_resolution(decision, human_resolution)).issues == ()
+
+
+def test_rule_no_accepts_a_resolvable_stable_array_index():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[0]",),
+    )
+
+    assert _analyze(_with_resolution(decision, resolution)).issues == ()
+
+
+def test_rule_no_rejects_array_wildcard_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[*]",),
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+def test_human_no_also_rejects_array_wildcard_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[*]",),
+        decided_by="human",
+        decision_ref="approval-2026-08-20",
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+def test_rule_no_rejects_out_of_range_array_dependency_bypass():
+    decision = _v2_decision()
+    resolution = replace(
+        _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+        dependency_inputs=("future_pressures[1]",),
+    )
+
+    result = _analyze(_with_resolution(decision, resolution))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].blocking is True
+
+
+@pytest.mark.parametrize(
+    ("resolution", "reason", "expected_code"),
+    [
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="",
+            ),
+            "empty decision record",
+            "invalid_causal_candidate",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="causal-rules-v2",
+            ),
+            "wrong ruleset",
+            "unresolved_causal_candidate",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=("chapter_contract.target_chinese_chars",),
+            ),
+            "non causal field",
+            "unresolved_causal_candidate",
+        ),
+    ],
+)
+def test_rule_no_rejects_invalid_decision_record_or_non_causal_dependency(resolution, reason, expected_code):
+    result = _analyze(_with_resolution(_v2_decision(), resolution))
+
+    assert result.issues[0].code == expected_code, reason
+    assert result.issues[0].blocking is True
+
+
+def _corrupt_resolution(resolution: OptionalCandidateResolution, field: str, value: object) -> OptionalCandidateResolution:
+    object.__setattr__(resolution, field, value)
+    return resolution
+
+
+@pytest.mark.parametrize(
+    ("resolution", "reason"),
+    [
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                rationale="",
+            ),
+            "empty rationale",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "decided_by",
+                "automated",
+            ),
+            "invalid decided_by",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "value_state",
+                "guessed",
+            ),
+            "invalid value_state",
+        ),
+        (
+            _corrupt_resolution(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                "affects_current_chapter",
+                "maybe",
+            ),
+            "invalid affects_current_chapter",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                decision_ref="",
+            ),
+            "empty decision_ref",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=["future_pressures[0]"],
+            ),
+            "mutable dependency container",
+        ),
+        (
+            replace(
+                _candidate(impact=CandidateImpact.NO, value_state=CandidateValueState.UNKNOWN, proposed_value=None),
+                dependency_inputs=(1,),
+            ),
+            "invalid dependency element",
+        ),
+    ],
+)
+def test_model_invalid_optional_candidate_is_a_blocking_issue_not_an_allowed_no(resolution, reason):
+    result = _analyze(_with_resolution(_v2_decision(), resolution))
+
+    assert result.issues, reason
+    assert result.issues[0].code == "invalid_causal_candidate", reason
+    assert result.issues[0].blocking is True, reason
+    assert result.issues[0].field_path == "chapter_contract.optional_candidates[candidate-scene-transition]", reason
+
+
+def test_undetermined_candidate_fails_closed_even_when_its_value_is_known():
+    decision = _v2_decision()
+    unresolved = _candidate(
+        impact=CandidateImpact.UNDETERMINED,
+        value_state=CandidateValueState.KNOWN,
+        proposed_value=decision.chapter_contract.pressure_curve.end,
+    )
+
+    result = _analyze(replace(decision, chapter_contract=replace(decision.chapter_contract, optional_candidates=(unresolved,))))
+
+    assert result.issues[0].code == "unresolved_causal_candidate"
+    assert result.issues[0].field_path == "chapter_contract.optional_candidates[candidate-scene-transition]"
+
+
+def test_analysis_exception_becomes_task_one_blocking_issue():
+    result = CausalDependencyAnalyzer().analyze(
+        object(),
+        _profile(),
+        fact_snapshots=(),
+        previous_chapter=None,
+        change_requests=(),
+    )
+
+    assert result.issues[0].code == "causal_analysis_failed"
+    assert result.issues[0].blocking is True
+
+
+def test_outer_arc_and_pressure_changes_remain_in_the_causal_closure():
+    decision = _v2_decision()
+    candidate = replace(
+        decision,
+        arc_phase=ArcPhase.TURN,
+        arc_goal="将权限审查推入不可逆转折",
+        inherited_pressure="旧权限已被收回",
+        future_pressures=("听证会将在下一章公开",),
+    )
+
+    result = _analyze(candidate)
+
+    assert result.field_paths == CAUSAL_FIELD_PATHS_V1
+    assert set(("arc_phase", "arc_goal", "inherited_pressure", "future_pressures[*]")).issubset(result.field_paths)

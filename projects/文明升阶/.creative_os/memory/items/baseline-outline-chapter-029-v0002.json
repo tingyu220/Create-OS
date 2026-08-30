@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "[]",
+  "created_at": "2026-08-27T06:30:31.871596+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-029",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-outline-chapter-029-v0002",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_029"
+  ],
+  "title": "冻结第29章改纲集合",
+  "updated_at": "2026-08-27T06:30:31.871596+00:00",
+  "version": 1
+}

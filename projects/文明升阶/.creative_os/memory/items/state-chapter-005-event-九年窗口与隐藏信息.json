@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"“你不再只是听。你要和它对话。”陈景行看了他一眼，“如果你能问出那个问题的答案，我们就能知道，九年到底是从什么时候开始算的。”\", \"source_chapter\": \"production/final_chapters/chapter_005.md\"}], \"fields\": {\"outcome\": \"林子轩在校准后接触隐藏信息，确认太阳窗口仅剩九年，并得知警告是不要一个人走。\", \"participants\": [\"林子轩\", \"陈景行\", \"宇\"]}, \"id\": \"chapter-005-event-九年窗口与隐藏信息\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"九年窗口与隐藏信息\"}",
+  "created_at": "2026-08-17T15:56:35.232834+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_005.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-005-event-九年窗口与隐藏信息",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 5 章状态：event",
+  "updated_at": "2026-08-17T15:56:35.348474+00:00",
+  "version": 1
+}
