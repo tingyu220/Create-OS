@@ -97,7 +97,7 @@
     "open_hooks": ["北门仓库保存着父亲留下的线索", "房东是否会允许阿棠续租仍未确定"]
   },
   "baseline_evidence": [
-    {"source_id": "brief:last-train-clockshop", "source_hash": "c197614d6d062d47cf4d0c54017c223bb559f7fa026fee18dd1aaee7f5f1a01c", "assertion": "阿棠在钟表店面对父亲遗物与去留选择"}
+    {"source_id": "brief.json", "source_hash": "02e9184b16094071c6cc3d7a6ff7d3175978087359442e8d9cbba95f0f44d94a", "assertion": "阿棠在钟表店面对父亲遗物与去留选择"}
   ],
   "writing": {
     "chapter_id": "chapter_001",

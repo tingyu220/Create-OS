@@ -1,6 +1,7 @@
 import hashlib
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -10,6 +11,16 @@ from creative_os.domains.novel_validation_fixture import load_independent_valida
 
 PROJECT = Path(__file__).resolve().parents[1] / "projects" / "novel_domain_validation"
 FIXTURE = PROJECT / "validation" / "independent_short_story.json"
+
+
+def _write_fixture_project(tmp_path: Path, payload: dict) -> Path:
+    project = tmp_path / "novel_domain_validation"
+    validation = project / "validation"
+    validation.mkdir(parents=True)
+    shutil.copy2(PROJECT / "brief.json", project / "brief.json")
+    path = validation / "independent_short_story.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    return path
 
 
 def test_independent_fixture_has_complete_novel_scene_contract():
@@ -41,8 +52,33 @@ def test_independent_fixture_has_complete_novel_scene_contract():
 def test_loader_rejects_invalid_fixture_contract(tmp_path, mutate, match):
     payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
     mutate(payload)
-    path = tmp_path / "invalid.json"
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    path = _write_fixture_project(tmp_path, payload)
 
     with pytest.raises(NarrativeValidationError, match=match):
         load_independent_validation_case(path)
+
+
+def test_loader_rejects_baseline_evidence_hash_that_does_not_match_source(tmp_path):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["baseline_evidence"][0]["source_hash"] = "0" * 64
+
+    with pytest.raises(NarrativeValidationError, match="baseline evidence source hash mismatch"):
+        load_independent_validation_case(_write_fixture_project(tmp_path, payload))
+
+
+def test_loader_rejects_tampered_baseline_evidence_source(tmp_path):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    fixture = _write_fixture_project(tmp_path, payload)
+    brief = fixture.parents[1] / "brief.json"
+    brief.write_bytes(brief.read_bytes() + b"\n")
+
+    with pytest.raises(NarrativeValidationError, match="baseline evidence source hash mismatch"):
+        load_independent_validation_case(fixture)
+
+
+def test_loader_rejects_baseline_evidence_source_outside_project(tmp_path):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["baseline_evidence"][0]["source_id"] = "../brief.json"
+
+    with pytest.raises(NarrativeValidationError, match="baseline evidence source path outside project"):
+        load_independent_validation_case(_write_fixture_project(tmp_path, payload))

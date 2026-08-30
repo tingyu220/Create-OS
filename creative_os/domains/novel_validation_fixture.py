@@ -77,7 +77,8 @@ class IndependentNovelValidationCase:
 
 def load_independent_validation_case(path: str | Path) -> IndependentNovelValidationCase:
     """加载只服务于独立短篇验收的严格 JSON 数据。"""
-    payload = _load_root(Path(path))
+    fixture_path = Path(path).resolve()
+    payload = _load_root(fixture_path)
     _require_exact_fields(payload, _ROOT_FIELDS, "root", unknown_label="unknown root field")
     if payload["schema_version"] != 1:
         raise NarrativeValidationError("unsupported validation fixture schema")
@@ -90,7 +91,9 @@ def load_independent_validation_case(path: str | Path) -> IndependentNovelValida
     _validate_scene_contract(planning)
 
     current_state = _load_current_state(payload["current_state"], planning.chapter_contract.chapter_id)
-    baseline_evidence = _load_baseline_evidence(payload["baseline_evidence"])
+    baseline_evidence = _load_baseline_evidence(
+        payload["baseline_evidence"], fixture_path.parent.parent,
+    )
     writing, admission, source_chapter = _load_writing(payload["writing"], planning)
     boundary = _load_boundary(payload["boundary"])
     if boundary.estimated_chinese_chars < _MIN_CHINESE_CHARS:
@@ -178,21 +181,43 @@ def _load_current_state(value: object, chapter_id: str) -> FixtureCurrentState:
     )
 
 
-def _load_baseline_evidence(value: object) -> tuple[FixtureBaselineEvidence, ...]:
+def _load_baseline_evidence(
+    value: object, project_root: Path,
+) -> tuple[FixtureBaselineEvidence, ...]:
     result: list[FixtureBaselineEvidence] = []
     for item in _objects(value, "baseline_evidence"):
         _require_exact_fields(item, _BASELINE_EVIDENCE_FIELDS, "baseline_evidence item")
+        source_id = _text(item["source_id"], "baseline_evidence.source_id")
         source_hash = _text(item["source_hash"], "baseline_evidence.source_hash")
         if len(source_hash) != 64 or any(char not in "0123456789abcdef" for char in source_hash):
             raise NarrativeValidationError("baseline evidence source_hash invalid")
+        source_path = _resolve_baseline_source(project_root, source_id)
+        actual_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+        if actual_hash != source_hash:
+            raise NarrativeValidationError("baseline evidence source hash mismatch")
         result.append(FixtureBaselineEvidence(
-            source_id=_text(item["source_id"], "baseline_evidence.source_id"),
+            source_id=source_id,
             source_hash=source_hash,
             assertion=_text(item["assertion"], "baseline_evidence.assertion"),
         ))
     if not result:
         raise NarrativeValidationError("baseline evidence required")
     return tuple(result)
+
+
+def _resolve_baseline_source(project_root: Path, source_id: str) -> Path:
+    """解析项目内来源文件，拒绝绝对路径、穿越路径及符号链接逃逸。"""
+    source_path = Path(source_id)
+    if source_path.is_absolute() or ".." in source_path.parts:
+        raise NarrativeValidationError("baseline evidence source path outside project")
+    candidate = (project_root / source_path).resolve()
+    try:
+        candidate.relative_to(project_root)
+    except ValueError as error:
+        raise NarrativeValidationError("baseline evidence source path outside project") from error
+    if not candidate.is_file():
+        raise NarrativeValidationError("baseline evidence source unavailable")
+    return candidate
 
 
 def _load_writing(value: object, planning: NarrativeDecision) -> tuple[NovelWritingRequest, NovelAdmissionRequest, str]:
