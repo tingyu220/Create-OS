@@ -2,5 +2,9 @@
   "id": "novel-domain-validation",
   "name": "末班钟表店独立验证项目",
   "domain": "novel",
-  "purpose": "用于真实小说 Writer 的独立短篇验收，不复用既有作品资产"
+  "purpose": "用于真实小说 Writer 的独立短篇验收，不复用既有作品资产",
+  "validation_baseline": {
+    "source_id": "brief.json",
+    "assertion_pointer": "/logline"
+  }
 }

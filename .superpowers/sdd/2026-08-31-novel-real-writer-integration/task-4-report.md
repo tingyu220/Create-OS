@@ -7,7 +7,7 @@
 ## 红绿测试
 
 - 本次红：`pytest -q tests/test_novel_validation_fixture.py::test_loader_rejects_baseline_evidence_hash_that_does_not_match_source tests/test_novel_validation_fixture.py::test_loader_rejects_tampered_baseline_evidence_source`，两个用例均因旧 loader 放行而失败。
-- 本次绿及相关回归：`pytest -q tests/test_novel_validation_fixture.py tests/test_novel_scene_contract.py tests/test_novel_domain_end_to_end.py`，18 passed。
+- 本次绿及相关回归：`pytest -q tests/test_novel_validation_fixture.py tests/test_novel_scene_contract.py tests/test_novel_domain_end_to_end.py`，20 passed。
 
 ## 文件结构
 
@@ -28,7 +28,14 @@
 
 - 基线来源由不可重算的 `brief:last-train-clockshop` 改为项目文件 `brief.json`，夹具已记录该文件原始字节的 SHA-256。
 - 新增回归：伪造的 64 位哈希、来源文件遭篡改、以及 `source_id` 路径越界，均会使 loader 失败关闭。
-- 验证：`pytest -q tests/test_novel_validation_fixture.py tests/test_novel_scene_contract.py tests/test_novel_domain_end_to_end.py`，18 passed。
+- 验证：`pytest -q tests/test_novel_validation_fixture.py tests/test_novel_scene_contract.py tests/test_novel_domain_end_to_end.py`，20 passed。
+
+## 语义来源绑定修复
+
+- 项目元数据 `validation_baseline` 声明唯一允许来源 `brief.json`，并用 JSON Pointer `/logline` 声明断言位置；该协议不在 loader 中散落作品专名。
+- loader 先校验来源路径，再要求夹具的 `source_id` 与声明完全一致；即使改为项目内 `project.json` 且同步真实 SHA-256，也会拒绝。
+- 断言必须与声明定位读取到的简介正文完全一致，避免只校验哈希而无法证明断言由来源支持。
+- 新增“项目内来源重绑定”和“断言不在声明定位”回归测试。
 
 ## 自审
 

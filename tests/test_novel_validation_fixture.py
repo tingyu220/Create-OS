@@ -17,6 +17,7 @@ def _write_fixture_project(tmp_path: Path, payload: dict) -> Path:
     project = tmp_path / "novel_domain_validation"
     validation = project / "validation"
     validation.mkdir(parents=True)
+    shutil.copy2(PROJECT / "project.json", project / "project.json")
     shutil.copy2(PROJECT / "brief.json", project / "brief.json")
     path = validation / "independent_short_story.json"
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
@@ -81,4 +82,23 @@ def test_loader_rejects_baseline_evidence_source_outside_project(tmp_path):
     payload["baseline_evidence"][0]["source_id"] = "../brief.json"
 
     with pytest.raises(NarrativeValidationError, match="baseline evidence source path outside project"):
+        load_independent_validation_case(_write_fixture_project(tmp_path, payload))
+
+
+def test_loader_rejects_baseline_source_rebound_to_project_metadata(tmp_path):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["baseline_evidence"][0]["source_id"] = "project.json"
+    payload["baseline_evidence"][0]["source_hash"] = hashlib.sha256(
+        (PROJECT / "project.json").read_bytes(),
+    ).hexdigest()
+
+    with pytest.raises(NarrativeValidationError, match="baseline evidence source binding mismatch"):
+        load_independent_validation_case(_write_fixture_project(tmp_path, payload))
+
+
+def test_loader_rejects_assertion_not_at_declared_baseline_location(tmp_path):
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    payload["baseline_evidence"][0]["assertion"] = "与简介无关的断言"
+
+    with pytest.raises(NarrativeValidationError, match="baseline evidence assertion mismatch"):
         load_independent_validation_case(_write_fixture_project(tmp_path, payload))
