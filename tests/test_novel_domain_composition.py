@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import importlib
+
 import pytest
 
-from creative_os.domains.novel_domain_composition import build_novel_domain_service
+from creative_os import llm_writer
+from creative_os.domains import novel_domain_composition
+from creative_os.domains.novel_domain_composition import (
+    build_llm_novel_domain_service,
+    build_novel_domain_service,
+)
 
 
 class _Writer:
@@ -12,6 +19,29 @@ class _Writer:
 
 class _Resolver:
     pass
+
+
+class _Client:
+    model = "test-model"
+
+    def complete(self, messages, *, temperature, max_tokens):
+        raise AssertionError("装配测试不应执行模型调用")
+
+
+def test_build_llm_service_wraps_injected_client(tmp_path):
+    service = build_llm_novel_domain_service(tmp_path, baseline_resolver=_Resolver(), client=_Client())
+
+    assert service.capabilities().names[2] == "draft_writing"
+
+
+def test_importing_composition_does_not_read_environment(monkeypatch):
+    monkeypatch.setattr(
+        llm_writer.OpenAICompatibleClient,
+        "from_env",
+        lambda *_: (_ for _ in ()).throw(AssertionError()),
+    )
+
+    importlib.reload(novel_domain_composition)
 
 
 def test_build_novel_domain_service_exposes_complete_capability_catalog(tmp_path) -> None:
