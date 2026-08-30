@@ -11,7 +11,7 @@ from creative_os.domains.pov_strategy_model import (
     StateRef, StorylineState,
 )
 from creative_os.domains.narrative_evidence import EvidenceLocator
-from creative_os.domains.pov_strategy_policy import POVStrategyPolicy
+from creative_os.domains.pov_strategy_policy import DEFAULT_PROTAGONIST_ID, POVStrategyPolicy
 
 
 class POVStrategyInputError(ValueError):
@@ -32,7 +32,7 @@ def assemble_pov_strategy_input(
     if target_chapter < 1 or not chapter_needs.functions or not chapter_needs.dramatic_question.strip():
         raise POVStrategyInputError("missing_pov_strategy_input", ("chapter_needs",))
     start = max(1, target_chapter - policy.history_window)
-    history = tuple(_history_entry(root, chapter, policy.protagonist_id) for chapter in range(start, target_chapter))
+    history = tuple(_history_entry(root, chapter) for chapter in range(start, target_chapter))
     history = tuple(item for item in history if item is not None)
     if history and [item.chapter for item in history] != list(range(history[0].chapter, target_chapter)):
         raise POVStrategyInputError("invalid_pov_history_window")
@@ -45,13 +45,14 @@ def assemble_pov_strategy_input(
     consequences = _explicit_consequences(root, snapshots)
     pressures = _character_pressures(root, snapshots)
     evidence = _dedupe((*[ref for item in history for ref in item.evidence_refs], *arc_evidence(root, arc.id), *[ref for item in _storylines(root, snapshots) for ref in item.evidence_refs]))
+    protagonist_id = _resolve_protagonist_id(history, policy.protagonist_id)
     value = POVStrategyInput(
         project_id=root.name,
         target_chapter=target_chapter,
         assembled_at=_assembled_at(root, history),
         policy_version=policy.version,
         recent_pov_history=history,
-        protagonist_load=_protagonist_load(history, consequences, policy.protagonist_id, policy.cold_start_minimum),
+        protagonist_load=_protagonist_load(history, consequences, protagonist_id, policy.cold_start_minimum),
         character_pressures=pressures,
         arc_state=ArcState(arc.id, getattr(arc.phase, "value", str(arc.phase)), arc.goal, arc.goal, arc_evidence(root, arc.id)),
         storyline_states=_storylines(root, snapshots),
@@ -62,7 +63,7 @@ def assemble_pov_strategy_input(
     return value.with_fingerprint()
 
 
-def _history_entry(root: Path, chapter: int, protagonist_id: str) -> RecentPOVEntry | None:
+def _history_entry(root: Path, chapter: int) -> RecentPOVEntry | None:
     final = root / "production" / "final_chapters" / f"chapter_{chapter:03d}.md"
     decision = load_active_narrative_decision(root, chapter)
     if not final.exists() or decision is None or not decision.chapter_contract.pov_plan.primary_owner:
@@ -71,7 +72,7 @@ def _history_entry(root: Path, chapter: int, protagonist_id: str) -> RecentPOVEn
     ref = _evidence(final.relative_to(root).as_posix(), text, f"chapter:{chapter}", "正式章节与活动合同")
     plan = decision.chapter_contract.pov_plan
     # 正式正文决定实际出场；合同保留计划 POV，二者共同绑定同一历史条目。
-    protagonist_present = protagonist_id in text
+    protagonist_present = plan.protagonist_present
     owner = plan.primary_owner if plan.primary_owner in text else ""
     if not owner:
         return None
@@ -80,6 +81,15 @@ def _history_entry(root: Path, chapter: int, protagonist_id: str) -> RecentPOVEn
         for index, agency in enumerate(plan.supporting_agency)
     )
     return RecentPOVEntry(chapter, owner, protagonist_present, decision.chapter_contract.functions, outcomes, (ref,))
+
+
+def _resolve_protagonist_id(history: tuple[RecentPOVEntry, ...], configured_id: str) -> str:
+    if configured_id != DEFAULT_PROTAGONIST_ID:
+        return configured_id
+    return next(
+        (item.primary_owner for item in reversed(history) if item.protagonist_present and item.primary_owner),
+        configured_id,
+    )
 
 
 def _explicit_consequences(root: Path, snapshots) -> tuple[ConsequenceRef, ...]:

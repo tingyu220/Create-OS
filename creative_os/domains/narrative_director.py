@@ -102,24 +102,18 @@ class NarrativeDirector:
     @staticmethod
     def _load_selected_pov(input: DirectorInput, proposal: NarrativeDecision):
         from creative_os.runtime.pov_strategy_store import POVStrategyAuditStore, POVStrategyStoreError
-        from creative_os.domains.pov_strategy_model import ChapterNeeds
+        from creative_os.domains.pov_strategy_contract import chapter_needs_from_contract
         from creative_os.domains.pov_strategy_recompute import on_chapter_materialized, pending_recompute
         pending = pending_recompute(input.project_root)
         if pending and pending.get("target_chapter") == proposal.chapter:
-            chapter = proposal.chapter_contract
-            needs = ChapterNeeds(
-                chapter.functions, chapter.dramatic_question,
-                tuple(dict.fromkeys(scene.action for scene in chapter.scene_plan.scenes)),
-                chapter.scene_plan.required_world_slice,
-                tuple(technology.role for technology in chapter.technology_plan.technologies),
-            )
+            needs = chapter_needs_from_contract(proposal.chapter_contract)
             result = on_chapter_materialized(input.project_root, proposal.chapter - 1, needs)
             if result.next_candidate_id is None:
                 raise NarrativeDirectorBlockedError("POV strategy recompute is pending")
         store = POVStrategyAuditStore(input.project_root)
-        candidate_id = f"pov-strategy-{proposal.chapter:03d}"
         try:
-            record = store.read(candidate_id)
+            record = store.current_for_chapter(proposal.chapter)
+            candidate_id = record.candidate.id
             selection = store.load_selection(candidate_id)
         except POVStrategyStoreError as exc:
             raise NarrativeDirectorBlockedError("selected POV strategy is required") from exc
@@ -128,13 +122,7 @@ class NarrativeDirector:
         from creative_os.domains.pov_strategy_input import assemble_pov_strategy_input
         from creative_os.domains.pov_strategy_policy import load_pov_strategy_policy
         from creative_os.domains.pov_strategy_selection import POVSelectionError, validate_selection
-        chapter = proposal.chapter_contract
-        current_needs = ChapterNeeds(
-            chapter.functions, chapter.dramatic_question,
-            tuple(dict.fromkeys(scene.action for scene in chapter.scene_plan.scenes)),
-            chapter.scene_plan.required_world_slice,
-            tuple(technology.role for technology in chapter.technology_plan.technologies),
-        )
+        current_needs = chapter_needs_from_contract(proposal.chapter_contract)
         try:
             current_input = assemble_pov_strategy_input(input.project_root, proposal.chapter, current_needs, load_pov_strategy_policy(input.project_root))
             validate_selection(selection, record.candidate, current_input)

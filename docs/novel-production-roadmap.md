@@ -25,10 +25,30 @@
 
 - Stress Report: `projects/validation_novel/production/reports/llm_writer_stress_report.md`
 - V2 Backlog: `projects/validation_novel/production/reports/v2_backlog.md`
-# Phase E 状态
+# Novel Domain V1 当前状态
 
-- E-A Reader Engagement Foundation：已完成并通过离线 Gate。
-- E-B 逐章生产编排：已完成离线 Gate，并与场景、技术、POV 门禁整合。
-- E-C 真实生产校准：第7–26章已完成；第7–23章为 Scene/Technology 历史合同，第24–26章为完整多视角实验合同。
-- 当前生产边界：第27章正文不存在；必须先审批 POV 输入事实、系统候选和完整 Chapter Contract。
-- 下一阶段：验证 POVStrategyPlanner 在真实第26章状态上给出可解释建议，再逐章生产第27章。
+小说正文进度不再代表领域能力完成度。《文明升阶》仅作为真实回归样本。
+
+历史校准基线：Phase E 已完成并通过离线 Gate；第7–26章已完成。第27章正文不存在，后续生产仍须基于 POV 输入事实和 Chapter Contract。
+
+已完成：
+
+- Novel Domain 能力目录与统一 `NovelDomainService` 入口；
+- Scene 的叙事目的、必要故事信息、情绪变化和戏剧闭合契约；
+- Chapter Boundary 与碎章、对话截断、戏剧单元未闭合准入；
+- 统一 Novel Reviewer；
+- 通过稿到 Canon/State 候选的 Novel Compiler；
+- Draft、Issue、Repair、Final 因果链的 Lesson Candidate；
+- 规划—准入—写作—审查—编译的单章组合闭环。
+
+当前验证边界：
+
+- 所有 Canon/State 结果仍是候选，继续由现有审批服务决定是否写入；
+- 旧 Narrative Contract 可读取，新 Novel Domain 运行必须满足增强 Scene 语义；
+- 《文明升阶》的碎章、对话截断和戏剧单元未闭合问题已匿名化为回归夹具。
+
+下一阶段：
+
+- 完成 Novel Domain 新增测试与 Narrative/State/Publication 相关回归；
+- 检查通用代码不存在作品专名硬编码；
+- 对照设计规格执行逐项完成审计。

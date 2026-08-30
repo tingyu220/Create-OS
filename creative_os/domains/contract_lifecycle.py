@@ -151,7 +151,7 @@ class ContractLifecycleCoordinator:
             raise ContractStorageError("initial_contract_version_must_be_1")
 
         item_id = physical_key(decision.contract_id, decision.contract_version)
-        canonical_content = NarrativeDecisionCodec.encode_v2(decision)
+        canonical_content = NarrativeDecisionCodec.encode(decision)
         expected_hash = NarrativeDecisionCodec.content_hash(decision)
         try:
             existing = self.store.get_strict(item_id)
@@ -886,10 +886,10 @@ class ContractLifecycleCoordinator:
         ):
             raise ContractStorageError("invalid_contract_envelope")
         try:
-            decision = NarrativeDecisionCodec.decode_v2(item.content)
+            decision = NarrativeDecisionCodec.decode(item.content)
         except Exception as error:
             raise ContractStorageError("invalid_contract_content") from error
-        if item.content != NarrativeDecisionCodec.encode_v2(decision):
+        if item.content != NarrativeDecisionCodec.encode(decision):
             raise ContractStorageError("invalid_contract_content")
         if decision.contract_id != expected_contract_id:
             raise ContractStorageError("contract_pointer_contract_id_mismatch")

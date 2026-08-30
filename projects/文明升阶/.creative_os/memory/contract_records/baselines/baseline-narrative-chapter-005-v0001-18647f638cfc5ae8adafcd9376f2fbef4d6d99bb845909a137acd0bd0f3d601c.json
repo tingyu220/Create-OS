@@ -1,0 +1,38 @@
+{
+  "payload": {
+    "contract_id": "narrative-chapter-005",
+    "contract_version": 1,
+    "manifest": {
+      "entries": [
+        {
+          "content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+          "role": "fact_snapshot",
+          "source_id": "target5-director-authority-v1",
+          "source_version": "v0001"
+        },
+        {
+          "content_hash": "753e892225ce0db350d441e948f31996b4fe109798807d3cbef77ccc45233b1a",
+          "role": "outline_change",
+          "source_id": ".creative_os/import/active_baseline.json",
+          "source_version": "sha256:753e892225ce0db350d441e948f31996b4fe109798807d3cbef77ccc45233b1a"
+        },
+        {
+          "content_hash": "fb53781a00c37c952d22e937d50d1c078619905a028aa0b019c9427252fdc3f4",
+          "role": "previous_chapter",
+          "source_id": "production/final_chapters/chapter_004.md",
+          "source_version": "sha256:fb53781a00c37c952d22e937d50d1c078619905a028aa0b019c9427252fdc3f4"
+        },
+        {
+          "content_hash": "77987f43d25d9e0692493b20e673e23ff00c9875e0adbef8ec951d0cf5c926ed",
+          "role": "profile",
+          "source_id": "narrative-project-profile",
+          "source_version": "v0001"
+        }
+      ],
+      "fingerprint": "18647f638cfc5ae8adafcd9376f2fbef4d6d99bb845909a137acd0bd0f3d601c"
+    }
+  },
+  "payload_hash": "47edbef078560b84ec11c3dab9bf429e11c7e1f6be921a3f74cbb5f1852a9916",
+  "record_type": "baseline",
+  "schema_version": 1
+}

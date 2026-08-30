@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "陈景行没有看林子轩。他最后把目光从主屏上那行小字移开，像关掉一个刚刚成形的档案。然后他绕过控制台，从北侧安全门走进清洁空气更冷的走廊。 “判定中心三号厅已经在线。”韩宁在耳麦里说。她没有追出来，声音像贴在他耳后。 韩宁关掉平板，曲涛开始拆移动电源。沈岚走到门边，回头看了陈景行一眼，想说什么，最终没说。 一行人从楼顶退下。楼道里的灯自动亮起，昏黄地照着湿脚印。陈景行走在后面，忽然想起边界石旁边那个新词：等待验证。现在看来，等待验证的不仅是技术包，还有他们自己，以及头顶这片越来越不安静的太空。",
+  "created_at": "2026-08-27T07:19:31.557195+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_030.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "chapter-030-summary",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "chapter_030",
+    "chapter_summary",
+    "novel"
+  ],
+  "title": "第 30 章章节摘要",
+  "updated_at": "2026-08-27T07:19:31.557195+00:00",
+  "version": 1
+}

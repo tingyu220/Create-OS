@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准连续生成第28至32章并授权第31章合同\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"林子轩能否在不把幻觉上升为事实的前提下，保留并验证他所见的宇宙边界线索？\",\"chapter_contract.ending_shift\":\"林子轩公开光冕幻觉并完成神经、设备与地面观测三重测试；客观信号未被证实，但幻觉在隔离条件下可重复，未知由私人秘密转成受控线索\",\"chapter_contract.forbidden.values[0]\":\"不得确认林子轩真的看见宇宙边界\",\"chapter_contract.forbidden.values[1]\":\"不得让幻觉直接提供新技术参数或坐标\",\"chapter_contract.forbidden.values[2]\":\"不得把地面空结果写成设备失效\",\"chapter_contract.forbidden.values[3]\":\"不得让其他角色只相信林子轩而不做独立验证\",\"chapter_contract.forbidden.values[4]\":\"不得让那个声音在本章完成祝贺或解释动机\",\"chapter_contract.foreshadow_actions.values[0]\":\"隔离幻觉的轮廓与第二层权限光冕噪声在时间结构上相似但不能定性同源\",\"chapter_contract.foreshadow_actions.values[1]\":\"无声测试结束后出现一段不属于设备的短促节律\",\"chapter_contract.foreshadow_actions.values[2]\":\"林子轩开始怀疑一级文明判定也是某种被观察条件\",\"chapter_contract.functions[0]\":\"让林子轩承受点火后的光冕幻觉\",\"chapter_contract.functions[1]\":\"区分主观体验与可验证信号\",\"chapter_contract.functions[2]\":\"把一级文明成功转成更大的宇宙疑问\",\"chapter_contract.information.misdirect.values[0]\":\"医疗团队起初把光冕归因于疲劳与点火强光残像\",\"chapter_contract.information.reveal[0]\":\"林子轩在点火与一级文明判定时都看见边界般光冕\",\"chapter_contract.information.reveal[1]\":\"常规神经检查无法解释该体验\",\"chapter_contract.information.reveal[2]\":\"无外部信号条件下幻觉可重复但地面观测给出空结果\",\"chapter_contract.information.withhold[0]\":\"光冕是否来自D-7、宇或外部文明\",\"chapter_contract.information.withhold[1]\":\"所谓宇宙边界的真实结构\",\"chapter_contract.information.withhold[2]\":\"那个声音是否共享林子轩的感知\",\"chapter_contract.pressure_curve.end\":\"他选择公开全部体验并接受长期监测，把结论冻结为可重复主观现象、客观来源未知\",\"chapter_contract.pressure_curve.start\":\"林子轩在一级文明判定后再次看见光冕，却担心公开会被视为D-7神经损伤\",\"chapter_contract.pressure_curve.turn\":\"医疗测试排除常见视觉异常，感官隔离又让幻觉重复，而外部观测给出空结果\",\"chapter_contract.protagonist_choice.action\":\"公开反复出现的光冕幻觉并接受神经、设备与地面观测三重测试\",\"chapter_contract.protagonist_choice.actor\":\"林子轩\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"继续隐瞒，只把光冕当作个人直觉参与决策\",\"chapter_contract.protagonist_choice.consequence\":\"光冕成为可重复测试但来源未知的正式线索，不能再被直接当作宇宙事实\",\"chapter_contract.protagonist_choice.cost\":\"失去对自身体验的独占解释权，D-7神经状态与决策资格进入持续医学审查\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者知道林子轩的体验可在无外部信号条件下重复，但设备与地面观测均未证明宇宙边界真实存在\",\"chapter_contract.reader_change.before\":\"读者知道系统记录过未知光冕噪声，却不知道林子轩持续看见类似宇宙边界的幻觉\",\"future_pressures[0]\":\"那个声音可能会借一级文明判定再次出现\",\"future_pressures[1]\":\"收割者与建造者的称谓仍没有可信动机解释\",\"inherited_pressure\":\"一级文明与第二层技术已受控确认，但光冕噪声仍只被标记为未知；林子轩此前多次私下看见相似光冕。\"}},\"facts\":[{\"fields\":{\"status\":\"各节点需独立签署后同步点火\"},\"kind\":\"event\",\"subject\":\"十二站全球点火\"},{\"fields\":{\"pov_pressure\":\"必须在中央强制与分布式共同决定之间选择\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-27T07:25:18.849998+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-031",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-031-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_031"
+  ],
+  "title": "冻结第31章事实与字段意图",
+  "updated_at": "2026-08-27T07:25:18.849998+00:00",
+  "version": 1
+}

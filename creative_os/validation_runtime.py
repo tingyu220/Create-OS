@@ -909,7 +909,11 @@ def _build_validation_fixture_composed_artifacts(root: str | Path) -> dict[str, 
     return run_record
 
 
-def validate_reader_facing_text(text: str) -> list[str]:
+def validate_reader_facing_text(
+    text: str,
+    *,
+    relation_constraints: tuple[tuple[str, str, str], ...] = (),
+) -> list[str]:
     checks = {
         "hard_scene_heading": "## Scene",
         "system_term_context": "Context",
@@ -940,7 +944,7 @@ def validate_reader_facing_text(text: str) -> list[str]:
         issues.append("duplicate_reader_paragraph")
     if _has_reversed_dialogue_reference(text):
         issues.append("dialogue_reference_mismatch")
-    if _has_character_relation_mismatch(text):
+    if _has_character_relation_mismatch(text, relation_constraints):
         issues.append("character_relation_mismatch")
     if _has_truncated_sentence_ending(text):
         issues.append("truncated_sentence_ending")
@@ -956,8 +960,17 @@ def _has_reversed_dialogue_reference(text: str) -> bool:
     return False
 
 
-def _has_character_relation_mismatch(text: str) -> bool:
-    return "林子轩" in text and bool(re.search(r"林正弘[^。！？]{0,100}女儿", text))
+def _has_character_relation_mismatch(
+    text: str,
+    constraints: tuple[tuple[str, str, str], ...],
+) -> bool:
+    for parent, child, forbidden_reference in constraints:
+        if not parent.strip() or not child.strip() or not forbidden_reference.strip():
+            raise ValueError("character_relation_constraint_invalid")
+        pattern = rf"{re.escape(parent)}[^。！？]{{0,100}}{re.escape(forbidden_reference)}"
+        if child in text and re.search(pattern, text):
+            return True
+    return False
 
 
 def _has_truncated_sentence_ending(text: str) -> bool:

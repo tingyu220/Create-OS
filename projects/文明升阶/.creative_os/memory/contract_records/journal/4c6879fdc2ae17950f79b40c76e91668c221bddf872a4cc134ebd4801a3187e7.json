@@ -1,0 +1,45 @@
+{
+  "entry_hash": "136f87db0e6aae92f60a57ac28890bf5bc6c085678e9e8eac069ee6b0b287bc9",
+  "envelope": {
+    "payload": {
+      "contract_id": "narrative-chapter-032",
+      "contract_version": 1,
+      "manifest": {
+        "entries": [
+          {
+            "content_hash": "cafc59aa9bf9317226fa144542d721f425f27cf12728a102860151b8157450ac",
+            "role": "fact_snapshot",
+            "source_id": "baseline-facts-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "role": "outline_change",
+            "source_id": "baseline-outline-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "3c2eb9244ca50b07a05f37ae03587ad174754444a6c82de8e026fe15affb671a",
+            "role": "previous_chapter",
+            "source_id": "baseline-previous-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "77987f43d25d9e0692493b20e673e23ff00c9875e0adbef8ec951d0cf5c926ed",
+            "role": "profile",
+            "source_id": "baseline-profile-chapter-032-v0001",
+            "source_version": "v0001"
+          }
+        ],
+        "fingerprint": "d81e5cdaae8622065cc633a2f7b84d48d59045c8659108fdf1f4dd0e4d6649a2"
+      }
+    },
+    "payload_hash": "005dcdf7095d3bbad7f8ad4444555e20ee635bb0b66a2906ef12f656f03989f4",
+    "record_type": "baseline",
+    "schema_version": 1
+  },
+  "journal_version": 1,
+  "record_id": "baseline-narrative-chapter-032-v0001-d81e5cdaae8622065cc633a2f7b84d48d59045c8659108fdf1f4dd0e4d6649a2",
+  "record_type": "baseline",
+  "state": "committed"
+}

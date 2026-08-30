@@ -367,7 +367,7 @@ def _invalid_control(path: str, value: object, candidate: NarrativeDecision) -> 
     if path in {"contract_version", "chapter", "chapter_contract.target_chinese_chars"}:
         return type(value) is not int or value < 1
     if path == "schema_version":
-        return type(value) is not int or value != 2
+        return type(value) is not int or value not in {2, 3}
     if path == "kind":
         return value != "narrative_decision"
     return _is_unknown(value)

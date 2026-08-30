@@ -9,8 +9,12 @@ from creative_os.domains.contract_baseline_resolver import (
     BaselineSourceResolver,
     ResolverError,
     UnsupportedAuthorityAdapter,
+    ImmutableMemoryAuthorityAdapter,
     default_authority_adapters,
 )
+from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
+from creative_os.memory.store import JsonMemoryStore
+import hashlib
 
 
 @dataclass(frozen=True)
@@ -66,6 +70,31 @@ def test_default_unversioned_roles_fail_closed(tmp_path):
     with pytest.raises(ResolverError) as caught:
         resolver.resolve(tmp_path, entry("previous_chapter", "chapter:1"))
     assert caught.value.issue.code == "source_not_versioned"
+
+
+def test_immutable_memory_authority_adapter_reads_exact_active_envelope(tmp_path):
+    content = '{"name":"profile"}'
+    item = MemoryItem.new_candidate(
+        id="baseline-profile-chapter-027-v0001",
+        kind=MemoryKind.PROJECT_DECISION,
+        scope=MemoryScope.PROJECT,
+        scope_id=tmp_path.name,
+        title="冻结 Baseline Profile",
+        content=content,
+        evidence=(MemoryEvidence("controller_approval", "chapter-027"),),
+        applicability=("planning", "writing", "review"),
+        tags={"baseline_authority"},
+    ).activate(actor="tingyu")
+    JsonMemoryStore(tmp_path / ".creative_os/memory").add_immutable(item)
+    digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    read = ImmutableMemoryAuthorityAdapter("profile", lambda value: value).read_exact(
+        tmp_path,
+        entry("profile", item.id, "v0001", digest),
+    )
+
+    assert read.value == content
+    assert read.source_id == item.id
 
 
 @pytest.mark.parametrize(

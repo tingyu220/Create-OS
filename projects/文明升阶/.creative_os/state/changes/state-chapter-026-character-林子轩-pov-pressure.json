@@ -1,0 +1,49 @@
+{
+  "memory_id": "state-chapter-026-character-林子轩-pov-pressure",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "首堆返工排班将采用同样的跨站校验格式，用于新超算节点能源接入批次管理。",
+        "source_chapter": "production/final_chapters/chapter_026.md"
+      }
+    ],
+    "fields": {
+      "pov_pressure": {
+        "agency_capabilities": [
+          {
+            "id": "connect-key-fusion-seven-sites",
+            "serves_functions": [
+              "承接七地校验后果",
+              "改变核心人物选择条件",
+              "接入跨站校验协议"
+            ],
+            "target_state_ref": "七地协议进入林子轩与首堆的核心决策链"
+          }
+        ],
+        "pending_choices": [
+          {
+            "id": "adopt-cross-site-chain",
+            "value": "是否把跨站校验责任链接入首堆与新超算节点，并接受本地误差字段对等公开"
+          }
+        ],
+        "unfinished_goals": [
+          {
+            "id": "trace-seven-versions",
+            "value": "确认七地版本差异与统一时间戳异常读取的来源"
+          }
+        ],
+        "unpaid_costs": [
+          {
+            "id": "reciprocal-audit-cost",
+            "value": "核心团队失去单向控制校验口径的权限，并承担本地缺陷被国际对等审计的风险"
+          }
+        ]
+      }
+    },
+    "id": "chapter-026-character-林子轩-pov-pressure",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "approved",
+    "subject": "林子轩"
+  }
+}

@@ -1,17 +1,31 @@
 {
-  "schema_version": 2,
-  "kind": "hook",
-  "subject": "隐藏信息说话者",
-  "fields": {
-    "holder": "林子轩",
-    "question": "隐藏信息的说话者是谁，为什么要求林子轩不要让宇在场？",
-    "status": "open"
-  },
-  "latest_change": "state-chapter-005-hook-隐藏信息说话者",
   "evidence": [
     {
       "excerpt": "陈景行说“四点”，林子轩回到那间地下深处的小房间，在模拟屏幕永远灿烂的假阳光里躺了下去。他以为自己会睡不着。他没有做梦，只是陷进了一片很深的、没有尽头的东西里。",
       "source_chapter": "production/final_chapters/chapter_005.md"
     }
-  ]
+  ],
+  "field_sources": {
+    "holder": {
+      "change_id": "state-chapter-005-hook-隐藏信息说话者",
+      "chapter": 5
+    },
+    "question": {
+      "change_id": "state-chapter-005-hook-隐藏信息说话者",
+      "chapter": 5
+    },
+    "status": {
+      "change_id": "state-chapter-005-hook-隐藏信息说话者",
+      "chapter": 5
+    }
+  },
+  "fields": {
+    "holder": "林子轩",
+    "question": "隐藏信息的说话者是谁，为什么要求林子轩不要让宇在场？",
+    "status": "open"
+  },
+  "kind": "hook",
+  "latest_change": "state-chapter-005-hook-隐藏信息说话者",
+  "schema_version": 2,
+  "subject": "隐藏信息说话者"
 }

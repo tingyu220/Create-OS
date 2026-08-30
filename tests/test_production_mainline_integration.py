@@ -2,15 +2,17 @@ import ast
 import json
 from pathlib import Path
 
+from creative_os.domains.narrative_memory import load_active_narrative_decision
+
 
 ROOT = Path(__file__).parents[1]
 PROJECT = ROOT / "projects" / "文明升阶"
 
 
-def test_civilization_ascension_has_one_continuous_canon_through_chapter_026():
+def test_civilization_ascension_has_one_continuous_canon_through_chapter_032():
     final_dir = PROJECT / "production" / "final_chapters"
     assert [path.name for path in sorted(final_dir.glob("chapter_*.md"))] == [
-        f"chapter_{chapter:03d}.md" for chapter in range(1, 27)
+        f"chapter_{chapter:03d}.md" for chapter in range(1, 33)
     ]
 
     chapter_002 = (final_dir / "chapter_002.md").read_text(encoding="utf-8")
@@ -25,7 +27,7 @@ def test_civilization_ascension_has_one_continuous_canon_through_chapter_026():
     assert "成功点火" not in chapter_023
 
 
-def test_chapter_007_026_contracts_use_integrated_scene_technology_and_pov_schema():
+def test_chapter_007_032_contracts_use_integrated_scene_technology_and_pov_schema():
     items = PROJECT / ".creative_os" / "memory" / "items"
     for chapter in range(7, 27):
         payload = json.loads((items / f"narrative-chapter-{chapter:03d}.json").read_text(encoding="utf-8"))
@@ -39,6 +41,28 @@ def test_chapter_007_026_contracts_use_integrated_scene_technology_and_pov_schem
         else:
             assert "pov_plan" not in contract
 
+    chapter_027 = load_active_narrative_decision(PROJECT, 27)
+    assert chapter_027 is not None
+    assert chapter_027.chapter_contract.scene_plan.scenes
+    assert chapter_027.chapter_contract.technology_plan.technologies
+    assert chapter_027.chapter_contract.pov_plan.primary_owner == "林子轩"
+
+    for chapter in range(28, 33):
+        decision = load_active_narrative_decision(PROJECT, chapter)
+        assert decision is not None
+        assert decision.schema_version == 2
+        assert decision.chapter_contract.scene_plan.scenes
+        assert decision.chapter_contract.technology_plan.technologies
+        assert decision.chapter_contract.pov_plan.primary_owner
+
+
+def test_historical_scene_v2_contracts_load_through_the_integrated_codec():
+    for chapter in range(7, 33):
+        decision = load_active_narrative_decision(PROJECT, chapter)
+        assert decision is not None
+        assert decision.chapter == chapter
+        assert decision.chapter_contract.scene_plan.scenes
+
 
 def test_phase_e_and_pov_share_one_evidence_ref_type():
     definitions = []
@@ -48,8 +72,9 @@ def test_phase_e_and_pov_share_one_evidence_ref_type():
     assert definitions == [ROOT / "creative_os" / "domains" / "narrative_evidence.py"]
 
 
-def test_readiness_points_to_chapter_027_without_precreating_manuscript():
+def test_readiness_points_to_chapter_033_after_chapter_032_completion():
     readiness = (PROJECT / "production" / "reports" / "continuation_readiness.md").read_text(encoding="utf-8")
-    assert "下一章：27" in readiness
-    assert "第26章最终状态" in readiness
-    assert not (PROJECT / "production" / "final_chapters" / "chapter_027.md").exists()
+    assert "下一章：33" in readiness
+    assert "第32章最终状态已物化" in readiness
+    assert (PROJECT / "production" / "final_chapters" / "chapter_032.md").exists()
+    assert not (PROJECT / "production" / "final_chapters" / "chapter_033.md").exists()

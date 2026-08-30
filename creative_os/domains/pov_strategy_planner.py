@@ -22,7 +22,7 @@ class POVStrategyPlanner:
             raise POVStrategyPlanningError("no_viable_pov_candidate")
         ranked = rank_options(options, input, policy)
         result = POVStrategyCandidateSet(
-            id=f"pov-strategy-{input.target_chapter:03d}",
+            id=f"pov-strategy-{input.target_chapter:03d}-{input.baseline_fingerprint}",
             target_chapter=input.target_chapter,
             input_fingerprint=input.baseline_fingerprint,
             policy_version=policy.version,

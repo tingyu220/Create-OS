@@ -1,6 +1,6 @@
 # 接续准备
 
-- 下一章：27
-- 上一章：第26章最终状态
-- Context：尚未编译；等待第27章 POV 输入事实与 Chapter Contract 人工审批
-- 状态：阻断（未生成正文、未创建 Writer Admission）
+- 下一章：33
+- Context：待第33章 POV 重算与 Chapter Contract 审批后生成
+- 状态：待规划
+- 基线：第32章最终状态已物化

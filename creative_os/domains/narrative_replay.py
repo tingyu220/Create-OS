@@ -134,8 +134,10 @@ def analyze_chapter(
     )
 
 
-def render_replay_report(findings: list[ReplayFinding]) -> str:
-    lines = ["# 《文明升阶》叙事回放报告", "", "本报告只读取正式正文；没有合同的章节不会被系统臆测。", ""]
+def render_replay_report(findings: list[ReplayFinding], *, project_title: str = "小说项目") -> str:
+    if not project_title.strip():
+        raise ValueError("project_title_required")
+    lines = [f"# 《{project_title.strip()}》叙事回放报告", "", "本报告只读取正式正文；没有合同的章节不会被系统臆测。", ""]
     for finding in sorted(findings, key=lambda item: item.chapter_number):
         lines.extend([f"## 第 {finding.chapter_number} 章", "", f"- 来源：`{finding.source}`", f"- 开头：{finding.opening}"])
         lines.append(f"- 自动检测：{'、'.join(finding.automatic_codes) if finding.automatic_codes else '未发现'}")

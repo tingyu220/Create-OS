@@ -178,7 +178,10 @@ def test_reader_facing_quality_gate_rejects_reversed_dialogue_reference():
 def test_reader_facing_quality_gate_rejects_wrong_father_child_gender():
     text = "林正弘看着林子轩，像是想把这些字在女儿面前摆稳一些。"
 
-    assert "character_relation_mismatch" in validate_reader_facing_text(text)
+    assert "character_relation_mismatch" in validate_reader_facing_text(
+        text,
+        relation_constraints=(("林正弘", "林子轩", "女儿"),),
+    )
 
 
 def test_reader_facing_quality_gate_rejects_truncated_sentence_ending():

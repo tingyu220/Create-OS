@@ -5,11 +5,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from creative_os.domains.narrative_decision import NarrativeDecision
-from creative_os.domains.narrative_memory import load_active_narrative_decision
+from creative_os.domains.narrative_memory import (
+    load_active_narrative_approval_actor,
+    load_active_narrative_decision,
+)
 from creative_os.domains.pov_strategy_input import assemble_pov_strategy_input
 from creative_os.domains.pov_strategy_model import ChapterNeeds
-from creative_os.memory.store import JsonMemoryStore
 from creative_os.domains.pov_strategy_model import POVSelectionRecord, POVStrategyInput, POVRisk
+from creative_os.domains.pov_strategy_contract import chapter_needs_from_contract
 from creative_os.domains.pov_strategy_policy import POVStrategyPolicy, load_pov_strategy_policy
 from creative_os.domains.pov_strategy_review import review_selected_pov
 from creative_os.domains.pov_strategy_selection import POVSelectionError, validate_selection
@@ -84,17 +87,12 @@ def admit_active_pov_strategy(project_root: str | Path, contract: NarrativeDecis
     active = load_active_narrative_decision(root, contract.chapter)
     if active is None or active.to_json() != contract.to_json():
         raise POVStrategyAdmissionBlockedError("missing_approved_narrative_decision")
-    item = JsonMemoryStore(root / ".creative_os" / "memory").get(f"narrative-chapter-{contract.chapter:03d}")
-    if not item.approved_by:
+    approved_by = load_active_narrative_approval_actor(root, contract.chapter)
+    if not approved_by:
         raise POVStrategyAdmissionBlockedError("missing_approved_narrative_decision")
-    chapter = contract.chapter_contract
-    needs = ChapterNeeds(
-        chapter.functions, chapter.dramatic_question,
-        tuple(dict.fromkeys(scene.action for scene in chapter.scene_plan.scenes)),
-        chapter.scene_plan.required_world_slice,
-        tuple(technology.role for technology in chapter.technology_plan.technologies),
-    )
+    needs = chapter_needs_from_contract(contract.chapter_contract)
     current_input = assemble_pov_strategy_input(root, contract.chapter, needs, policy)
-    candidate_id = f"pov-strategy-{contract.chapter:03d}"
-    selection = POVStrategyAuditStore(root).load_selection(candidate_id)
-    return admit_pov_strategy(root, selection, current_input, contract, approved_by=item.approved_by, policy=policy, verify_evidence=True)
+    store = POVStrategyAuditStore(root)
+    current = store.current_for_chapter(contract.chapter)
+    selection = store.load_selection(current.candidate.id)
+    return admit_pov_strategy(root, selection, current_input, contract, approved_by=approved_by, policy=policy, verify_evidence=True)

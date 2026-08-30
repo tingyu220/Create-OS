@@ -1,7 +1,32 @@
 {
-  "schema_version": 2,
-  "kind": "character",
-  "subject": "苏晚晴",
+  "evidence": [
+    {
+      "excerpt": "盒子里装着一本厚厚的皮面笔记本，还有一些散碎的小物件：一个塑料小鸭、一束干了的野花、几张照片。",
+      "source_chapter": "production/final_chapters/chapter_003.md"
+    }
+  ],
+  "field_sources": {
+    "current_goal": {
+      "change_id": "state-chapter-003-character-苏晚晴",
+      "chapter": 3
+    },
+    "emotional_state": {
+      "change_id": "state-chapter-003-character-苏晚晴",
+      "chapter": 3
+    },
+    "known_facts": {
+      "change_id": "state-chapter-003-character-苏晚晴",
+      "chapter": 3
+    },
+    "location": {
+      "change_id": "state-chapter-003-character-苏晚晴",
+      "chapter": 3
+    },
+    "withheld_facts": {
+      "change_id": "state-chapter-003-character-苏晚晴",
+      "chapter": 3
+    }
+  },
   "fields": {
     "current_goal": "让林子轩相信父母对他的爱并非伪装",
     "emotional_state": [
@@ -17,11 +42,8 @@
       "项目完整动机"
     ]
   },
+  "kind": "character",
   "latest_change": "state-chapter-003-character-苏晚晴",
-  "evidence": [
-    {
-      "excerpt": "盒子里装着一本厚厚的皮面笔记本，还有一些散碎的小物件：一个塑料小鸭、一束干了的野花、几张照片。",
-      "source_chapter": "production/final_chapters/chapter_003.md"
-    }
-  ]
+  "schema_version": 2,
+  "subject": "苏晚晴"
 }

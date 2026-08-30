@@ -203,6 +203,55 @@ def test_length_failure_uses_a_seamless_extension_instead_of_rewriting_the_draft
     assert text.count("# 第2章") == 1
 
 
+def test_length_failure_with_narrative_issue_still_extends_current_draft(tmp_path, monkeypatch):
+    """防止混合错误分支丢弃长篇初稿并整章重写。"""
+    project = _project(tmp_path)
+    reviews = iter([
+        ["below_minimum_chinese_chars", "narrative:supporting_agency_not_dramatized"],
+        [],
+    ])
+    monkeypatch.setattr(runner, "_review", lambda *_args: next(reviews))
+
+    class RepairingClient(FakeClient):
+        def complete(self, messages, *, temperature: float, max_tokens: int):
+            self.calls += 1
+            self.messages = messages
+            return "# 第2章\n" + "初稿" * 600 if self.calls == 1 else "配角继续行动" * 800
+
+    client = RepairingClient("")
+    result = continue_one_chapter(project, client=client, max_attempts=2, target_chinese_chars=2000)
+
+    assert result.status == "pass"
+    text = result.final_chapter_path.read_text(encoding="utf-8")
+    assert "初稿" in text and "配角继续行动" in text
+    assert "supporting_agency_not_dramatized" in client.messages[-1].content
+
+
+def test_failed_length_draft_is_resumed_without_regenerating_opening(tmp_path, monkeypatch):
+    """防止进程重启后丢弃已保存的长章草稿。"""
+    project = _project(tmp_path)
+    draft = project / ".creative_os/llm_writer/drafts/chapter_002.md"
+    draft.parent.mkdir(parents=True)
+    draft.write_text("# 第2章\n" + "已保存正文" * 500, encoding="utf-8")
+    prepared = _prepared(project, target_chinese_chars=3000)
+    review = project / ".creative_os/reviews/chapter_002_continuation.json"
+    review.parent.mkdir(parents=True)
+    review.write_text(json.dumps({
+        "context": prepared.context.fingerprint,
+        "issues": ["below_minimum_chinese_chars", "narrative:supporting_agency_not_dramatized"],
+    }), encoding="utf-8")
+    reviews = iter([[]])
+    monkeypatch.setattr(runner, "_review", lambda *_args: next(reviews))
+    client = FakeClient("配角完成独立选择" * 800)
+
+    result = _secure_continue_one_chapter(prepared, client=client, max_attempts=1)
+
+    assert result.status == "pass"
+    text = result.final_chapter_path.read_text(encoding="utf-8")
+    assert "已保存正文" in text and "配角完成独立选择" in text
+    assert client.calls == 1
+
+
 def test_runner_returns_recoverable_failure_when_model_execution_fails(tmp_path):
     project = _project(tmp_path)
 

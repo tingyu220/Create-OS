@@ -78,6 +78,10 @@ def test_two_stage_service_rechecks_authority_and_binds_real_context(monkeypatch
     monkeypatch.setattr(admission, "ContractRecordStore", Records)
     service = admission.WriterAdmissionService(project, Resolver())
     grant = service.pre_admit(admission.PreAdmissionRequest(decision.contract_id))
+    projected = NarrativeDecisionCodec.decode(grant.projection.canonical_json)
+    assert decision.chapter_contract.intent_evidence_bindings
+    assert projected.chapter_contract.intent_evidence_bindings == ()
+    assert grant.projection.contract_content_hash == digest
     with __import__("pytest").raises(admission.WriterAdmissionError):
         service.validate_grant_for_context(replace(grant, signature="0"*64))
     expired = replace(grant, expires_at=(datetime.now(timezone.utc)-timedelta(seconds=1)).isoformat())

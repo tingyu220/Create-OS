@@ -9,6 +9,7 @@ from creative_os.domains.contract_issue import ContractIssue
 from creative_os.domains.narrative_decision import NarrativeChangeRequest, NarrativeDecision, NarrativeProjectProfile
 from creative_os.domains.narrative_evidence import ResolvedEvidenceSource
 from creative_os.memory.store import JsonMemoryStore
+from creative_os.memory.model import MemoryKind, MemoryScope, MemoryStatus
 import hashlib
 
 
@@ -175,6 +176,46 @@ class VersionedMemoryAdapter:
                 raise ResolverError(BaselineSourceResolver._error("decode_error", self.role).issue) from error
             return AuthorityRead(self.role, entry.source_id, entry.source_version, digest, "memory-v1", value)
         raise ResolverError(BaselineSourceResolver._error("source_not_versioned", self.role).issue)
+
+
+class ImmutableMemoryAuthorityAdapter:
+    """按 ID、信封版本与内容哈希读取冻结的当前 Memory 权威源。"""
+
+    def __init__(self, role: str, decoder, evidence_decoder=None):
+        self.role = role
+        self._decoder = decoder
+        self._evidence_decoder = evidence_decoder
+
+    def read_exact(self, project_root: Path, entry: BaselineEntry) -> AuthorityRead:
+        try:
+            item = JsonMemoryStore(project_root / ".creative_os" / "memory").get_strict(entry.source_id)
+        except Exception as error:
+            raise ResolverError(BaselineSourceResolver._error("io_error", self.role).issue) from error
+        if (
+            item.status != MemoryStatus.ACTIVE
+            or item.kind != MemoryKind.PROJECT_DECISION
+            or item.scope != MemoryScope.PROJECT
+            or item.scope_id != project_root.name
+            or entry.source_version != f"v{item.version:04d}"
+        ):
+            raise ResolverError(BaselineSourceResolver._error("source_drift", self.role).issue)
+        digest = hashlib.sha256(item.content.encode("utf-8")).hexdigest()
+        if digest != entry.content_hash:
+            raise ResolverError(BaselineSourceResolver._error("hash_mismatch", self.role).issue)
+        try:
+            value = self._decoder(item.content)
+            evidence = () if self._evidence_decoder is None else tuple(self._evidence_decoder(item.content))
+        except Exception as error:
+            raise ResolverError(BaselineSourceResolver._error("decode_error", self.role).issue) from error
+        return AuthorityRead(
+            self.role,
+            entry.source_id,
+            entry.source_version,
+            digest,
+            "immutable-memory-v1",
+            value,
+            evidence,
+        )
 
 
 class UnsupportedAuthorityAdapter:

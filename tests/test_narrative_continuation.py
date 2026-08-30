@@ -1,5 +1,6 @@
 import json
 from dataclasses import replace
+from types import SimpleNamespace
 
 import pytest
 
@@ -16,13 +17,48 @@ from creative_os.domains.narrative_decision import (
     TechnologyContract,
     TechnologyPlan,
 )
-from creative_os.domains.narrative_memory import save_narrative_candidate
+from creative_os.domains.narrative_memory import (
+    load_active_narrative_approval_actor,
+    load_active_narrative_decision,
+    save_narrative_candidate,
+)
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.novel_continuation import ContinuationBlockedError, build_next_chapter
 from creative_os.domains.writer_admission import AdmittedContractProjection
 from creative_os.novel_continuation_runner import _messages, continue_one_chapter, promote_passing_draft
 from creative_os.memory.approval import approve_candidate
 from creative_os.memory.model import MemoryEvidence
 from creative_os.memory.store import JsonMemoryStore
+
+
+def test_active_narrative_loader_reads_the_pointer_bound_immutable_contract(tmp_path):
+    """防止生命周期已激活合同仍无法进入 Context/Writer 生产读取。"""
+    from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator, ContractPointer
+    from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+    from tests.test_contract_storage import _decision, _evidence
+
+    project = tmp_path / "文明升阶"
+    lifecycle = ContractLifecycleCoordinator(project)
+    decision = _decision()
+    item = lifecycle.create_initial_candidate(decision, evidence=_evidence())
+    lifecycle.store.replace(item.activate(actor="tingyu"))
+    pointer = ContractPointer.build(
+        physical_key=item.id,
+        contract_version=1,
+        content_hash=NarrativeDecisionCodec.content_hash(decision),
+        baseline_fingerprint="b" * 64,
+        approval_record_id="approval-1",
+        approval_record_hash="c" * 64,
+        reviewer_result_id="review-1",
+        reviewer_result_hash="d" * 64,
+        ruleset_version="prewrite-v1",
+        semantic_asset_versions=(),
+        disposition_set_hash="e" * 64,
+    )
+    lifecycle.write_pointer(pointer)
+
+    assert load_active_narrative_decision(project, decision.chapter) == decision
+    assert load_active_narrative_approval_actor(project, decision.chapter) == "tingyu"
 
 
 def _project(tmp_path):
@@ -108,6 +144,35 @@ def test_legacy_approved_contract_is_not_loaded_into_context(tmp_path):
 
     assert task.contract_projection is None
     assert not context.contains_source("narrative:chapter:002")
+
+
+def test_admitted_contract_overrides_stale_outline_narrative_goal(tmp_path):
+    project = _project(tmp_path)
+    decision = _approved_contract(project)
+    canonical = NarrativeDecisionCodec.encode_v2(decision)
+    projection = AdmittedContractProjection(
+        decision.contract_id,
+        decision.contract_version,
+        NarrativeDecisionCodec.content_hash(decision),
+        canonical,
+    )
+    grant = SimpleNamespace(
+        project_id=project.name,
+        chapter_id="chapter_002",
+        contract_id=decision.contract_id,
+        projection=projection,
+        exclusions=(),
+    )
+    service = SimpleNamespace(validate_grant_for_context=lambda _grant: _grant)
+
+    task, _ = build_next_chapter(
+        project,
+        require_narrative_contract=True,
+        grant=grant,
+        admission_service=service,
+    )
+
+    assert task.narrative_goal == "林子轩是否相信警告？；章节功能：推进主线"
 
 
 def test_legacy_contracts_cannot_bypass_prepared_run_for_next_chapter(tmp_path):

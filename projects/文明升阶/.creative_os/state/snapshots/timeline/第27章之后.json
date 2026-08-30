@@ -1,0 +1,21 @@
+{
+  "evidence": [
+    {
+      "excerpt": "所有偏转都缩到链接线中段，停在一个没有名字的节点上。",
+      "source_chapter": "production/final_chapters/chapter_027.md"
+    }
+  ],
+  "field_sources": {
+    "order": {
+      "change_id": "state-chapter-027-timeline-order",
+      "chapter": 27
+    }
+  },
+  "fields": {
+    "order": "七地字段级互证接入 → 同向提前偏移复算 → DR-17节点反演 → 缓存读取申请24分钟倒计时"
+  },
+  "kind": "timeline",
+  "latest_change": "state-chapter-027-timeline-order",
+  "schema_version": 2,
+  "subject": "第27章之后"
+}

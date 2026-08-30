@@ -1,0 +1,49 @@
+{
+  "memory_id": "state-chapter-029-character-陈景行-pov-pressure",
+  "state_change": {
+    "evidence": [
+      {
+        "excerpt": "# 第 29 章：同步点火",
+        "source_chapter": "production/final_chapters/chapter_029.md"
+      }
+    ],
+    "fields": {
+      "pov_pressure": {
+        "agency_capabilities": [
+          {
+            "id": "validate-kardashev-boundary",
+            "serves_functions": [
+              "独立判定卡尔达肖夫指数达到1.0",
+              "解锁并约束第二层技术信息",
+              "把能源胜利转化为新的文明选择"
+            ],
+            "target_state_ref": "共同点火证据从待判定状态转为一级文明确认及第二层受控解锁"
+          }
+        ],
+        "pending_choices": [
+          {
+            "id": "boundary-proof-before-unlock",
+            "value": "是否先公开社会代价与稳定性缺口，再允许第二层解锁"
+          }
+        ],
+        "unfinished_goals": [
+          {
+            "id": "independent-level-one-ruling",
+            "value": "独立核验全球能源曲线是否足以构成一级文明事实"
+          }
+        ],
+        "unpaid_costs": [
+          {
+            "id": "deny-victory-celebration",
+            "value": "必须在全球庆祝时公开点火仍不等于永久能源稳定"
+          }
+        ]
+      }
+    },
+    "id": "chapter-029-character-陈景行-pov-pressure",
+    "kind": "character",
+    "schema_version": 2,
+    "status": "approved",
+    "subject": "陈景行"
+  }
+}

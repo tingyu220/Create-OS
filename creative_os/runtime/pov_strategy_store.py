@@ -26,6 +26,12 @@ class POVStrategyAuditStore:
         path = self._path(value.id)
         if path.exists():
             return self.read(value.id)
+        for record in self.list():
+            if (
+                record.candidate.target_chapter == value.target_chapter
+                and record.status not in {"expired", "superseded"}
+            ):
+                self.set_status(record.candidate.id, "superseded", actor="candidate-recompute")
         candidate_json = encode_candidate_set(value)
         path.write_text(candidate_json, encoding="utf-8")
         self._append_event(value.id, "proposed", "system", {
@@ -34,6 +40,16 @@ class POVStrategyAuditStore:
             "schema_version": "pov-strategy-candidate-v1",
         })
         return self.read(value.id)
+
+    def current_for_chapter(self, chapter: int) -> POVStrategyAuditRecord:
+        matches = tuple(
+            record for record in self.list()
+            if record.candidate.target_chapter == chapter
+            and record.status not in {"expired", "superseded"}
+        )
+        if len(matches) != 1:
+            raise POVStrategyStoreError("chapter must have exactly one current POV candidate")
+        return matches[0]
 
     def set_status(self, candidate_id: str, status: str, *, actor: str) -> POVStrategyAuditRecord:
         if status not in {"proposed", "selected", "expired", "superseded", "recompute_failed"}:

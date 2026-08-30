@@ -17,6 +17,7 @@ from creative_os.domains.narrative_decision import NarrativeDecision
 from creative_os.domains.writer_admission import AdmissionGrant, AdmittedContractProjection, WriterAdmissionService
 from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.novel_state_store import compact_active_snapshots
+from creative_os.domains.publication_edition import ActivePublicationEdition
 
 
 class ContinuationBlockedError(ValueError):
@@ -66,7 +67,7 @@ def build_next_chapter(
         if admission_service is None:
             raise ContinuationBlockedError("admission service is required for grant validation")
         admission_service.validate_grant_for_context(grant)
-    narrative_contract = None if grant is None else NarrativeDecisionCodec.decode_v2(grant.projection.canonical_json)
+    narrative_contract = None if grant is None else NarrativeDecisionCodec.decode(grant.projection.canonical_json)
     if grant is not None and (
         grant.project_id != root.name
         or grant.chapter_id != f"chapter_{continuation.chapter_number:03d}"
@@ -85,6 +86,10 @@ def build_next_chapter(
         contract = narrative_contract.chapter_contract
         continuation = replace(
             continuation,
+            narrative_goal=(
+                f"{contract.dramatic_question}；章节功能："
+                + "、".join(contract.functions)
+            ),
             target_chinese_chars=contract.target_chinese_chars,
             min_chinese_chars=max(1000, int(contract.target_chinese_chars * 0.75)),
             forbidden_contradictions=list(
@@ -160,6 +165,9 @@ def build_next_chapter(
             domain_rules=["character_consistency", "world_consistency", "continuity"],
             contract_projection=None if grant is None else grant.projection,
             exclusions=() if grant is None else grant.exclusions,
+            edition_id=ActivePublicationEdition.load(root).edition_id,
+            edition_manifest_hash=ActivePublicationEdition.load(root).manifest_hash,
+            project_root=str(root),
         ),
         max_chars=20000,
     )

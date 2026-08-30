@@ -26,6 +26,7 @@ from creative_os.domains.narrative_decision import (
     ProtagonistChoice,
     PointOfViewPlan,
     ReaderChange,
+    SceneClosure,
     SceneContract,
     ScenePlan,
     SupportingAgencyContract,
@@ -51,12 +52,68 @@ class NarrativeDecisionCodec:
                 raise NarrativeValidationError("schema_version=2 is required for v2 narrative fields")
             return cls.decode_v1(payload)
         if version == 2:
+            if "contract_id" not in payload:
+                payload = cls._adapt_legacy_scene_v2_payload(payload)
             return cls.decode_v2(payload)
         if version == 3:
             if not isinstance(payload.get("chapter_contract"), Mapping) or "engagement_obligations" not in payload["chapter_contract"]:
                 raise NarrativeValidationError("unsupported narrative decision schema: 3")
             return cls.decode_v3(payload)
         raise NarrativeValidationError(f"unsupported narrative decision schema: {version}")
+
+    @classmethod
+    def _adapt_legacy_scene_v2_payload(cls, payload: Mapping[str, Any]) -> dict[str, Any]:
+        """将 Scene/Technology Gate 上线期的无信封 v2 合同投影为统一 v2 读取形态。"""
+        required_root = {
+            "schema_version", "kind", "chapter", "profile_id", "volume_id", "arc_id",
+            "arc_phase", "arc_goal", "inherited_pressure", "future_pressures", "chapter_contract",
+        }
+        if set(payload) != required_root:
+            raise NarrativeValidationError("legacy scene v2 root shape is invalid")
+        chapter = cls._integer(payload["chapter"], "chapter")
+        contract = dict(cls._object(payload["chapter_contract"], "chapter_contract"))
+        required_contract = {
+            "functions", "dramatic_question", "protagonist_choice", "reader_change", "information",
+            "pressure_curve", "foreshadow_actions", "ending_shift", "target_chinese_chars", "forbidden",
+            "scene_plan", "technology_plan",
+        }
+        if not required_contract <= set(contract) <= required_contract | {"pov_plan"}:
+            raise NarrativeValidationError("legacy scene v2 chapter contract shape is invalid")
+        choice = dict(cls._object(contract["protagonist_choice"], "protagonist_choice"))
+        cls._require_fields(choice, {"actor", "action", "alternatives", "cost", "consequence"}, "legacy protagonist_choice")
+        missing = cls._choice_missing(
+            cls._optional_text(choice["actor"]),
+            cls._optional_text(choice["action"]),
+            cls._strings(choice["alternatives"], "alternatives", allow_empty=True),
+            cls._optional_text(choice["cost"]),
+            cls._optional_text(choice["consequence"]),
+        )
+        choice["missing_fields"] = list(missing)
+        choice["status"] = (ChoiceStatus.UNKNOWN if len(missing) == 5 else ChoiceStatus.PARTIAL if missing else ChoiceStatus.COMPLETE).value
+        information = dict(cls._object(contract["information"], "information"))
+        information["misdirect"] = cls._legacy_nullable_payload(information.get("misdirect"), "information.misdirect")
+        contract["information"] = information
+        contract["protagonist_choice"] = choice
+        contract["foreshadow_actions"] = cls._legacy_nullable_payload(contract["foreshadow_actions"], "foreshadow_actions")
+        contract["forbidden"] = cls._legacy_nullable_payload(contract["forbidden"], "forbidden")
+        contract["chapter_id"] = f"chapter_{chapter:03d}"
+        contract["optional_candidates"] = []
+        contract["intent_evidence_bindings"] = {}
+        return {
+            **payload,
+            "contract_id": f"narrative-chapter-{chapter:03d}",
+            "contract_version": 1,
+            "chapter_contract": contract,
+            "legacy_unclassified_evidence": [],
+        }
+
+    @classmethod
+    def _legacy_nullable_payload(cls, value: object, name: str) -> dict[str, Any]:
+        values = cls._strings(value, name, allow_empty=True)
+        return {
+            "values": list(values),
+            "not_applicable_reason": None if values else "历史合同明确无适用项",
+        }
 
     @classmethod
     def decode_v1(cls, content: str | bytes | Mapping[str, Any]) -> NarrativeDecision:
@@ -269,6 +326,16 @@ class NarrativeDecisionCodec:
         return cls.canonical_json(payload)
 
     @classmethod
+    def encode(cls, decision: NarrativeDecision) -> str:
+        if not isinstance(decision, NarrativeDecision):
+            raise NarrativeValidationError("encode requires NarrativeDecision")
+        if decision.schema_version == 2:
+            return cls.encode_v2(decision)
+        if decision.schema_version == 3:
+            return cls.encode_v3(decision)
+        raise NarrativeValidationError(f"unsupported schema version: {decision.schema_version}")
+
+    @classmethod
     def decode_v3(cls, content: str | bytes | Mapping[str, Any]) -> NarrativeDecision:
         payload = cls._payload(content)
         if cls._integer(payload.get("schema_version"), "schema_version") != 3:
@@ -305,7 +372,7 @@ class NarrativeDecisionCodec:
 
     @classmethod
     def content_hash(cls, value: NarrativeDecision | Mapping[str, Any] | str | bytes) -> str:
-        canonical = cls.encode_v2(value) if isinstance(value, NarrativeDecision) else cls.canonical_json(value)
+        canonical = cls.encode(value) if isinstance(value, NarrativeDecision) else cls.canonical_json(value)
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
     @classmethod
@@ -402,6 +469,22 @@ class NarrativeDecisionCodec:
                             "entry_reason": item.entry_reason,
                             "exit_trigger": item.exit_trigger,
                             "inherited_from_previous": item.inherited_from_previous,
+                            **({
+                                "narrative_purpose": item.narrative_purpose,
+                                "essential_information": list(item.essential_information),
+                                "emotional_change": item.emotional_change,
+                                "closure": {
+                                    "goal_addressed": item.closure.goal_addressed,
+                                    "conflict_advanced": item.closure.conflict_advanced,
+                                    "choice_made": item.closure.choice_made,
+                                    "outcome_recorded": item.closure.outcome_recorded,
+                                },
+                            } if (
+                                item.narrative_purpose
+                                or item.essential_information
+                                or item.emotional_change
+                                or item.closure != SceneClosure()
+                            ) else {}),
                         }
                         for item in contract.scene_plan.scenes
                     ],
@@ -524,7 +607,7 @@ class NarrativeDecisionCodec:
         )
         scenes = []
         for raw in cls._objects(payload["scenes"], "scene_plan.scenes"):
-            cls._require_fields(
+            cls._require_fields_with_optional(
                 raw,
                 {
                     "id", "order", "place_id", "place_label", "place_class", "interior_exterior",
@@ -532,8 +615,25 @@ class NarrativeDecisionCodec:
                     "conflict", "action", "information_change", "state_change", "entry_reason", "exit_trigger",
                     "inherited_from_previous",
                 },
+                {"narrative_purpose", "essential_information", "emotional_change", "closure"},
                 "scene_contract",
             )
+            closure_raw = raw.get("closure")
+            if closure_raw is None:
+                closure = SceneClosure()
+            else:
+                closure_payload = cls._object(closure_raw, "scene closure")
+                cls._require_fields(
+                    closure_payload,
+                    {"goal_addressed", "conflict_advanced", "choice_made", "outcome_recorded"},
+                    "scene closure",
+                )
+                closure = SceneClosure(
+                    goal_addressed=bool(closure_payload["goal_addressed"]),
+                    conflict_advanced=bool(closure_payload["conflict_advanced"]),
+                    choice_made=bool(closure_payload["choice_made"]),
+                    outcome_recorded=bool(closure_payload["outcome_recorded"]),
+                )
             scenes.append(SceneContract(
                 id=cls._text(raw["id"], "scene id"),
                 order=cls._integer(raw["order"], "scene order"),
@@ -553,6 +653,12 @@ class NarrativeDecisionCodec:
                 entry_reason=cls._text(raw["entry_reason"], "scene entry_reason"),
                 exit_trigger=cls._text(raw["exit_trigger"], "scene exit_trigger"),
                 inherited_from_previous=bool(raw["inherited_from_previous"]),
+                narrative_purpose=cls._optional_text(raw.get("narrative_purpose")) or "",
+                essential_information=cls._strings(
+                    raw.get("essential_information", []), "scene essential_information", allow_empty=True,
+                ),
+                emotional_change=cls._optional_text(raw.get("emotional_change")) or "",
+                closure=closure,
             ))
         return ScenePlan(
             scenes=tuple(scenes),
@@ -581,12 +687,12 @@ class NarrativeDecisionCodec:
                 role=cls._text(raw["role"], "technology role"),
                 birth_reason=cls._text(raw["birth_reason"], "technology birth_reason"),
                 source=cls._text(raw["source"], "technology source"),
-                prerequisites=cls._strings(raw["prerequisites"], "technology prerequisites"),
+                prerequisites=cls._strings(raw["prerequisites"], "technology prerequisites", allow_empty=True),
                 validation_stage=cls._text(raw["validation_stage"], "technology validation_stage"),
                 first_application=cls._text(raw["first_application"], "technology first_application"),
-                social_diffusion=cls._strings(raw["social_diffusion"], "technology social_diffusion"),
+                social_diffusion=cls._strings(raw["social_diffusion"], "technology social_diffusion", allow_empty=True),
                 cost=cls._text(raw["cost"], "technology cost"),
-                changed_domains=cls._strings(raw["changed_domains"], "technology changed_domains"),
+                changed_domains=cls._strings(raw["changed_domains"], "technology changed_domains", allow_empty=True),
             ))
         return TechnologyPlan(tuple(technologies))
 

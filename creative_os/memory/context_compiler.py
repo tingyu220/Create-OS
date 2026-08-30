@@ -11,6 +11,7 @@ from creative_os.foundation.task import Task
 from creative_os.memory.model import MemoryItem, MemoryKind
 from creative_os.memory.retriever import MemoryRetrievalResult
 from creative_os.domains.writer_admission import AdmittedContractProjection, ContextExclusion
+from creative_os.domains.publication_edition import ActivePublicationEdition
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +33,9 @@ class CompileRequest:
     domain_rules: list[str]
     contract_projection: AdmittedContractProjection | None = None
     exclusions: tuple[ContextExclusion, ...] = ()
+    edition_id: str | None = None
+    edition_manifest_hash: str | None = None
+    project_root: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +51,8 @@ class CompiledContext:
     size_chars: int
     compiler_version: str
     fingerprint: str
+    edition_id: str = "legacy-default"
+    edition_manifest_hash: str = "0" * 64
 
     def contains_source(self, source_id: str) -> bool:
         return any(source.source_id == source_id for source in self.sources)
@@ -100,6 +106,8 @@ class ContextCompiler:
             size_chars=current_size,
             compiler_version=self.VERSION,
             fingerprint=fingerprint,
+            edition_id=request.edition_id or "legacy-default",
+            edition_manifest_hash=request.edition_manifest_hash or "0" * 64,
         )
 
     def _validate_boundaries(self, request: CompileRequest) -> None:
@@ -107,6 +115,19 @@ class ContextCompiler:
             raise ContextBoundaryError("task does not match project state")
         if request.task.domain != request.state.active_domain:
             raise ContextBoundaryError("task domain does not match project state")
+        if request.edition_id is not None:
+            if not request.edition_id.strip() or not request.edition_manifest_hash:
+                raise ContextBoundaryError("publication_edition_binding_required")
+            if request.project_root is None:
+                raise ContextBoundaryError("publication_edition_authority_required")
+            try:
+                active = ActivePublicationEdition.load(request.project_root)
+                if request.edition_id != active.edition_id or request.edition_manifest_hash != active.manifest_hash:
+                    raise ContextBoundaryError("stale_publication_edition")
+            except ContextBoundaryError:
+                raise
+            except Exception as exc:
+                raise ContextBoundaryError("publication_edition_authority_unavailable") from exc
 
     def _estimate(
         self,

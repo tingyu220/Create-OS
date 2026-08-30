@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"陈景行没有看林子轩。他最后把目光从主屏上那行小字移开，像关掉一个刚刚成形的档案。然后他绕过控制台，从北侧安全门走进清洁空气更冷的走廊。\", \"source_chapter\": \"production/final_chapters/chapter_030.md\"}], \"fields\": {\"outcome\": \"陈景行没有看林子轩。他最后把目光从主屏上那行小字移开，像关掉一个刚刚成形的档案。然后他绕过控制台，从北侧安全门走进清洁空气更冷的走廊。\"}, \"id\": \"chapter-030-event-main\", \"kind\": \"event\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第30章事件\"}",
+  "created_at": "2026-08-27T07:19:31.857957+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_030.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-030-event-main",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "event",
+    "novel",
+    "state"
+  ],
+  "title": "第 30 章状态：event",
+  "updated_at": "2026-08-27T07:20:21.346312+00:00",
+  "version": 1
+}

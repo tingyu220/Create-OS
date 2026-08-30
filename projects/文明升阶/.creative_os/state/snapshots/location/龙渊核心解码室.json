@@ -1,7 +1,24 @@
 {
-  "schema_version": 2,
-  "kind": "location",
-  "subject": "龙渊核心解码室",
+  "evidence": [
+    {
+      "excerpt": "第二天上午九点，他再次走进核心解码室。这一次，房间里多了一个人。那人站在陈景行身后，比陈景行年轻一些，脸很瘦，眼睛很大，看起来有些紧张。陈景行没介绍她。她先开口了：“我是方晴，辅助观察员。今天负责记录你的非语言反应。”",
+      "source_chapter": "production/final_chapters/chapter_005.md"
+    }
+  ],
+  "field_sources": {
+    "access_constraints": {
+      "change_id": "state-chapter-005-location-龙渊核心解码室",
+      "chapter": 5
+    },
+    "anchors": {
+      "change_id": "state-chapter-005-location-龙渊核心解码室",
+      "chapter": 5
+    },
+    "present_characters": {
+      "change_id": "state-chapter-005-location-龙渊核心解码室",
+      "chapter": 5
+    }
+  },
   "fields": {
     "access_constraints": [
       "解码过程受神经接口和项目流程约束"
@@ -17,11 +34,8 @@
       "宇"
     ]
   },
+  "kind": "location",
   "latest_change": "state-chapter-005-location-龙渊核心解码室",
-  "evidence": [
-    {
-      "excerpt": "第二天上午九点，他再次走进核心解码室。这一次，房间里多了一个人。那人站在陈景行身后，比陈景行年轻一些，脸很瘦，眼睛很大，看起来有些紧张。陈景行没介绍她。她先开口了：“我是方晴，辅助观察员。今天负责记录你的非语言反应。”",
-      "source_chapter": "production/final_chapters/chapter_005.md"
-    }
-  ]
+  "schema_version": 2,
+  "subject": "龙渊核心解码室"
 }

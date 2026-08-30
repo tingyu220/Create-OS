@@ -63,7 +63,7 @@ def build_narrative_candidate_item(
         scope=MemoryScope.PROJECT,
         scope_id=root.name,
         title=f"第 {decision.chapter} 章叙事合同",
-        content=NarrativeDecisionCodec.encode_v2(decision),
+        content=NarrativeDecisionCodec.encode(decision),
         evidence=tuple(evidence),
         applicability=("writing", "planning", "review"),
         tags={"novel", "narrative", "narrative_decision", f"chapter_{decision.chapter:03d}"},
@@ -74,6 +74,16 @@ def build_narrative_candidate_item(
 def load_active_narrative_decision(project_root: str | Path, chapter_number: int) -> NarrativeDecision | None:
     if chapter_number < 1:
         raise ValueError("chapter_number must be positive")
+    # 新生产只以 current pointer 为活动真值；旧无版本条目仅保留兼容读取。
+    from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator
+
+    current = ContractLifecycleCoordinator(project_root).load_current(
+        f"narrative-chapter-{chapter_number:03d}"
+    )
+    if current is not None:
+        if current.chapter != chapter_number:
+            raise ValueError(f"narrative decision chapter mismatch: {current.chapter} != {chapter_number}")
+        return current
     item = _active_item(project_root, f"narrative-chapter-{chapter_number:03d}")
     if item is None:
         return None
@@ -81,6 +91,26 @@ def load_active_narrative_decision(project_root: str | Path, chapter_number: int
     if decision.chapter != chapter_number:
         raise ValueError(f"narrative decision chapter mismatch: {decision.chapter} != {chapter_number}")
     return decision
+
+
+def load_active_narrative_approval_actor(
+    project_root: str | Path,
+    chapter_number: int,
+) -> str | None:
+    """读取 pointer 当前物理合同的审批人；仅为旧合同保留无版本回退。"""
+    if chapter_number < 1:
+        raise ValueError("chapter_number must be positive")
+    from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator
+
+    lifecycle = ContractLifecycleCoordinator(project_root)
+    pointer = lifecycle.read_pointer(f"narrative-chapter-{chapter_number:03d}")
+    if pointer is not None:
+        item = lifecycle.store.get_strict(pointer.physical_key)
+        if item.status != MemoryStatus.ACTIVE:
+            return None
+        return item.approved_by
+    item = _active_item(project_root, f"narrative-chapter-{chapter_number:03d}")
+    return None if item is None else item.approved_by
 
 
 def save_change_request_candidate(

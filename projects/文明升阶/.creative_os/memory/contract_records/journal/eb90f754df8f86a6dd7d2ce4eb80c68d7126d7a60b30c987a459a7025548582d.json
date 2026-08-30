@@ -1,0 +1,95 @@
+{
+  "entry_hash": "c2eac0a349df7d36b0742949f51f253ddfd9b76bc5347b324ca5e80cda12b996",
+  "envelope": {
+    "payload": {
+      "baseline_manifest": {
+        "entries": [
+          {
+            "content_hash": "cafc59aa9bf9317226fa144542d721f425f27cf12728a102860151b8157450ac",
+            "role": "fact_snapshot",
+            "source_id": "baseline-facts-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "role": "outline_change",
+            "source_id": "baseline-outline-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "3c2eb9244ca50b07a05f37ae03587ad174754444a6c82de8e026fe15affb671a",
+            "role": "previous_chapter",
+            "source_id": "baseline-previous-chapter-032-v0001",
+            "source_version": "v0001"
+          },
+          {
+            "content_hash": "77987f43d25d9e0692493b20e673e23ff00c9875e0adbef8ec951d0cf5c926ed",
+            "role": "profile",
+            "source_id": "baseline-profile-chapter-032-v0001",
+            "source_version": "v0001"
+          }
+        ],
+        "fingerprint": "d81e5cdaae8622065cc633a2f7b84d48d59045c8659108fdf1f4dd0e4d6649a2"
+      },
+      "contract_content_hash": "acc63d0d0c073854c5398673497003b4959e1088636dc7aaf104d424d660ff2d",
+      "contract_id": "narrative-chapter-032",
+      "contract_version": 1,
+      "foreshadow_payoff_or_close": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "full_contract": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "information_reveal_and_misdirect": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "major_choice_and_cost": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "new_facts": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "outline_change": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      },
+      "post_freeze_revision": {
+        "approved_at": "2026-08-27T07:35:00.747872+00:00",
+        "approved_by": "tingyu",
+        "decision_evidence": [],
+        "reason": "总控批准连续生成第28至32章并授权第32章合同",
+        "status": "approved"
+      }
+    },
+    "payload_hash": "c213273b97098acb6396c2b3ad5681b33a196c3fee8dea3415eff9139963a294",
+    "record_type": "approval",
+    "schema_version": 1
+  },
+  "journal_version": 1,
+  "record_id": "approval-narrative-chapter-032-v0001-acc63d0d0c073854c5398673497003b4959e1088636dc7aaf104d424d660ff2d-d81e5cdaae8622065cc633a2f7b84d48d59045c8659108fdf1f4dd0e4d6649a2",
+  "record_type": "approval",
+  "state": "committed"
+}

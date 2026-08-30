@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准连续生成第28至32章并授权第32章合同\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"当那个声音祝贺人类时，韩宁能否证明这不是诱导或伪造，并拒绝让礼赞替人类定义自身价值？\",\"chapter_contract.ending_shift\":\"七地独立重建同一段礼赞：人类因在代价面前仍选择共同承担而证明值得活下去；韩宁公开原始记录与全部失败校验，并把礼赞者身份、收割者含义和下一轮条件冻结为未知\",\"chapter_contract.forbidden.values[0]\":\"不得确认声音发送者就是收割者\",\"chapter_contract.forbidden.values[1]\":\"不得解释建造者与收割者真实目的\",\"chapter_contract.forbidden.values[2]\":\"不得让林子轩出场或成为唯一接收者\",\"chapter_contract.forbidden.values[3]\":\"不得隐去第29章普通人承担的断暖停电与轨道代价\",\"chapter_contract.forbidden.values[4]\":\"不得把礼赞等同于人类永久安全\",\"chapter_contract.forbidden.values[5]\":\"不得提前给出下一轮具体任务或坐标\",\"chapter_contract.foreshadow_actions.values[0]\":\"礼赞末尾存在无法翻译的第二重节律\",\"chapter_contract.foreshadow_actions.values[1]\":\"值得活下去的措辞暗示礼赞者拥有筛选视角但不能据此定性身份\",\"chapter_contract.foreshadow_actions.values[2]\":\"七地载波差异说明声音不依赖单一设备却仍未知如何产生\",\"chapter_contract.functions[0]\":\"验证那个声音对人类的礼赞\",\"chapter_contract.functions[1]\":\"证明人类值得活下去来自共同选择而非服从\",\"chapter_contract.functions[2]\":\"保留收割者与建造者动机疑问\",\"chapter_contract.information.misdirect.values[0]\":\"宣传系统试图把礼赞剪成外部文明正式认可人类的胜利宣言\",\"chapter_contract.information.reveal[0]\":\"七地可从不同原始载波独立重建同一段礼赞\",\"chapter_contract.information.reveal[1]\":\"声音祝贺人类并称人类证明了值得活下去\",\"chapter_contract.information.reveal[2]\":\"礼赞依据是人类公开代价后仍完成共同选择而非单纯能源数字\",\"chapter_contract.information.withhold[0]\":\"声音发送者是否就是收割者\",\"chapter_contract.information.withhold[1]\":\"建造者与收割者的真实关系\",\"chapter_contract.information.withhold[2]\":\"值得活下去是否包含下一轮测试\",\"chapter_contract.information.withhold[3]\":\"声音如何跨载波出现\",\"chapter_contract.pressure_curve.end\":\"韩宁拒绝剪辑，发布原始声音、空结果和代价账本，并拒绝接受声音对人类价值的最终裁定\",\"chapter_contract.pressure_curve.start\":\"七地先后收到相似节律，宣传系统要求立即发布人类胜利宣言\",\"chapter_contract.pressure_curve.turn\":\"老孔发现只有公开失败校验和社会代价，礼赞才能排除剪辑与单源伪造\",\"chapter_contract.protagonist_choice.action\":\"公开礼赞原始记录、全部校验失败和社会代价，同时拒绝把声音剪成收割者认可人类的胜利宣言\",\"chapter_contract.protagonist_choice.actor\":\"韩宁\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"只发布祝贺语句并隐去来源未知与失败校验\",\"chapter_contract.protagonist_choice.consequence\":\"礼赞成为可信但动机未知的共同事实，人类把自身价值解释权保留在自己手中\",\"chapter_contract.protagonist_choice.cost\":\"失去宣传控制，引发公众对收割者、下一轮筛选和人类是否被监视的恐惧\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者听见可跨七地验证的礼赞，却同时知道声音来源、称谓含义和真正目的均未被证明\",\"chapter_contract.reader_change.before\":\"读者知道未知节律被保留但不可重复，收割者与建造者动机仍无解释\",\"future_pressures[0]\":\"礼赞者为何用收割者与建造者称谓仍未知\",\"future_pressures[1]\":\"值得活下去是否意味着更严酷的下一轮筛选尚未可知\",\"inherited_pressure\":\"无信号隔离测试留下不属于设备的短促节律，地方空结果排除了已知天文解释；它必须跨七地独立重建后才能被当作外部信息。\"}},\"facts\":[{\"fields\":{\"status\":\"各节点需独立签署后同步点火\"},\"kind\":\"event\",\"subject\":\"十二站全球点火\"},{\"fields\":{\"pov_pressure\":\"必须在中央强制与分布式共同决定之间选择\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-27T07:35:00.511817+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-032",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-032-v0001",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_032"
+  ],
+  "title": "冻结第32章事实与字段意图",
+  "updated_at": "2026-08-27T07:35:00.512320+00:00",
+  "version": 1
+}

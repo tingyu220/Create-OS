@@ -1,7 +1,20 @@
 {
-  "schema_version": 2,
-  "kind": "event",
-  "subject": "九年窗口与隐藏信息",
+  "evidence": [
+    {
+      "excerpt": "“你不再只是听。你要和它对话。”陈景行看了他一眼，“如果你能问出那个问题的答案，我们就能知道，九年到底是从什么时候开始算的。”",
+      "source_chapter": "production/final_chapters/chapter_005.md"
+    }
+  ],
+  "field_sources": {
+    "outcome": {
+      "change_id": "state-chapter-005-event-九年窗口与隐藏信息",
+      "chapter": 5
+    },
+    "participants": {
+      "change_id": "state-chapter-005-event-九年窗口与隐藏信息",
+      "chapter": 5
+    }
+  },
   "fields": {
     "outcome": "林子轩在校准后接触隐藏信息，确认太阳窗口仅剩九年，并得知警告是不要一个人走。",
     "participants": [
@@ -10,11 +23,8 @@
       "宇"
     ]
   },
+  "kind": "event",
   "latest_change": "state-chapter-005-event-九年窗口与隐藏信息",
-  "evidence": [
-    {
-      "excerpt": "“你不再只是听。你要和它对话。”陈景行看了他一眼，“如果你能问出那个问题的答案，我们就能知道，九年到底是从什么时候开始算的。”",
-      "source_chapter": "production/final_chapters/chapter_005.md"
-    }
-  ]
+  "schema_version": 2,
+  "subject": "九年窗口与隐藏信息"
 }

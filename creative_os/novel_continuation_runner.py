@@ -12,12 +12,14 @@ from creative_os.domains.entity_consistency import canonical_entities_from_basel
 from creative_os.domains.novel_chapter_memory import save_chapter_candidates
 from creative_os.domains.narrative_review import review_narrative
 from creative_os.domains.narrative_decision import NarrativeDecision
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.llm_writer import ModelMessage
 from creative_os.llm_metrics import TimedCompletion
 from creative_os.runtime import AppendOnlyEventLog, EventType, RuntimeExecutionError, RuntimeRequest, RuntimeRunner
 from creative_os.memory.model import MemoryEvidence, MemoryItem, MemoryKind, MemoryScope
 from creative_os.domains.writer_admission import (AdmissionGrant, PreAdmissionRequest,
     RestrictedWriterAdmissionToken, WriterAdmissionService, WriterAdmissionToken)
+from creative_os.domains.publication_edition import ActivePublicationEdition
 from creative_os.task_status import ChapterTaskStatus, write_chapter_status
 from creative_os.validation_runtime import validate_reader_facing_text
 
@@ -51,6 +53,7 @@ class PreparedWriterRun:
     projection: object
     token: WriterAdmissionToken | RestrictedWriterAdmissionToken
     admission_service: WriterAdmissionService
+    edition_id: str = "legacy-default"
 
 
 def prepare_continuation_run(project_root: str | Path, run_id: str,
@@ -61,7 +64,8 @@ def prepare_continuation_run(project_root: str | Path, run_id: str,
     task, context = build_next_chapter(root, require_narrative_contract=True,
                                        grant=grant, admission_service=admission_service)
     token = admission_service.finalize_admission(grant, context.fingerprint, run_id)
-    return PreparedWriterRun(root, run_id, task, context, grant.projection, token, admission_service)
+    edition = ActivePublicationEdition.load(root)
+    return PreparedWriterRun(root, run_id, task, context, grant.projection, token, admission_service, edition.edition_id)
 
 
 def continue_one_chapter(prepared: PreparedWriterRun, *, client: ContinuationClient | None,
@@ -70,6 +74,7 @@ def continue_one_chapter(prepared: PreparedWriterRun, *, client: ContinuationCli
     if not isinstance(prepared, PreparedWriterRun):
         raise TypeError("continue_one_chapter requires PreparedWriterRun")
     _require_prepared_binding(prepared)
+    _require_publication_edition(prepared)
     return prepared.admission_service.validate_token(
         prepared.token, prepared.run_id, prepared.context.fingerprint,
         handoff=lambda: _continue_one_chapter_impl(prepared, _guard=_EXIT_GUARD, client=client, dry_run=dry_run,
@@ -107,13 +112,29 @@ def _continue_one_chapter_impl(
 
     text = ""
     issues: list[str] = []
+    draft_path = root / ".creative_os" / "llm_writer" / "drafts" / f"chapter_{task.chapter_number:03d}.md"
+    review_path = root / ".creative_os" / "reviews" / f"chapter_{task.chapter_number:03d}_continuation.json"
+    if draft_path.exists() and review_path.exists():
+        try:
+            prior_review = json.loads(review_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            prior_review = {}
+        prior_issues = prior_review.get("issues")
+        if (
+            prior_review.get("context") == str(getattr(context, "fingerprint"))
+            and isinstance(prior_issues, list)
+            and "below_minimum_chinese_chars" in prior_issues
+        ):
+            text = draft_path.read_text(encoding="utf-8")
+            issues = [str(issue) for issue in prior_issues]
     entity_warnings: list[dict[str, object]] = []
     total_elapsed = 0.0
     runtime = runtime_runner or RuntimeRunner(record_sink=event_log.append_execution, clock=time.monotonic)
     for _ in range(max_attempts):
+        extend_current = bool(text and "below_minimum_chinese_chars" in issues)
         messages = (
-            _length_extension_messages(task, text)
-            if text and issues == ["below_minimum_chinese_chars"]
+            _length_extension_messages(task, text, issues)
+            if extend_current
             else _messages(task, context, issues)
         )
         try:
@@ -135,13 +156,12 @@ def _continue_one_chapter_impl(
             issues = ["model_execution_failed"]
             break
         generated = runtime_result.output
-        text = _append_extension(text, generated) if text and issues == ["below_minimum_chinese_chars"] else generated
+        text = _append_extension(text, generated) if extend_current else generated
         issues = _review(root, task, text)
         entity_warnings = _entity_warnings(root, text)
         total_elapsed += runtime_result.reported_elapsed_seconds
         if not issues:
             break
-    draft_path = root / ".creative_os" / "llm_writer" / "drafts" / f"chapter_{task.chapter_number:03d}.md"
     draft_path.parent.mkdir(parents=True, exist_ok=True)
     draft_path.write_text(text, encoding="utf-8")
     experiences = _candidate_experiences(task, issues)
@@ -195,6 +215,7 @@ def promote_passing_draft(prepared: PreparedWriterRun) -> ContinuationRun:
     if not isinstance(prepared, PreparedWriterRun):
         raise TypeError("promote_passing_draft requires PreparedWriterRun")
     _require_prepared_binding(prepared)
+    _require_publication_edition(prepared)
     return prepared.admission_service.validate_token(
         prepared.token, prepared.run_id, prepared.context.fingerprint,
         handoff=lambda: _promote_passing_draft_impl(prepared, _guard=_EXIT_GUARD),
@@ -241,10 +262,19 @@ def _require_prepared_binding(prepared: PreparedWriterRun) -> None:
     ):
         raise ValueError("prepared run binding mismatch")
 
+def _require_publication_edition(prepared: PreparedWriterRun) -> None:
+    active = ActivePublicationEdition.load(prepared.project_root)
+    bound = getattr(prepared, "edition_id", None)
+    if bound is None:
+        bound = getattr(prepared.token, "edition_id", None)
+    if active.edition_id != "legacy-default" and bound != active.edition_id:
+        raise ValueError("stale_publication_edition")
+
 
 def _promote_passing_draft_impl(prepared: PreparedWriterRun, *, _guard: object) -> ContinuationRun:
     if _guard is not _EXIT_GUARD:
         raise PermissionError("writer exit implementation requires admission handoff")
+    _require_publication_edition(prepared)
     root = prepared.project_root
     task, context = prepared.task, prepared.context
     draft_path = root / ".creative_os" / "llm_writer" / "drafts" / f"chapter_{task.chapter_number:03d}.md"
@@ -356,13 +386,22 @@ def _messages(task: ContinuationTask, context: object, previous_issues: list[str
     return [ModelMessage(role="system", content="你是长篇小说 Writer，只输出读者可见正文。"), ModelMessage(role="user", content=prompt)]
 
 
-def _length_extension_messages(task: ContinuationTask, draft: str) -> list[ModelMessage]:
+def _length_extension_messages(task: ContinuationTask, draft: str, issues: list[str] | None = None) -> list[ModelMessage]:
     remaining = max(1200, task.min_chinese_chars - _chinese_char_count(draft) + 500)
     tail = draft[-1800:]
+    repair_contract = ""
+    if task.contract_projection is not None and any("supporting_agency_not_dramatized" in issue for issue in (issues or [])):
+        decision = NarrativeDecisionCodec.decode(task.contract_projection.canonical_json)
+        repair_contract = "\n补写必须让以下合同角色以明确身份完成选择、代价、结果和主线改变：\n" + "\n".join(
+            f"- {agency.actor}：选择={agency.choice}；代价={agency.cost}；结果={agency.result}；主线改变={agency.mainline_change}"
+            for agency in decision.chapter_contract.pov_plan.supporting_agency
+        )
     prompt = (
         f"下面是小说第 {task.chapter_number} 章的已写正文末段。正文尚差篇幅，请从最后一个动作或对话的下一秒自然续写约 {remaining} 个中文字符。\n"
         "只输出可直接接在末段后的正文，不要重复标题、不要概述前文、不要解释写作过程、不要使用场景标签或分隔线。\n"
         "保持人物、地点、时间和对话对象连续；让新增内容推进当前冲突，而不是另起一个割裂场景。\n\n"
+        f"补写还必须修复这些门禁问题：{'；'.join(issue for issue in (issues or []) if issue != 'below_minimum_chinese_chars') or '无'}。"
+        f"{repair_contract}\n"
         f"已写末段：\n{tail}"
     )
     return [

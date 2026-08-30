@@ -15,6 +15,7 @@ from creative_os.domains.narrative_codec import NarrativeDecisionCodec
 from creative_os.domains.project_authority import project_authority_lock
 from creative_os.memory.model import MemoryStatus
 from creative_os.domains.contract_revision import WriterRunContinuationAuthorization
+from creative_os.domains.publication_edition import ActivePublicationEdition
 
 class WriterAdmissionError(ValueError):pass
 @dataclass(frozen=True,slots=True)
@@ -80,6 +81,10 @@ class WriterAdmissionService:
    self._token(t,expected_run_id,actual_context_fingerprint);s=self._evaluate_authority_locked(t.contract_id)
    if s.authority_state_hash!=t.authority_state_hash:raise WriterAdmissionError('authority_state_drift')
    return t if handoff is None else handoff()
+ def validate_token_for_edition(self,t:WriterAdmissionToken,expected_run_id:str,actual_context_fingerprint:str,edition_id:str,*,handoff:Callable[[],T]|None=None)->WriterAdmissionToken|T:
+  result=self.validate_token(t,expected_run_id,actual_context_fingerprint,handoff=handoff)
+  ActivePublicationEdition.load(self.project_root).require(edition_id)
+  return result
  def issue_restricted_continuation_token(self,old_token:WriterAdmissionToken,authorization_id:str)->RestrictedWriterAdmissionToken:
   with project_authority_lock(self.project_root):
    self._token(old_token,old_token.run_id,old_token.context_fingerprint)
@@ -106,7 +111,8 @@ class WriterAdmissionService:
   if not c.is_resolved or not pf.is_ready or not rv.is_ready:raise WriterAdmissionError('writer_admission_blocked')
   pending=self._pending(cid,p.contract_version)
   if pending:raise WriterAdmissionError('pending_revision')
-  pr=AdmittedContractProjection(cid,p.contract_version,p.content_hash,NarrativeDecisionCodec.encode_v2(d));ex=(ContextExclusion(cid,p.contract_version),);ph=_hash(asdict(pr));eh=_hash([asdict(x) for x in ex]);sh=_hash({'pointer':p.to_dict(),'approval':[[n,x.status.value] for n,x in e.approval.approvals],'dispositions':dh,'pending':list(pending)})
+  projected=replace(d,chapter_contract=replace(d.chapter_contract,intent_evidence_bindings=(),optional_candidates=()),legacy_unclassified_evidence=())
+  pr=AdmittedContractProjection(cid,p.contract_version,p.content_hash,NarrativeDecisionCodec.encode(projected));ex=(ContextExclusion(cid,p.contract_version),);ph=_hash(asdict(pr));eh=_hash([asdict(x) for x in ex]);sh=_hash({'pointer':p.to_dict(),'approval':[[n,x.status.value] for n,x in e.approval.approvals],'dispositions':dh,'pending':list(pending)})
   return AdmissionAuthorityState(p,d,sh,pr,ph,ex,eh)
  def _pending(self,cid,v):
   try:return tuple(sorted(x.id for x in ContractLifecycleCoordinator(self.project_root).store.list() if x.id.startswith(cid+'-v') and x.status==MemoryStatus.CANDIDATE and int(x.id.rsplit('-v',1)[1])>v))

@@ -14,6 +14,7 @@ ALLOWED_KEYS = {
     "monopoly_review_after", "blocking_risks", "protagonist_id", "eligible_pov_ids",
 }
 DEFAULT_BLOCKING_RISKS = ("supporting_pov_without_agency", "pov_cannot_serve_chapter_function")
+DEFAULT_PROTAGONIST_ID = "protagonist"
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,7 +25,7 @@ class POVStrategyPolicy:
     absence_review_after: int = 3
     monopoly_review_after: int = 4
     blocking_risks: tuple[str, ...] = DEFAULT_BLOCKING_RISKS
-    protagonist_id: str = "林子轩"
+    protagonist_id: str = DEFAULT_PROTAGONIST_ID
     eligible_pov_ids: tuple[str, ...] = ()
 
     def validate(self) -> None:
@@ -49,7 +50,7 @@ def load_pov_strategy_policy(project_root: str | Path) -> POVStrategyPolicy:
         absence_review_after=int(payload.get("absence_review_after", 3)),
         monopoly_review_after=int(payload.get("monopoly_review_after", 4)),
         blocking_risks=tuple(str(x) for x in payload.get("blocking_risks", DEFAULT_BLOCKING_RISKS)),
-        protagonist_id=str(payload.get("protagonist_id", "林子轩")),
+        protagonist_id=str(payload.get("protagonist_id", DEFAULT_PROTAGONIST_ID)),
         eligible_pov_ids=tuple(str(x) for x in payload.get("eligible_pov_ids", ())),
     )
     policy.validate()

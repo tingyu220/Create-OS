@@ -388,6 +388,23 @@ class EngagementObligation:
 
 
 @dataclass(frozen=True, slots=True)
+class SceneClosure:
+    goal_addressed: bool = False
+    conflict_advanced: bool = False
+    choice_made: bool = False
+    outcome_recorded: bool = False
+
+    def validate(self) -> None:
+        values = (self.goal_addressed, self.conflict_advanced, self.choice_made, self.outcome_recorded)
+        if any(type(value) is not bool for value in values):
+            raise NarrativeValidationError("scene closure flags must be bool")
+
+    @property
+    def complete(self) -> bool:
+        return all((self.goal_addressed, self.conflict_advanced, self.choice_made, self.outcome_recorded))
+
+
+@dataclass(frozen=True, slots=True)
 class SceneContract:
     id: str
     order: int
@@ -407,8 +424,12 @@ class SceneContract:
     entry_reason: str
     exit_trigger: str
     inherited_from_previous: bool = False
+    narrative_purpose: str = ""
+    essential_information: tuple[str, ...] = ()
+    emotional_change: str = ""
+    closure: SceneClosure = SceneClosure()
 
-    def validate(self) -> None:
+    def validate(self, *, novel_required: bool = False) -> None:
         for name in ("id", "place_id", "place_label", "place_class", "interior_exterior", "time_window", "viewpoint", "goal", "conflict", "action", "entry_reason", "exit_trigger"):
             _require_text(str(getattr(self, name)), f"scene {name}")
         if self.order < 1:
@@ -416,6 +437,15 @@ class SceneContract:
         _require_items(self.participants, "scene participants")
         if not self.information_change.strip() and not self.state_change.strip():
             raise NarrativeValidationError("scene requires information_change or state_change")
+        if not isinstance(self.closure, SceneClosure):
+            raise NarrativeValidationError("scene closure must be SceneClosure")
+        self.closure.validate()
+        if novel_required:
+            _require_text(self.narrative_purpose, "scene narrative_purpose")
+            _require_items(self.essential_information, "scene essential_information")
+            _require_text(self.emotional_change, "scene emotional_change")
+            if not self.closure.complete:
+                raise NarrativeValidationError("scene closure must be complete")
 
 
 @dataclass(frozen=True, slots=True)
@@ -426,7 +456,7 @@ class ScenePlan:
     allowed_same_place_run: int = 3
     exception_reason: str = ""
 
-    def validate(self, *, required: bool = False) -> None:
+    def validate(self, *, required: bool = False, novel_required: bool = False) -> None:
         if required and not self.scenes:
             raise NarrativeValidationError("scene plan requires scenes")
         if not self.scenes:
@@ -436,7 +466,7 @@ class ScenePlan:
             raise NarrativeValidationError("scene plan allowed_same_place_run must be positive")
         orders = []
         for scene in self.scenes:
-            scene.validate()
+            scene.validate(novel_required=novel_required)
             orders.append(scene.order)
         if orders != list(range(1, len(self.scenes) + 1)):
             raise NarrativeValidationError("scene orders must be unique and contiguous")

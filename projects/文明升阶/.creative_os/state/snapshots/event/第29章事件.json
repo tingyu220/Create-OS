@@ -1,0 +1,21 @@
+{
+  "evidence": [
+    {
+      "excerpt": "格陵兰二号自动站安静下去之后，控制台没有回到原来的节律。黄点变亮了一小档，像有人在远处把一盏灯从雾里推近。韩宁没有看时间，但林子轩知道她在数。这是龙渊养成的习惯：用倒计时代替呼吸。",
+      "source_chapter": "production/final_chapters/chapter_029.md"
+    }
+  ],
+  "field_sources": {
+    "outcome": {
+      "change_id": "state-chapter-029-event-main",
+      "chapter": 29
+    }
+  },
+  "fields": {
+    "outcome": "格陵兰二号自动站安静下去之后，控制台没有回到原来的节律。黄点变亮了一小档，像有人在远处把一盏灯从雾里推近。韩宁没有看时间，但林子轩知道她在数。这是龙渊养成的习惯：用倒计时代替呼吸。"
+  },
+  "kind": "event",
+  "latest_change": "state-chapter-029-event-main",
+  "schema_version": 2,
+  "subject": "第29章事件"
+}

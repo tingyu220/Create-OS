@@ -1,0 +1,21 @@
+{
+  "payload": {
+    "baseline_fingerprint": "9352f291a1ee01e442e08cb575267f63aade524704de7d7309af0516938f9ac9",
+    "contract_content_hash": "b006d77408d13981e5f87e3d3e4a6b467467b0ff6ec1489724b029a43e18c696",
+    "contract_id": "narrative-chapter-027",
+    "contract_version": 1,
+    "issues": [],
+    "result_hash": "85feb024d5aa84c4141a67b4c01bc82c41e3188ff91c12069a26559c2b4f1dc6",
+    "result_id": "review-narrative-chapter-027-v0001",
+    "ruleset_version": "prewrite-v1",
+    "semantic_asset_versions": [
+      [
+        "function_semantics",
+        "v1"
+      ]
+    ]
+  },
+  "payload_hash": "8c864e07e533240c1a5f42ddda14e9bc2d6feb4a01b828606caa2f3b9a3e1379",
+  "record_type": "reviewer_result",
+  "schema_version": 1
+}

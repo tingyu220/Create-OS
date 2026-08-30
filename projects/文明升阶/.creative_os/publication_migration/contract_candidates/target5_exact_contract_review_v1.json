@@ -1,0 +1,830 @@
+{
+  "approval_recorded": false,
+  "approval_required": true,
+  "baseline_hash": "753e892225ce0db350d441e948f31996b4fe109798807d3cbef77ccc45233b1a",
+  "candidate": {
+    "arc_goal": "完成首次脑纹与通路检验，让林子轩从被动知情者进入身体被技术读取的阶段",
+    "arc_id": "arc-key-and-cost",
+    "arc_phase": "escalation",
+    "chapter": 5,
+    "chapter_contract": {
+      "chapter_id": "chapter_005",
+      "dramatic_question": "林子轩能否在失去退出权的情况下继续配合通路检验，并保住自己的判断能力？",
+      "ending_shift": "通路检验从安全校准推进到神经疲劳临界点，异常感知即将显现",
+      "engagement_obligations": [
+        {
+          "action": "establish",
+          "deadline_chapter": 6,
+          "expectation_id": "exp-target5-third-payload-anomaly",
+          "intent_evidence": [
+            {
+              "asserted_value": "建立第三段有效载荷可能产生异常感知的追读预期",
+              "assertion": "叙事导演为目标第5章约束字段 chapter_contract.engagement_obligations[0]",
+              "contract_id": "narrative-chapter-005",
+              "contract_version": 1,
+              "evidence_id": "ev-target5-b8fccdd4dc8e0e5f1f19",
+              "excerpt": "建立第三段有效载荷可能产生异常感知的追读预期",
+              "field_path": "chapter_contract.engagement_obligations[0]",
+              "locator": {
+                "kind": "record_id",
+                "value": "chapter_contract.engagement_obligations[0]"
+              },
+              "role": "intent",
+              "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+              "source_id": "director/civilization-target5-v1",
+              "source_version": "v1"
+            }
+          ],
+          "projection_hash": "51212de5f2edfe2b5dcc988dac589753d0b5d828b7aeecdf068a863e04a4deb6"
+        }
+      ],
+      "forbidden": {
+        "not_applicable_reason": null,
+        "values": [
+          "不得提前写出浅层解码中的两种声音",
+          "不得把脑纹校准写成无风险、无代价的常规体检",
+          "不得离开林子轩限制视角解释第三段有效载荷"
+        ]
+      },
+      "foreshadow_actions": {
+        "not_applicable_reason": null,
+        "values": [
+          "林子轩开始混淆设备噪声与自身感知，为后续异常声音铺垫"
+        ]
+      },
+      "functions": [
+        "完成脑纹校准与通路检验",
+        "建立林子轩与陈景行之间克制的照护关系",
+        "把第三段有效载荷推进到异常感知出现前夕"
+      ],
+      "information": {
+        "misdirect": {
+          "not_applicable_reason": null,
+          "values": [
+            "前额胀痛暂时可被理解为普通测试疲劳"
+          ]
+        },
+        "reveal": [
+          "脑纹校准用于区分林子轩自身信号与噪声",
+          "第三段有效载荷需要由林子轩的皮层信号定位",
+          "植入物与核心解码模块之间存在过载风险"
+        ],
+        "withhold": [
+          "第三段有效载荷的真实内容",
+          "异常感知是否来自外部声音"
+        ]
+      },
+      "intent_evidence_bindings": {
+        "arc_goal": [
+          {
+            "asserted_value": "完成首次脑纹与通路检验，让林子轩从被动知情者进入身体被技术读取的阶段",
+            "assertion": "叙事导演为目标第5章约束字段 arc_goal",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-3cccbd5f8b7ea45481cb",
+            "excerpt": "完成首次脑纹与通路检验，让林子轩从被动知情者进入身体被技术读取的阶段",
+            "field_path": "arc_goal",
+            "locator": {
+              "kind": "record_id",
+              "value": "arc_goal"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "arc_phase": [
+          {
+            "asserted_value": "escalation",
+            "assertion": "叙事导演为目标第5章约束字段 arc_phase",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-5eee735579fb3a935218",
+            "excerpt": "escalation",
+            "field_path": "arc_phase",
+            "locator": {
+              "kind": "record_id",
+              "value": "arc_phase"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.dramatic_question": [
+          {
+            "asserted_value": "林子轩能否在失去退出权的情况下继续配合通路检验，并保住自己的判断能力？",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.dramatic_question",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-7f825a626527c93e5634",
+            "excerpt": "林子轩能否在失去退出权的情况下继续配合通路检验，并保住自己的判断能力？",
+            "field_path": "chapter_contract.dramatic_question",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.dramatic_question"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.ending_shift": [
+          {
+            "asserted_value": "通路检验从安全校准推进到神经疲劳临界点，异常感知即将显现",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.ending_shift",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-9e6cd035ee28182e3877",
+            "excerpt": "通路检验从安全校准推进到神经疲劳临界点，异常感知即将显现",
+            "field_path": "chapter_contract.ending_shift",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.ending_shift"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.forbidden.values[0]": [
+          {
+            "asserted_value": "不得提前写出浅层解码中的两种声音",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.forbidden.values[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-aca6e301ae59336f2763",
+            "excerpt": "不得提前写出浅层解码中的两种声音",
+            "field_path": "chapter_contract.forbidden.values[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.forbidden.values[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.forbidden.values[1]": [
+          {
+            "asserted_value": "不得把脑纹校准写成无风险、无代价的常规体检",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.forbidden.values[1]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-9f43bfe6569736a37c2a",
+            "excerpt": "不得把脑纹校准写成无风险、无代价的常规体检",
+            "field_path": "chapter_contract.forbidden.values[1]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.forbidden.values[1]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.forbidden.values[2]": [
+          {
+            "asserted_value": "不得离开林子轩限制视角解释第三段有效载荷",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.forbidden.values[2]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-8d101487bf9e3b811e37",
+            "excerpt": "不得离开林子轩限制视角解释第三段有效载荷",
+            "field_path": "chapter_contract.forbidden.values[2]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.forbidden.values[2]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.foreshadow_actions.values[0]": [
+          {
+            "asserted_value": "林子轩开始混淆设备噪声与自身感知，为后续异常声音铺垫",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.foreshadow_actions.values[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-24e6f1b1e925f99c1bcb",
+            "excerpt": "林子轩开始混淆设备噪声与自身感知，为后续异常声音铺垫",
+            "field_path": "chapter_contract.foreshadow_actions.values[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.foreshadow_actions.values[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.functions[0]": [
+          {
+            "asserted_value": "完成脑纹校准与通路检验",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.functions[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-3ebcb932c70f34ae80a9",
+            "excerpt": "完成脑纹校准与通路检验",
+            "field_path": "chapter_contract.functions[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.functions[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.functions[1]": [
+          {
+            "asserted_value": "建立林子轩与陈景行之间克制的照护关系",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.functions[1]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-c835a67d94f60bdcf0a2",
+            "excerpt": "建立林子轩与陈景行之间克制的照护关系",
+            "field_path": "chapter_contract.functions[1]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.functions[1]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.functions[2]": [
+          {
+            "asserted_value": "把第三段有效载荷推进到异常感知出现前夕",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.functions[2]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-4d0f7c1265285a38ec5c",
+            "excerpt": "把第三段有效载荷推进到异常感知出现前夕",
+            "field_path": "chapter_contract.functions[2]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.functions[2]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.misdirect.values[0]": [
+          {
+            "asserted_value": "前额胀痛暂时可被理解为普通测试疲劳",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.misdirect.values[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-0cb4a41a7ab81ee0b908",
+            "excerpt": "前额胀痛暂时可被理解为普通测试疲劳",
+            "field_path": "chapter_contract.information.misdirect.values[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.misdirect.values[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.reveal[0]": [
+          {
+            "asserted_value": "脑纹校准用于区分林子轩自身信号与噪声",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.reveal[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-f9e658e9e539e4362dbd",
+            "excerpt": "脑纹校准用于区分林子轩自身信号与噪声",
+            "field_path": "chapter_contract.information.reveal[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.reveal[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.reveal[1]": [
+          {
+            "asserted_value": "第三段有效载荷需要由林子轩的皮层信号定位",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.reveal[1]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-2b58eb957da79b83060b",
+            "excerpt": "第三段有效载荷需要由林子轩的皮层信号定位",
+            "field_path": "chapter_contract.information.reveal[1]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.reveal[1]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.reveal[2]": [
+          {
+            "asserted_value": "植入物与核心解码模块之间存在过载风险",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.reveal[2]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-d6951ad52caf09b1af85",
+            "excerpt": "植入物与核心解码模块之间存在过载风险",
+            "field_path": "chapter_contract.information.reveal[2]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.reveal[2]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.withhold[0]": [
+          {
+            "asserted_value": "第三段有效载荷的真实内容",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.withhold[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-5127490a9a9d93f09818",
+            "excerpt": "第三段有效载荷的真实内容",
+            "field_path": "chapter_contract.information.withhold[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.withhold[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.information.withhold[1]": [
+          {
+            "asserted_value": "异常感知是否来自外部声音",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.information.withhold[1]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-d0c64661b49068890ce4",
+            "excerpt": "异常感知是否来自外部声音",
+            "field_path": "chapter_contract.information.withhold[1]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.information.withhold[1]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.pressure_curve.end": [
+          {
+            "asserted_value": "连续认知任务使林子轩脑内持续发胀，检验逼近异常感知边界",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.pressure_curve.end",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-08d6bf62191a2b8bb5f2",
+            "excerpt": "连续认知任务使林子轩脑内持续发胀，检验逼近异常感知边界",
+            "field_path": "chapter_contract.pressure_curve.end",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.pressure_curve.end"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.pressure_curve.start": [
+          {
+            "asserted_value": "林子轩在封闭地下设施醒来，身体状态和时间都由系统监测",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.pressure_curve.start",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-a64b1b68013cc8b43621",
+            "excerpt": "林子轩在封闭地下设施醒来，身体状态和时间都由系统监测",
+            "field_path": "chapter_contract.pressure_curve.start",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.pressure_curve.start"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.pressure_curve.turn": [
+          {
+            "asserted_value": "陈景行明确告知他不能决定是否进入，只能决定进入后是否听取载荷",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.pressure_curve.turn",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-2ed3634a1ca04b43d42b",
+            "excerpt": "陈景行明确告知他不能决定是否进入，只能决定进入后是否听取载荷",
+            "field_path": "chapter_contract.pressure_curve.turn",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.pressure_curve.turn"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.action": [
+          {
+            "asserted_value": "明知无法退出仍继续配合脑纹校准与通路检验",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.action",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-f74a2256c3327749282c",
+            "excerpt": "明知无法退出仍继续配合脑纹校准与通路检验",
+            "field_path": "chapter_contract.protagonist_choice.action",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.action"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.actor": [
+          {
+            "asserted_value": "林子轩",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.actor",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-b2b5c203cd0102c8870d",
+            "excerpt": "林子轩",
+            "field_path": "chapter_contract.protagonist_choice.actor",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.actor"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.alternatives[0]": [
+          {
+            "asserted_value": "拒绝继续配合并要求停止检验",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.alternatives[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-ad1e9e321e365f0253be",
+            "excerpt": "拒绝继续配合并要求停止检验",
+            "field_path": "chapter_contract.protagonist_choice.alternatives[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.alternatives[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.consequence": [
+          {
+            "asserted_value": "通路检验深入到连续认知任务，林子轩开始出现明显脑内胀痛",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.consequence",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-7f9cc428ce58e5201e10",
+            "excerpt": "通路检验深入到连续认知任务，林子轩开始出现明显脑内胀痛",
+            "field_path": "chapter_contract.protagonist_choice.consequence",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.consequence"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.cost": [
+          {
+            "asserted_value": "承受持续神经疲劳，并接受自己的身体信号由龙渊设备读取",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.cost",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-222008255f6233d5b2c0",
+            "excerpt": "承受持续神经疲劳，并接受自己的身体信号由龙渊设备读取",
+            "field_path": "chapter_contract.protagonist_choice.cost",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.cost"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.protagonist_choice.status": [
+          {
+            "asserted_value": "complete",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.protagonist_choice.status",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-fe9ac3f4583ca89c5976",
+            "excerpt": "complete",
+            "field_path": "chapter_contract.protagonist_choice.status",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.protagonist_choice.status"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.reader_change.after": [
+          {
+            "asserted_value": "读者确认脑纹、植入物和第三段有效载荷会共同作用于林子轩，并看见检验已产生神经代价",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.reader_change.after",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-5af3954afdd5d0c97f36",
+            "excerpt": "读者确认脑纹、植入物和第三段有效载荷会共同作用于林子轩，并看见检验已产生神经代价",
+            "field_path": "chapter_contract.reader_change.after",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.reader_change.after"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "chapter_contract.reader_change.before": [
+          {
+            "asserted_value": "读者只知道林子轩被带入龙渊，尚不清楚他的身体将如何参与解码",
+            "assertion": "叙事导演为目标第5章约束字段 chapter_contract.reader_change.before",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-3f0011f90abf240b065f",
+            "excerpt": "读者只知道林子轩被带入龙渊，尚不清楚他的身体将如何参与解码",
+            "field_path": "chapter_contract.reader_change.before",
+            "locator": {
+              "kind": "record_id",
+              "value": "chapter_contract.reader_change.before"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "future_pressures[0]": [
+          {
+            "asserted_value": "浅层解码将让第三段有效载荷直接进入林子轩的皮层识别通路",
+            "assertion": "叙事导演为目标第5章约束字段 future_pressures[0]",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-8f3b57fe243e6dc97d07",
+            "excerpt": "浅层解码将让第三段有效载荷直接进入林子轩的皮层识别通路",
+            "field_path": "future_pressures[0]",
+            "locator": {
+              "kind": "record_id",
+              "value": "future_pressures[0]"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ],
+        "inherited_pressure": [
+          {
+            "asserted_value": "林子轩已被带入龙渊，体内植入物和第三段有效载荷仍未完成安全验证",
+            "assertion": "叙事导演为目标第5章约束字段 inherited_pressure",
+            "contract_id": "narrative-chapter-005",
+            "contract_version": 1,
+            "evidence_id": "ev-target5-004d981c75b25b9eeace",
+            "excerpt": "林子轩已被带入龙渊，体内植入物和第三段有效载荷仍未完成安全验证",
+            "field_path": "inherited_pressure",
+            "locator": {
+              "kind": "record_id",
+              "value": "inherited_pressure"
+            },
+            "role": "intent",
+            "source_content_hash": "f9bf1481b05fa1a3a6eed49c460096e2e95e3f3ffe2a07be249221a24f6f9755",
+            "source_id": "director/civilization-target5-v1",
+            "source_version": "v1"
+          }
+        ]
+      },
+      "optional_candidates": [],
+      "pov_plan": {
+        "mode": "limited",
+        "primary_owner": "林子轩",
+        "protagonist_present": true,
+        "rationale": "必须让读者只通过林子轩的身体感受理解检验，避免提前获得第三段有效载荷真相",
+        "supporting_agency": [
+          {
+            "actor": "陈景行",
+            "choice": "以精确指令推进检验，并用克制的照护维持林子轩稳定",
+            "cost": "承担对林子轩神经安全的直接责任",
+            "independent_goal": "在正式解码前确认林子轩的通路与过载阈值可控",
+            "mainline_change": "陈景行从信息控制者转为具有有限照护行动的执行者",
+            "resistance": "必须推进检验，同时不能让林子轩因恐惧或过载失去清醒",
+            "result": "检验继续推进且林子轩保持清醒"
+          }
+        ]
+      },
+      "pressure_curve": {
+        "end": "连续认知任务使林子轩脑内持续发胀，检验逼近异常感知边界",
+        "start": "林子轩在封闭地下设施醒来，身体状态和时间都由系统监测",
+        "turn": "陈景行明确告知他不能决定是否进入，只能决定进入后是否听取载荷"
+      },
+      "protagonist_choice": {
+        "action": "明知无法退出仍继续配合脑纹校准与通路检验",
+        "actor": "林子轩",
+        "alternatives": [
+          "拒绝继续配合并要求停止检验"
+        ],
+        "consequence": "通路检验深入到连续认知任务，林子轩开始出现明显脑内胀痛",
+        "cost": "承受持续神经疲劳，并接受自己的身体信号由龙渊设备读取",
+        "missing_fields": [],
+        "status": "complete"
+      },
+      "reader_change": {
+        "after": "读者确认脑纹、植入物和第三段有效载荷会共同作用于林子轩，并看见检验已产生神经代价",
+        "before": "读者只知道林子轩被带入龙渊，尚不清楚他的身体将如何参与解码"
+      },
+      "scene_plan": {
+        "allowed_same_place_run": 2,
+        "chapter_spatial_intent": "从隔离卧室进入核心解码室，让普通生活的疏离感收束为身体被读取的现实压力",
+        "exception_reason": "",
+        "required_world_slice": "保留宿舍生活记忆与龙渊地下设施的反差",
+        "scenes": [
+          {
+            "action": "林子轩醒来、观察身体反应并准时离开房间",
+            "conflict": "普通生活记忆与被全面监测的现实发生冲突",
+            "entry_reason": "承接陈景行要求四点报到",
+            "exit_trigger": "系统显示十五点五十二分并提示不得迟到",
+            "goal": "按时前往检验并确认自身状态",
+            "id": "target5-isolation-room",
+            "information_change": "系统掌握他的睡眠和生理恢复数据",
+            "inherited_from_previous": true,
+            "interior_exterior": "interior",
+            "order": 1,
+            "ordinary_people_present": false,
+            "participants": [
+              "林子轩"
+            ],
+            "place_class": "controlled_living_space",
+            "place_id": "longyuan-isolation-room",
+            "place_label": "龙渊地下隔离卧室",
+            "state_change": "林子轩从休整状态进入受控检验状态",
+            "time_window": "通路检验前",
+            "viewpoint": "林子轩"
+          },
+          {
+            "action": "林子轩继续配合视线、听觉和认知任务",
+            "conflict": "检验不可退出，继续深入会增加神经与身份自主风险",
+            "entry_reason": "完成隔离休整并按要求报到",
+            "exit_trigger": "脑内持续发胀，异常感知即将出现",
+            "goal": "完成脑纹校准并验证第三段有效载荷通路",
+            "id": "target5-pathway-test",
+            "information_change": "第三段有效载荷必须依赖其皮层反应定位且存在过载风险",
+            "inherited_from_previous": false,
+            "interior_exterior": "interior",
+            "order": 2,
+            "ordinary_people_present": false,
+            "participants": [
+              "林子轩",
+              "陈景行"
+            ],
+            "place_class": "restricted_technology_lab",
+            "place_id": "longyuan-core-decoding-room",
+            "place_label": "龙渊核心解码室",
+            "state_change": "林子轩出现明显神经疲劳，通路检验进入临界阶段",
+            "time_window": "当日下午四点",
+            "viewpoint": "林子轩"
+          }
+        ]
+      },
+      "target_chinese_chars": 3200,
+      "technology_plan": {
+        "technologies": [
+          {
+            "birth_reason": "第三段有效载荷只能通过林子轩的皮层反应定位",
+            "changed_domains": [
+              "neural_access",
+              "information_access"
+            ],
+            "cost": "受试者出现神经疲劳，并失去部分身体与信息自主权",
+            "first_application": "标定第三段有效载荷位置并测量读取误差",
+            "id": "brainwave-pathway-calibration",
+            "name": "脑纹校准与通路检验系统",
+            "prerequisites": [
+              "脑纹基线建模",
+              "植入物安全连接",
+              "过载阈值监测"
+            ],
+            "role": "core",
+            "social_diffusion": [
+              "当前仅限龙渊核心解码室"
+            ],
+            "source": "龙渊核心解码模块、林子轩体内植入物与实时皮层反应",
+            "validation_stage": "正式浅层解码前的通路检验"
+          }
+        ]
+      }
+    },
+    "contract_id": "narrative-chapter-005",
+    "contract_version": 1,
+    "future_pressures": [
+      "浅层解码将让第三段有效载荷直接进入林子轩的皮层识别通路"
+    ],
+    "inherited_pressure": "林子轩已被带入龙渊，体内植入物和第三段有效载荷仍未完成安全验证",
+    "kind": "narrative_decision",
+    "legacy_unclassified_evidence": [],
+    "profile_id": "文明升阶-production-profile",
+    "schema_version": 3,
+    "volume_id": "volume-1-key"
+  },
+  "contract_hash": "9e8bb96af73fdd0f7b11d81ad987488770385a2aea30286b8705420d04ae4d1f",
+  "gates": {
+    "causal_resolved": true,
+    "codec_roundtrip": true,
+    "preflight_ready": true,
+    "reviewer_dry_run_ready": true
+  },
+  "projection_hash": "51212de5f2edfe2b5dcc988dac589753d0b5d828b7aeecdf068a863e04a4deb6",
+  "provenance": [
+    {
+      "basis": "林子轩限制视角与普通生活疏离",
+      "field": "pov",
+      "paragraph": 5,
+      "source_chapter": 5
+    },
+    {
+      "basis": "脑纹校准用途",
+      "field": "technology",
+      "paragraph": 15,
+      "source_chapter": 5
+    },
+    {
+      "basis": "通路检验三项目标与过载阈值",
+      "field": "technology",
+      "paragraph": 26,
+      "source_chapter": 5
+    },
+    {
+      "basis": "无法退出但仍可决定是否听取载荷",
+      "field": "choice",
+      "paragraph": 33,
+      "source_chapter": 5
+    },
+    {
+      "basis": "陈景行以工具化方式表达照护",
+      "field": "relationship",
+      "paragraph": 39,
+      "source_chapter": 5
+    },
+    {
+      "basis": "连续任务导致明显神经疲劳",
+      "field": "consequence",
+      "paragraph": 42,
+      "source_chapter": 5
+    }
+  ],
+  "review_result_hash": "464f25103bd31a4dc5171ed65b6b825a60d617efa9d1417219d214c444a758a7",
+  "schema_version": 1,
+  "status": "REVIEW",
+  "writer_allowed": false
+}

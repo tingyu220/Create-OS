@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.5,
+  "content": "{\"evidence\":{\"assertion\":\"总控批准连续生成第28至32章并授权第29章合同\",\"values\":{\"arc_goal\":\"从聚变试验失败走到全球协作和一级文明门槛\",\"arc_phase\":\"setup\",\"chapter_contract.dramatic_question\":\"十二座聚变电站能否在跨地域误差与各自现实压力下同时点火，并形成可信的全球能源事实？\",\"chapter_contract.ending_shift\":\"十二座聚变电站在各地现场共同签署下完成同步点火，全球能源网形成可验证的统一输出，人类逼近一级文明门槛\",\"chapter_contract.forbidden.values[0]\":\"不得把十二地写成无差别背景蒙太奇\",\"chapter_contract.forbidden.values[1]\":\"不得让配角只向林子轩汇报结果\",\"chapter_contract.forbidden.values[2]\":\"不得提前解锁亚光速或冬眠技术\",\"chapter_contract.forbidden.values[3]\":\"不得把点火写成零风险奇迹\",\"chapter_contract.forbidden.values[4]\":\"不得将光冕定性为客观宇宙边界\",\"chapter_contract.foreshadow_actions.values[0]\":\"统一能源曲线逼近卡尔达肖夫指数1.0\",\"chapter_contract.foreshadow_actions.values[1]\":\"点火蓝光中出现只有林子轩察觉的光冕残像\",\"chapter_contract.functions[0]\":\"完成十二座聚变电站同步点火\",\"chapter_contract.functions[1]\":\"让全球普通人承担文明跃迁代价\",\"chapter_contract.functions[2]\":\"检验第二次解码给出的能源验证\",\"chapter_contract.information.misdirect.values[0]\":\"龙渊最初认为统一倒计时足以代表全球协作\",\"chapter_contract.information.reveal[0]\":\"十二座电站必须以各自现场签署而非中央命令完成同步点火\",\"chapter_contract.information.reveal[1]\":\"各地局部风险需要不同工程处置但必须汇入同一验证窗口\",\"chapter_contract.information.reveal[2]\":\"同步输出使全球可利用能源首次形成统一可核验曲线\",\"chapter_contract.information.withhold[0]\":\"一级文明判定后的第二层完整内容\",\"chapter_contract.information.withhold[1]\":\"点火后光冕幻觉的来源\",\"chapter_contract.pressure_curve.end\":\"各节点独立签署风险并修正本地异常，林子轩放弃单方指挥，十二站在同一秒完成点火\",\"chapter_contract.pressure_curve.start\":\"十二站点火窗口开启，但冰岛冷却波动、赤道接收塔过载和轨道观测盲区同时出现\",\"chapter_contract.pressure_curve.turn\":\"取消任一节点可降低局部风险，却会让全球验证失去共同事实效力\",\"chapter_contract.protagonist_choice.action\":\"把最终点火权交还十二地现场，在所有节点独立签署后维持同步点火\",\"chapter_contract.protagonist_choice.actor\":\"林子轩\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"由龙渊强制统一倒计时并允许高风险节点退出\",\"chapter_contract.protagonist_choice.consequence\":\"十二站点火成为可审计的全球共同事实，能源输出开始改变文明等级判定\",\"chapter_contract.protagonist_choice.cost\":\"龙渊失去单方控制，任何一地拒绝都能终止验证，林子轩承担失败责任却不能替现场作决定\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者亲历十二地普通人与工程人员承担代价后完成同步点火，并意识到文明跃迁是全球共同选择而非龙渊单点胜利\",\"chapter_contract.reader_change.before\":\"读者知道第二次解码要求全球能源验证，十二座电站仍处于准备状态\",\"future_pressures[0]\":\"同步点火将把人类推到一级文明门槛\",\"future_pressures[1]\":\"能源跃迁可能触发林子轩无法解释的光冕幻觉\",\"inherited_pressure\":\"第二次解码要求人类用真实能源能力作答；十二座聚变电站已进入同步点火窗口，但各节点风险与现实代价并不相同。\"}},\"facts\":[{\"fields\":{\"status\":\"各节点需独立签署后同步点火\"},\"kind\":\"event\",\"subject\":\"十二站全球点火\"},{\"fields\":{\"pov_pressure\":\"必须在中央强制与分布式共同决定之间选择\"},\"kind\":\"character\",\"subject\":\"林子轩\"}]}",
+  "created_at": "2026-08-27T06:30:31.857455+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "chapter-029",
+      "source_type": "controller_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "baseline-facts-chapter-029-v0002",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_029"
+  ],
+  "title": "冻结第29章事实与字段意图",
+  "updated_at": "2026-08-27T06:30:31.857455+00:00",
+  "version": 1
+}

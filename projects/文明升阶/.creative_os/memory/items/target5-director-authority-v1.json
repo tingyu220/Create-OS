@@ -1,0 +1,31 @@
+{
+  "applicability": [
+    "planning",
+    "writing",
+    "review"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 1.0,
+  "content": "{\"arc_goal\":\"完成首次脑纹与通路检验，让林子轩从被动知情者进入身体被技术读取的阶段\",\"arc_phase\":\"escalation\",\"chapter_contract.dramatic_question\":\"林子轩能否在失去退出权的情况下继续配合通路检验，并保住自己的判断能力？\",\"chapter_contract.ending_shift\":\"通路检验从安全校准推进到神经疲劳临界点，异常感知即将显现\",\"chapter_contract.engagement_obligations[0]\":\"建立第三段有效载荷可能产生异常感知的追读预期\",\"chapter_contract.forbidden.values[0]\":\"不得提前写出浅层解码中的两种声音\",\"chapter_contract.forbidden.values[1]\":\"不得把脑纹校准写成无风险、无代价的常规体检\",\"chapter_contract.forbidden.values[2]\":\"不得离开林子轩限制视角解释第三段有效载荷\",\"chapter_contract.foreshadow_actions.values[0]\":\"林子轩开始混淆设备噪声与自身感知，为后续异常声音铺垫\",\"chapter_contract.functions[0]\":\"完成脑纹校准与通路检验\",\"chapter_contract.functions[1]\":\"建立林子轩与陈景行之间克制的照护关系\",\"chapter_contract.functions[2]\":\"把第三段有效载荷推进到异常感知出现前夕\",\"chapter_contract.information.misdirect.values[0]\":\"前额胀痛暂时可被理解为普通测试疲劳\",\"chapter_contract.information.reveal[0]\":\"脑纹校准用于区分林子轩自身信号与噪声\",\"chapter_contract.information.reveal[1]\":\"第三段有效载荷需要由林子轩的皮层信号定位\",\"chapter_contract.information.reveal[2]\":\"植入物与核心解码模块之间存在过载风险\",\"chapter_contract.information.withhold[0]\":\"第三段有效载荷的真实内容\",\"chapter_contract.information.withhold[1]\":\"异常感知是否来自外部声音\",\"chapter_contract.pressure_curve.end\":\"连续认知任务使林子轩脑内持续发胀，检验逼近异常感知边界\",\"chapter_contract.pressure_curve.start\":\"林子轩在封闭地下设施醒来，身体状态和时间都由系统监测\",\"chapter_contract.pressure_curve.turn\":\"陈景行明确告知他不能决定是否进入，只能决定进入后是否听取载荷\",\"chapter_contract.protagonist_choice.action\":\"明知无法退出仍继续配合脑纹校准与通路检验\",\"chapter_contract.protagonist_choice.actor\":\"林子轩\",\"chapter_contract.protagonist_choice.alternatives[0]\":\"拒绝继续配合并要求停止检验\",\"chapter_contract.protagonist_choice.consequence\":\"通路检验深入到连续认知任务，林子轩开始出现明显脑内胀痛\",\"chapter_contract.protagonist_choice.cost\":\"承受持续神经疲劳，并接受自己的身体信号由龙渊设备读取\",\"chapter_contract.protagonist_choice.status\":\"complete\",\"chapter_contract.reader_change.after\":\"读者确认脑纹、植入物和第三段有效载荷会共同作用于林子轩，并看见检验已产生神经代价\",\"chapter_contract.reader_change.before\":\"读者只知道林子轩被带入龙渊，尚不清楚他的身体将如何参与解码\",\"future_pressures[0]\":\"浅层解码将让第三段有效载荷直接进入林子轩的皮层识别通路\",\"inherited_pressure\":\"林子轩已被带入龙渊，体内植入物和第三段有效载荷仍未完成安全验证\"}",
+  "created_at": "2026-08-30T04:15:08.230956+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "99fe0b22745886d1ad105dee92e99ef98b48b9a35f38b2e5dfe8a490ed38bbc9",
+      "source_type": "human_approval"
+    }
+  ],
+  "exceptions": [],
+  "id": "target5-director-authority-v1",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "baseline_authority",
+    "chapter_005"
+  ],
+  "title": "目标第5章叙事导演字段权威",
+  "updated_at": "2026-08-30T04:15:08.230956+00:00",
+  "version": 1
+}

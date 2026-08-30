@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from creative_os.domains.base import DomainPackage
+from creative_os.domains.novel_capabilities import NOVEL_CAPABILITY_NAMES
 
 
 class NovelSchemaKind(StrEnum):
@@ -189,3 +190,8 @@ class NovelDomainPackage(DomainPackage):
     @property
     def production_workflow(self) -> list[str]:
         return list(self._production_workflow)
+
+    @property
+    def capability_names(self) -> tuple[str, ...]:
+        """返回领域可执行能力；具体实现由 NovelDomainService 组合。"""
+        return NOVEL_CAPABILITY_NAMES

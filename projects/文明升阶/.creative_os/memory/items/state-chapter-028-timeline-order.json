@@ -1,0 +1,30 @@
+{
+  "applicability": [
+    "writing"
+  ],
+  "approved_by": "tingyu",
+  "confidence": 0.6,
+  "content": "{\"evidence\": [{\"excerpt\": \"脚步声在管廊尽头停下来。不是一组人来带他们走，而是三组。两组穿安全部深色工装，一组穿运维灰蓝外套。领头的是安全审计员顾长明，个子不高，颧骨很高，走路时左臂不摆，像把肩胛骨别在腰后。他走近陈景行，把一份线上流转单递到对方面前。\", \"source_chapter\": \"production/final_chapters/chapter_028.md\"}], \"fields\": {\"precision\": \"chapter_only\", \"relative_order\": \"发生在第28章内\"}, \"id\": \"chapter-028-timeline-order\", \"kind\": \"timeline\", \"schema_version\": 2, \"status\": \"candidate\", \"subject\": \"第28章之后\"}",
+  "created_at": "2026-08-26T18:29:38.669185+00:00",
+  "evidence": [
+    {
+      "note": "",
+      "source_id": "production/final_chapters/chapter_028.md",
+      "source_type": "chapter"
+    }
+  ],
+  "exceptions": [],
+  "id": "state-chapter-028-timeline-order",
+  "kind": "project_decision",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "active",
+  "tags": [
+    "novel",
+    "state",
+    "timeline"
+  ],
+  "title": "第 28 章状态：timeline",
+  "updated_at": "2026-08-27T06:24:18.979207+00:00",
+  "version": 1
+}

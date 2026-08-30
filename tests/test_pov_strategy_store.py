@@ -1,9 +1,23 @@
 import json
+from dataclasses import replace
 
 import pytest
 
 from creative_os.runtime.pov_strategy_store import POVStrategyAuditStore, POVStrategyStoreError
 from tests.pov_strategy_helpers import candidate_set
+
+
+def test_new_input_supersedes_previous_candidate_for_the_same_chapter(tmp_path):
+    """防止重算流程继续返回同章旧输入对应的不可变候选。"""
+    first = replace(candidate_set(), id="pov-strategy-027-a", input_fingerprint="a" * 64)
+    second = replace(candidate_set(), id="pov-strategy-027-b", input_fingerprint="b" * 64)
+    store = POVStrategyAuditStore(tmp_path)
+
+    store.append_candidate(first)
+    store.append_candidate(second)
+
+    assert store.read(first.id).status == "superseded"
+    assert store.current_for_chapter(27).candidate.id == second.id
 
 
 def test_store_survives_restart_and_detects_tampering(tmp_path):

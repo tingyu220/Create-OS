@@ -1,20 +1,68 @@
 {
-  "schema_version": 2,
-  "kind": "character",
-  "subject": "陈景行",
+  "evidence": [
+    {
+      "excerpt": "# 第 29 章：同步点火",
+      "source_chapter": "production/final_chapters/chapter_029.md"
+    }
+  ],
+  "field_sources": {
+    "current_goal": {
+      "change_id": "state-chapter-005-character-陈景行",
+      "chapter": 5
+    },
+    "knows": {
+      "change_id": "state-chapter-005-character-陈景行",
+      "chapter": 5
+    },
+    "location": {
+      "change_id": "state-chapter-005-character-陈景行",
+      "chapter": 5
+    },
+    "pov_pressure": {
+      "change_id": "state-chapter-029-character-陈景行-pov-pressure",
+      "chapter": 29
+    }
+  },
   "fields": {
-    "observed_in_chapter": 5,
     "current_goal": "完成林子轩的脑纹校准并推动第三段解码",
     "knows": [
       "林子轩神经状态异常且需要校准"
     ],
-    "location": "龙渊核心解码室"
-  },
-  "latest_change": "state-chapter-005-character-陈景行",
-  "evidence": [
-    {
-      "excerpt": "陈景行说“四点”，林子轩回到那间地下深处的小房间，在模拟屏幕永远灿烂的假阳光里躺了下去。他以为自己会睡不着。他没有做梦，只是陷进了一片很深的、没有尽头的东西里。",
-      "source_chapter": "production/final_chapters/chapter_005.md"
+    "location": "龙渊核心解码室",
+    "pov_pressure": {
+      "agency_capabilities": [
+        {
+          "id": "validate-kardashev-boundary",
+          "serves_functions": [
+            "独立判定卡尔达肖夫指数达到1.0",
+            "解锁并约束第二层技术信息",
+            "把能源胜利转化为新的文明选择"
+          ],
+          "target_state_ref": "共同点火证据从待判定状态转为一级文明确认及第二层受控解锁"
+        }
+      ],
+      "pending_choices": [
+        {
+          "id": "boundary-proof-before-unlock",
+          "value": "是否先公开社会代价与稳定性缺口，再允许第二层解锁"
+        }
+      ],
+      "unfinished_goals": [
+        {
+          "id": "independent-level-one-ruling",
+          "value": "独立核验全球能源曲线是否足以构成一级文明事实"
+        }
+      ],
+      "unpaid_costs": [
+        {
+          "id": "deny-victory-celebration",
+          "value": "必须在全球庆祝时公开点火仍不等于永久能源稳定"
+        }
+      ]
     }
-  ]
+  },
+  "kind": "character",
+  "latest_change": "state-chapter-029-character-陈景行-pov-pressure",
+  "schema_version": 2,
+  "subject": "陈景行"
 }

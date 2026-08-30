@@ -20,6 +20,14 @@ def test_planner_prefers_function_capability_not_history_rotation():
     assert result.recommended.primary_owner == "engineer"
 
 
+def test_candidate_id_is_bound_to_the_input_fingerprint():
+    value = strategy_input()
+
+    result = POVStrategyPlanner().plan(value, POVStrategyPolicy())
+
+    assert result.id == f"pov-strategy-027-{value.baseline_fingerprint}"
+
+
 def test_planner_outlook_does_not_freeze_future_assignments():
     result = POVStrategyPlanner().plan(strategy_input(), POVStrategyPolicy())
     assert result.rhythm_outlook.horizon_chapters in {3, 4}
