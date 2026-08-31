@@ -51,7 +51,7 @@
 
 - Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
 - 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
-- Live 验收：已完成一次真实调用，脱敏报告为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`。调用成功到达 Reviewer，但 `stage=review_failed`，唯一阻断码为 `essential_information_missing`。根因是 Writer 消息未要求必要信息逐字出现在正文，而 Reviewer 已严格按逐字包含校验；该提示词契约已修复，等待重跑 Live 验收。
+- Live 验收：强化 Prompt 后的第二次真实调用仍被 Reviewer 以 `essential_information_missing` 阻断；诊断确认三项必要信息均被同义改写。已批准最多一次合同修复重试设计，尚未实施。
 - 可视化数据投影层：准入保持关闭，须待 Live 验收达到 `compile_candidate_ready` 且审查通过后才可开始设计。
 
 下一阶段：
