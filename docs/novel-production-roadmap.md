@@ -51,7 +51,7 @@
 
 - Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
 - 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
-- Live 验收：合同修复重试已实施并重新通过。证据为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`：`compile_candidate_ready`、审查通过、Canon 候选 1 条、State 候选 3 条。
+- Live 验收：受控 Live 会话已以真实 `exit_code=0` 结束。证据为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`：`compile_candidate_ready`、审查通过、Canon 候选 1 条、State 候选 3 条。
 - 可视化数据投影层：仅开放“统一只读可视化数据投影层”的设计准入；完整 Web UI 仍不得直接开发。
 
 下一阶段：

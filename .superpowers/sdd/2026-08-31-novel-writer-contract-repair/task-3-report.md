@@ -12,9 +12,10 @@
 ## Live
 
 - 修复轮 1 的静态追踪确认：CLI 仅在 `run_independent_writer_validation()` 正常返回后才原子写入报告；模型运行异常会由 Writer 映射为 `novel_writer_model_failed`，CLI 再以 `writer_validation_failed` 和退出码 1 结束。因此上轮“进程结束、报告不变”是异常路径与未捕获 stderr/退出码共同造成的不可复核状态，不是原子写入故障。
-- 本轮只追加一次真实 Live CLI。控制器在 30 秒观察窗内确认进程仍在运行、无可分类 stderr；随后确认进程结束，报告于 `2026-08-31T09:40:58Z` 刷新。该工具会话在分离时未回传终态退出码，不能伪造为外部捕获值；但根据 CLI 成功写入后的唯一控制流，退出状态为 0。未保存 stderr 原文、正文、Prompt、密钥或 Header。
-- 新报告元数据：模型 `deepseek-v4-pro`；阶段 `compile_candidate_ready`；审查通过；阻断码为空；Canon/State 候选数为 1/3。
-- Token 统计为 prompt 533、completion 2094、total 2627；报告只含允许的标量审计字段。
+- 修复轮 1 的 Live 报告已通过，但工具会话分离、未取得终态退出码，不能作为最终准入证据。
+- 修复轮 2 使用同一终端会话执行：`python scripts/validate_novel_real_writer.py --fixture projects/novel_domain_validation/validation/independent_short_story.json --mode live --report projects/novel_domain_validation/production/reports/real_writer_validation.json --env-file "D:/田雨/Creative OS/.env"`。会话 `92022` 经两次轮询后明确返回 `exit_code=0`；终态无输出，脱敏错误标识为 `none`。
+- 新报告时间戳为 `2026-08-31T09:52:17Z`；模型 `deepseek-v4-pro`；阶段 `compile_candidate_ready`；审查通过；阻断码为空；Canon/State 候选数为 1/3。
+- Token 统计为 prompt 3094、completion 6064、total 9158；报告只含允许的标量审计字段，未保存 stderr 原文、正文、Prompt、密钥或 Header。
 
 ## 审计与关注点
 
