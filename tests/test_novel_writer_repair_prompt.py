@@ -5,6 +5,7 @@ import pytest
 from creative_os.domains.novel_writer import NovelWritingRequest
 from creative_os.domains.novel_writer_prompt import (
     DEFAULT_NOVEL_WRITER_SYSTEM_INSTRUCTION,
+    build_novel_writer_messages,
 )
 from creative_os.domains.novel_writer_repair_prompt import (
     build_novel_writer_repair_messages,
@@ -35,8 +36,10 @@ def test_repair_messages_request_complete_rewrite_without_story_hardcoding(writi
     assert "完整重写" in messages[1].content
     assert "逐字" in messages[1].content
     assert "只输出可发布正文" in messages[0].content
-    assert "戏剧问题" in messages[1].content
-    assert "保持克制的现实语气" in messages[1].content
+    original_user_content = build_novel_writer_messages(
+        writing_request, DEFAULT_NOVEL_WRITER_SYSTEM_INSTRUCTION
+    )[1].content
+    assert original_user_content in messages[1].content
     assert "文明升阶" not in messages[1].content
 
 
