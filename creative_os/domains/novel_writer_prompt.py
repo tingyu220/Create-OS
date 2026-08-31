@@ -24,7 +24,6 @@ def _contract_sections(request: NovelWritingRequest) -> list[str]:
     contract = request.chapter_contract
     choice = contract.protagonist_choice
     reader = contract.reader_change
-    info = contract.information
     return [
         f"章节身份：{request.chapter_id}（合同章节：{contract.chapter_id}）",
         f"章节功能：{'；'.join(contract.functions)}",
