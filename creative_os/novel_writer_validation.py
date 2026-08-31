@@ -16,6 +16,7 @@ from creative_os.domains.novel_lesson import NovelLessonBuilder
 from creative_os.domains.novel_reviewer import NovelReviewer
 from creative_os.domains.novel_run import NovelChapterRunRequest
 from creative_os.domains.novel_validation_fixture import IndependentNovelValidationCase
+from creative_os.llm_writer import OpenAICompatibleClient
 
 
 _VALIDATION_MODES = frozenset({"fake", "live"})
@@ -49,6 +50,7 @@ class _ValidationAdmissionToken:
 
     chapter_id: str
     contract_id: str
+    contract_content_hash: str
     context_fingerprint: str
 
 
@@ -61,7 +63,8 @@ class _ValidationAdmission:
             raise ValueError("validation_admission_request_mismatch")
         return _ValidationAdmissionToken(
             chapter_id=self._case.writing.chapter_id,
-            contract_id=self._case.admission.contract_id,
+            contract_id=self._case.writing.contract_id,
+            contract_content_hash=self._case.writing.contract_content_hash,
             context_fingerprint=self._case.writing.context_fingerprint,
         )
 
@@ -83,6 +86,7 @@ def run_independent_writer_validation(
     """执行独立夹具的规划、写作、审查与候选编译闭环。"""
     if mode not in _VALIDATION_MODES:
         raise ValueError("novel_writer_validation_mode_invalid")
+    provider_kind = _validation_provider_kind(mode, client)
 
     telemetry = _TelemetryCollector()
     service = NovelDomainService(
@@ -105,7 +109,7 @@ def run_independent_writer_validation(
     compile_result = result.compile_result
     return NovelWriterValidationReport(
         mode=mode,
-        provider_kind="fake" if mode == "fake" else "openai_compatible",
+        provider_kind=provider_kind,
         model=str(getattr(client, "model", "unknown")),
         chapter_id=case.writing.chapter_id,
         stage=result.stage,
@@ -123,3 +127,15 @@ def run_independent_writer_validation(
         canon_patch_count=0 if compile_result is None else len(compile_result.canon_patches),
         state_candidate_count=0 if compile_result is None else len(compile_result.state_changes),
     )
+
+
+def _validation_provider_kind(mode: str, client: object) -> str:
+    """以客户端真实类型与可调用能力校验验收模式，禁止模式字符串冒充提供方。"""
+    is_live_client = (
+        type(client) is OpenAICompatibleClient
+        and callable(getattr(client, "complete", None))
+    )
+    provider_kind = "openai_compatible" if is_live_client else "fake"
+    if (mode == "live") != is_live_client:
+        raise ValueError("novel_writer_validation_provider_mode_mismatch")
+    return provider_kind

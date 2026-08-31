@@ -1,7 +1,10 @@
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
+
 from creative_os.llm_metrics import LLMUsage, TimedCompletion
+from creative_os.llm_writer import OpenAICompatibleClient
 from creative_os.domains.novel_validation_fixture import load_independent_validation_case
 
 
@@ -58,6 +61,29 @@ def test_validation_rejects_unsupported_mode_before_model_execution():
         assert str(error) == "novel_writer_validation_mode_invalid"
     else:
         raise AssertionError("unsupported mode must be rejected")
+
+
+def test_validation_rejects_fake_client_claiming_live_mode():
+    from creative_os.novel_writer_validation import run_independent_writer_validation
+
+    case = load_independent_validation_case(FIXTURE)
+
+    with pytest.raises(ValueError, match="novel_writer_validation_provider_mode_mismatch"):
+        run_independent_writer_validation(case, FakeClient(case.fake_draft.content), mode="live")
+
+
+def test_validation_rejects_live_client_claiming_fake_mode():
+    from creative_os.novel_writer_validation import run_independent_writer_validation
+
+    case = load_independent_validation_case(FIXTURE)
+    client = OpenAICompatibleClient(
+        base_url="https://example.invalid",
+        api_key="test-only",
+        model="test-model",
+    )
+
+    with pytest.raises(ValueError, match="novel_writer_validation_provider_mode_mismatch"):
+        run_independent_writer_validation(case, client, mode="fake")
 
 
 def test_validation_reports_planning_or_review_blocking_codes_without_draft_content():

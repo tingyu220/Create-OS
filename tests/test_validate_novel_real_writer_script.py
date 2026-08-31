@@ -4,6 +4,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import scripts.validate_novel_real_writer as writer_script
+
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "projects" / "novel_domain_validation" / "validation" / "independent_short_story.json"
@@ -52,3 +54,26 @@ def test_live_cli_returns_configuration_exit_code_without_credentials(tmp_path):
     assert completed.returncode == 2
     assert "live_writer_configuration_missing" in completed.stderr
     assert not report.exists()
+
+
+def test_fake_cli_returns_failure_when_reviewer_blocks_draft(tmp_path, monkeypatch):
+    report = tmp_path / "blocked-report.json"
+
+    class _BlockedFixtureClient:
+        model = "blocked-fixture"
+
+        def __init__(self, content):
+            pass
+
+        def complete(self, messages, *, temperature, max_tokens):
+            return "无关正文" * 300
+
+    monkeypatch.setattr(writer_script, "_FixtureClient", _BlockedFixtureClient)
+
+    exit_code = writer_script.main([
+        "--fixture", str(FIXTURE), "--mode", "fake", "--report", str(report),
+        "--env-file", str(tmp_path / "missing.env"),
+    ])
+
+    assert exit_code == 1
+    assert json.loads(report.read_text(encoding="utf-8"))["stage"] == "review_failed"

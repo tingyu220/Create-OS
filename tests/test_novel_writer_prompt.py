@@ -10,14 +10,25 @@ from tests.test_novel_scene_contract import _complete_scene
 
 
 @pytest.fixture
-def chapter_contract():
+def approved_decision():
     decision = _v2_decision()
     scene_plan = replace(decision.chapter_contract.scene_plan, scenes=(_complete_scene(),))
-    return replace(decision.chapter_contract, scene_plan=scene_plan)
+    return replace(
+        decision,
+        chapter_contract=replace(decision.chapter_contract, scene_plan=scene_plan),
+    )
 
 
-def test_prompt_projects_approved_contract_without_work_specific_terms(chapter_contract):
-    request = NovelWritingRequest("chapter_001", chapter_contract, "a" * 64, "保持克制的现实语气")
+def _writing_request(decision, instruction: str) -> NovelWritingRequest:
+    return NovelWritingRequest.from_narrative_decision(
+        decision,
+        context_fingerprint="a" * 64,
+        instruction=instruction,
+    )
+
+
+def test_prompt_projects_approved_contract_without_work_specific_terms(approved_decision):
+    request = _writing_request(approved_decision, "保持克制的现实语气")
     messages = build_novel_writer_messages(request, "只输出小说正文")
     rendered = "\n".join(item.content for item in messages)
     assert [item.role for item in messages] == ["system", "user"]
@@ -28,17 +39,17 @@ def test_prompt_projects_approved_contract_without_work_specific_terms(chapter_c
     assert "文明升阶" not in rendered
 
 
-def test_prompt_strips_empty_system_and_supplemental_instructions(chapter_contract):
-    request = NovelWritingRequest("chapter_001", chapter_contract, "a" * 64, "   ")
+def test_prompt_strips_empty_system_and_supplemental_instructions(approved_decision):
+    request = _writing_request(approved_decision, "   ")
     messages = build_novel_writer_messages(request, "  ")
     assert messages[0].content == ""
     assert "补充指令：无" in messages[1].content
 
 
-def test_prompt_projects_enhanced_scene_semantics_and_closure(chapter_contract):
-    scene = chapter_contract.scene_plan.scenes[0]
+def test_prompt_projects_enhanced_scene_semantics_and_closure(approved_decision):
+    scene = approved_decision.chapter_contract.scene_plan.scenes[0]
     messages = build_novel_writer_messages(
-        NovelWritingRequest("chapter_001", chapter_contract, "a" * 64, "补充语气"),
+        _writing_request(approved_decision, "补充语气"),
         "系统要求",
     )
     rendered = messages[1].content
@@ -51,9 +62,9 @@ def test_prompt_projects_enhanced_scene_semantics_and_closure(chapter_contract):
     assert "闭合要求：目标=True；冲突=True；选择=True；结果=True" in rendered
 
 
-def test_prompt_requires_each_essential_information_verbatim_in_draft(chapter_contract):
+def test_prompt_requires_each_essential_information_verbatim_in_draft(approved_decision):
     messages = build_novel_writer_messages(
-        NovelWritingRequest("chapter_001", chapter_contract, "a" * 64, "补充语气"),
+        _writing_request(approved_decision, "补充语气"),
         "系统要求",
     )
     rendered = messages[1].content
@@ -62,11 +73,13 @@ def test_prompt_requires_each_essential_information_verbatim_in_draft(chapter_co
     assert "不得同义改写" in rendered
 
 
-def test_prompt_requires_complete_novel_scene_contract(chapter_contract):
+def test_prompt_requires_complete_novel_scene_contract(approved_decision):
+    chapter_contract = approved_decision.chapter_contract
     scene = chapter_contract.scene_plan.scenes[0]
     incomplete = replace(scene, closure=SceneClosure(True, True, True, False))
     scene_plan = replace(chapter_contract.scene_plan, scenes=(incomplete,))
     contract = replace(chapter_contract, scene_plan=scene_plan)
+    decision = replace(approved_decision, chapter_contract=contract)
 
     with pytest.raises(ValueError, match="closure"):
-        build_novel_writer_messages(NovelWritingRequest("chapter_001", contract, "a" * 64, ""), "系统")
+        build_novel_writer_messages(_writing_request(decision, ""), "系统")

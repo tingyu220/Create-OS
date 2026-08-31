@@ -13,15 +13,15 @@
 
 - 修复轮 1 的静态追踪确认：CLI 仅在 `run_independent_writer_validation()` 正常返回后才原子写入报告；模型运行异常会由 Writer 映射为 `novel_writer_model_failed`，CLI 再以 `writer_validation_failed` 和退出码 1 结束。因此上轮“进程结束、报告不变”是异常路径与未捕获 stderr/退出码共同造成的不可复核状态，不是原子写入故障。
 - 修复轮 1 的 Live 报告已通过，但工具会话分离、未取得终态退出码，不能作为最终准入证据。
-- 修复轮 2 使用同一终端会话执行：`python scripts/validate_novel_real_writer.py --fixture projects/novel_domain_validation/validation/independent_short_story.json --mode live --report projects/novel_domain_validation/production/reports/real_writer_validation.json --env-file "D:/田雨/Creative OS/.env"`。会话 `92022` 经两次轮询后明确返回 `exit_code=0`；终态无输出，脱敏错误标识为 `none`。
-- 新报告时间戳为 `2026-08-31T09:52:17Z`；模型 `deepseek-v4-pro`；阶段 `compile_candidate_ready`；审查通过；阻断码为空；Canon/State 候选数为 1/3。
-- Token 统计为 prompt 3094、completion 6064、total 9158；报告只含允许的标量审计字段，未保存 stderr 原文、正文、Prompt、密钥或 Header。
+- 最终修复波使用同一终端会话执行并持续轮询。会话 `57892` 明确返回 `exit_code=0`；终态无输出。
+- 最新报告时间戳为 `2026-08-31T14:22:51Z`；模型 `deepseek-v4-pro`；阶段 `compile_candidate_ready`；审查通过；阻断码为空；Canon/State 候选数为 1/3。
+- Token 统计为 prompt 1812、completion 9149、total 10961；报告只含允许的标量审计字段，未保存 stderr 原文、正文、Prompt、密钥或 Header。
 
 ## 审计与关注点
 
 - 通用源码专名审计通过。
 - 脱敏关键字扫描唯一命中 `prompt_tokens` 指标名；其为固定 Token 统计字段，不是原始 Prompt 或秘密，报告没有 `api_key`、`authorization`、`bearer`、`raw_response` 或 `messages` 字段。
-- 已取得可落盘的 `compile_candidate_ready` 且审查通过的 Live 证据，下一阶段仅可设计统一只读投影层；完整 Web UI 继续关闭。
+- CLI 现在会在审查或编译门禁失败时返回非零退出；最新 Live 证据满足 `compile_candidate_ready` 且审查通过，下一阶段仅可设计统一只读投影层；完整 Web UI 继续关闭。
 
 ## 修复轮验证
 

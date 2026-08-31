@@ -17,6 +17,7 @@ class Admission:
     chapter_id: str
     context_fingerprint: str
     contract_id: str
+    contract_content_hash: str
 
 
 class FakeClient:
@@ -57,12 +58,22 @@ def writing_request() -> NovelWritingRequest:
     decision = _v2_decision()
     scene_plan = replace(decision.chapter_contract.scene_plan, scenes=(_complete_scene(),))
     contract: ChapterContract = replace(decision.chapter_contract, scene_plan=scene_plan)
-    return NovelWritingRequest("chapter_001", contract, "a" * 64, "保持克制的现实语气")
+    decision = replace(decision, chapter_contract=contract)
+    return NovelWritingRequest.from_narrative_decision(
+        decision,
+        context_fingerprint="a" * 64,
+        instruction="保持克制的现实语气",
+    )
 
 
 @pytest.fixture
 def admission(writing_request) -> Admission:
-    return Admission(writing_request.chapter_id, writing_request.context_fingerprint, "contract-001")
+    return Admission(
+        writing_request.chapter_id,
+        writing_request.context_fingerprint,
+        writing_request.contract_id,
+        writing_request.contract_content_hash,
+    )
 
 
 def _complete_draft() -> str:
@@ -171,6 +182,24 @@ def test_adapter_requires_admission_contract_id(writing_request, admission):
         )
 
 
+@pytest.mark.parametrize(
+    ("changes", "code"),
+    [
+        ({"contract_id": "unrelated-contract"}, "novel_writer_contract_id_binding_mismatch"),
+        ({"contract_content_hash": "0" * 64}, "novel_writer_contract_hash_binding_mismatch"),
+    ],
+)
+def test_adapter_rejects_admission_for_unrelated_contract(changes, code, writing_request, admission):
+    from creative_os.domains.llm_novel_writer import LLMNovelWriterAdapter
+    from creative_os.domains.novel_writer import NovelWritingError
+
+    with pytest.raises(NovelWritingError, match=code):
+        LLMNovelWriterAdapter(FakeClient(_complete_draft())).write(
+            writing_request,
+            replace(admission, **changes),
+        )
+
+
 def test_adapter_does_not_retry_when_first_draft_contains_required_information(writing_request, admission):
     from creative_os.domains.llm_novel_writer import LLMNovelWriterAdapter
 
@@ -209,6 +238,36 @@ def test_adapter_never_calls_model_three_times_when_repair_still_misses(writing_
     assert client.calls == 2
     result = NovelReviewer().review(_review_request(draft, writing_request))
     assert result.blocking_codes == ("essential_information_missing",)
+
+
+def test_adapter_does_not_repair_when_contract_repairs_are_disabled(writing_request, admission):
+    from creative_os.domains.llm_novel_writer import LLMNovelWriterAdapter, NovelWriterConfig
+
+    client = SequenceClient([_missing_draft()])
+
+    draft = LLMNovelWriterAdapter(
+        client,
+        config=NovelWriterConfig(max_contract_repairs=0),
+    ).write(writing_request, admission)
+
+    assert client.calls == 1
+    assert draft.content == _missing_draft()
+
+
+def test_adapter_marks_repair_runtime_record_with_essential_information_ref(writing_request, admission):
+    from creative_os.domains.llm_novel_writer import LLMNovelWriterAdapter
+    from creative_os.runtime import RuntimeRunner
+
+    records = []
+    writer = LLMNovelWriterAdapter(SequenceClient([_missing_draft(), _complete_draft()]))
+    writer._runtime = RuntimeRunner(record_sink=records.append)
+
+    writer.write(writing_request, admission)
+
+    assert [record.input_refs for record in records] == [
+        (("chapter", "chapter_007"), ("context", "a" * 64)),
+        (("chapter", "chapter_007"), ("context", "a" * 64), ("repair", "essential_information")),
+    ]
 
 
 def test_adapter_aggregates_repair_telemetry_and_propagates_missing_usage(writing_request, admission):

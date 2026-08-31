@@ -3,7 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from creative_os.domains.novel_writer import NovelDraft, NovelWritingError, NovelWritingRequest
+from creative_os.domains.novel_writer import (
+    NovelDraft,
+    NovelWritingError,
+    NovelWritingRequest,
+    validate_novel_writing_admission_binding,
+)
 from creative_os.domains.novel_writer_prompt import (
     DEFAULT_NOVEL_WRITER_SYSTEM_INSTRUCTION,
     build_novel_writer_messages,
@@ -136,13 +141,7 @@ class LLMNovelWriterAdapter:
 
     @staticmethod
     def _require_admission_binding(request: NovelWritingRequest, admission: object) -> None:
-        if getattr(admission, "chapter_id", None) != request.chapter_id:
-            raise NovelWritingError("novel_writer_chapter_binding_mismatch")
-        if getattr(admission, "context_fingerprint", None) != request.context_fingerprint:
-            raise NovelWritingError("novel_writer_context_binding_mismatch")
-        contract_id = getattr(admission, "contract_id", None)
-        if not isinstance(contract_id, str) or not contract_id.strip():
-            raise NovelWritingError("novel_writer_contract_id_missing")
+        validate_novel_writing_admission_binding(request, admission)
 
     def _validate_content(self, content: str) -> None:
         normalized = content.strip()

@@ -19,7 +19,11 @@ def writing_request() -> NovelWritingRequest:
     decision = _v2_decision()
     scene_plan = replace(decision.chapter_contract.scene_plan, scenes=(_complete_scene(),))
     contract = replace(decision.chapter_contract, scene_plan=scene_plan)
-    return NovelWritingRequest("chapter_001", contract, "a" * 64, "保持克制的现实语气")
+    return NovelWritingRequest.from_narrative_decision(
+        replace(decision, chapter_contract=contract),
+        context_fingerprint="a" * 64,
+        instruction="保持克制的现实语气",
+    )
 
 
 def test_repair_messages_request_complete_rewrite_without_story_hardcoding(writing_request):

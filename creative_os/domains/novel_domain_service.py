@@ -4,6 +4,7 @@ from creative_os.domains.novel_capabilities import NovelCapabilityCatalog
 from creative_os.domains.novel_compile_model import NovelCompileRequest
 from creative_os.domains.novel_review_model import NovelReviewRequest
 from creative_os.domains.novel_run import NovelChapterRunRequest, NovelChapterRunResult
+from creative_os.domains.novel_writer import validate_novel_writing_admission_binding
 from creative_os.domains.novel_writer_admission import NovelWriterAdmissionError
 
 
@@ -49,6 +50,7 @@ class NovelDomainService:
         return self._admission.admit(request)
 
     def write_draft(self, request, admission):
+        validate_novel_writing_admission_binding(request, admission)
         return self._writer.write(request, admission)
 
     def review_draft(self, request):
@@ -120,6 +122,10 @@ class NovelDomainService:
             raise TypeError("run_chapter requires NovelChapterRunRequest")
         if request.writing.context_fingerprint != request.admission.context_fingerprint:
             raise ValueError("novel_run_context_binding_mismatch")
+        if request.writing.contract_id != request.admission.contract_id:
+            raise ValueError("novel_run_contract_id_binding_mismatch")
+        if request.writing.chapter_id != request.writing.chapter_contract.chapter_id:
+            raise ValueError("novel_run_chapter_contract_binding_mismatch")
         if request.writing.chapter_contract.scene_plan != request.planning.scene_plan:
             raise ValueError("novel_run_scene_plan_mismatch")
         if request.boundary != request.planning.boundary:

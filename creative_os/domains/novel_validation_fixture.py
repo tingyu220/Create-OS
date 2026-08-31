@@ -280,7 +280,11 @@ def _load_writing(value: object, planning: NarrativeDecision) -> tuple[NovelWrit
     run_id = _text(payload["run_id"], "writing.run_id")
     source_chapter = _text(payload["source_chapter"], "writing.source_chapter")
     return (
-        NovelWritingRequest(chapter_id, planning.chapter_contract, fingerprint, _text(payload["instruction"], "writing.instruction")),
+        NovelWritingRequest.from_narrative_decision(
+            planning,
+            context_fingerprint=fingerprint,
+            instruction=_text(payload["instruction"], "writing.instruction"),
+        ),
         NovelAdmissionRequest(planning.contract_id, fingerprint, run_id),
         source_chapter,
     )

@@ -6,11 +6,11 @@
   "stage": "compile_candidate_ready",
   "review_passed": true,
   "blocking_codes": [],
-  "content_hash": "1fea075a758221387ba745828c68c4cfaf62e21784f29054934020467b1011d0",
-  "elapsed_seconds": 95.32800000000861,
-  "prompt_tokens": 3094,
-  "completion_tokens": 6064,
-  "total_tokens": 9158,
+  "content_hash": "9ca8296a2b2ba2900597b595671e7f28e54856d34768bd86dec96654009c76c2",
+  "elapsed_seconds": 189.53099999998813,
+  "prompt_tokens": 1812,
+  "completion_tokens": 9149,
+  "total_tokens": 10961,
   "canon_patch_count": 1,
   "state_candidate_count": 3
 }

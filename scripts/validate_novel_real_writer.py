@@ -89,6 +89,9 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as error:
         print(f"writer_validation_failed:{error}", file=sys.stderr)
         return 1
+    if report.stage != "compile_candidate_ready" or not report.review_passed:
+        print("writer_validation_gate_failed", file=sys.stderr)
+        return 1
     return 0
 
 
