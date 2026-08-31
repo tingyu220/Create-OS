@@ -56,5 +56,8 @@
 
 下一阶段：
 
-- 开始统一只读可视化数据投影层设计；
-- 保持完整 Web UI 开发关闭，直至单独满足工作台准入条件。
+- 统一只读 Projection Layer Phase 1 已实现：通过项目范围 Source Adapter 和严格一致 Builder，生成带来源引用的 `ProjectSnapshot`；首批覆盖 Overview、Chapter Matrix、Quality、Runtime/Trace。
+- 现有文本控制台已降为 `ProjectSnapshot` 的薄消费者，不再直接读取章节状态或拼接领域业务判断。
+- 真实项目验收已覆盖 `projects/novel_domain_validation` 与《文明升阶》；验证命令为 `pytest tests/projection/test_real_project_projection.py -q`。
+- Phase 2 尚未实现：Characters、Story Threads、Timeline，以及 Event Log 项目身份升级和真正的增量刷新。
+- 完整 Web UI 继续关闭，直至 Phase 2 投影接口稳定并再次确认工作台准入。
