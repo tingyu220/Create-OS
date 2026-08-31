@@ -47,8 +47,14 @@
 - 旧 Narrative Contract 可读取，新 Novel Domain 运行必须满足增强 Scene 语义；
 - 《文明升阶》的碎章、对话截断和戏剧单元未闭合问题已匿名化为回归夹具。
 
+## 真实 Writer 独立验收（Task 6）
+
+- Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
+- 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
+- Live 验收：`live_validation=blocked_missing_configuration`。当前未检测到 `CREATIVE_OS_LLM_API_KEY`、`CREATIVE_OS_LLM_MODEL`，且项目根不存在 `.env`；未执行真实模型调用，也未生成真实验收报告。
+- 可视化数据投影层：准入保持关闭，须待 Live 验收达到 `compile_candidate_ready` 且审查通过后才可开始设计。
+
 下一阶段：
 
-- 完成 Novel Domain 新增测试与 Narrative/State/Publication 相关回归；
-- 检查通用代码不存在作品专名硬编码；
-- 对照设计规格执行逐项完成审计。
+- 配置真实模型所需环境后，运行 Live 独立验收并核验脱敏报告；
+- 仅在 Live 验收通过后，开始可视化数据投影层设计。

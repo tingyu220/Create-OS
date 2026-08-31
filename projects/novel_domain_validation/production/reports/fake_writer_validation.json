@@ -1,0 +1,16 @@
+{
+  "mode": "fake",
+  "provider_kind": "fake",
+  "model": "fixture-writer",
+  "chapter_id": "chapter_001",
+  "stage": "compile_candidate_ready",
+  "review_passed": true,
+  "blocking_codes": [],
+  "content_hash": "2939f9c76ac48d616eed49e94ae58c7da047e9049226f74476ebefb64256bc06",
+  "elapsed_seconds": 0.0,
+  "prompt_tokens": null,
+  "completion_tokens": null,
+  "total_tokens": null,
+  "canon_patch_count": 1,
+  "state_candidate_count": 3
+}
