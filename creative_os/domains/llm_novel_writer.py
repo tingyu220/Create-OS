@@ -22,7 +22,7 @@ class NovelWriterConfig:
     max_contract_repairs: int = 1
 
     def __post_init__(self) -> None:
-        if self.max_contract_repairs not in (0, 1):
+        if type(self.max_contract_repairs) is not int or self.max_contract_repairs not in (0, 1):
             raise ValueError("novel_writer_max_contract_repairs_invalid")
 
 

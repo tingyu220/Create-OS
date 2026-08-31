@@ -22,3 +22,10 @@
 ## 关注点
 
 - 修复仅针对 Writer 可机械判定的必要信息缺失，不复制或放松 Reviewer 的其他规则。
+
+## 修复轮 1：配置类型收紧
+
+- 根因：`max_contract_repairs in (0, 1)` 使用 Python 相等性，接受 `True`、`False`、`0.0` 与 `1.0`。
+- 测试：先将以上四个值加入非法配置参数化测试；红测为 4 failed、2 passed。
+- 修复：仅增加 `type(max_contract_repairs) is int` 类型门槛，并保留原有 0/1 值限制。
+- 验证：`pytest -q tests/test_llm_novel_writer.py tests/test_novel_writer_validation.py tests/test_novel_domain_end_to_end.py`，28 passed；`git diff --check` 通过。

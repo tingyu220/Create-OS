@@ -230,7 +230,7 @@ def test_adapter_aggregates_repair_telemetry_and_propagates_missing_usage(writin
     assert observer.items[0].total_tokens is None
 
 
-@pytest.mark.parametrize("repairs", [-1, 2])
+@pytest.mark.parametrize("repairs", [-1, 2, False, True, 0.0, 1.0])
 def test_writer_config_rejects_repair_limits_outside_single_retry(repairs):
     from creative_os.domains.llm_novel_writer import NovelWriterConfig
 
