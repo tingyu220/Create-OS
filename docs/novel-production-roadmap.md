@@ -51,10 +51,10 @@
 
 - Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
 - 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
-- Live 验收：强化 Prompt 后的第二次真实调用仍被 Reviewer 以 `essential_information_missing` 阻断；诊断确认三项必要信息均被同义改写。合同修复重试已实施。本轮在修正官方 Base URL 后执行 Live CLI，进程结束但未落盘新的验收报告；现有可审计报告仍为 `review_failed` / `essential_information_missing`，因此没有通过证据，准入继续关闭。
-- 可视化数据投影层：准入保持关闭，须待 Live 验收达到 `compile_candidate_ready` 且审查通过后才可开始设计。
+- Live 验收：合同修复重试已实施并重新通过。证据为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`：`compile_candidate_ready`、审查通过、Canon 候选 1 条、State 候选 3 条。
+- 可视化数据投影层：仅开放“统一只读可视化数据投影层”的设计准入；完整 Web UI 仍不得直接开发。
 
 下一阶段：
 
-- 配置真实模型所需环境后，运行 Live 独立验收并核验脱敏报告；
-- 仅在 Live 验收通过后，开始可视化数据投影层设计。
+- 开始统一只读可视化数据投影层设计；
+- 保持完整 Web UI 开发关闭，直至单独满足工作台准入条件。

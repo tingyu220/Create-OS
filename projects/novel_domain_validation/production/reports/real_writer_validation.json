@@ -3,16 +3,14 @@
   "provider_kind": "openai_compatible",
   "model": "deepseek-v4-pro",
   "chapter_id": "chapter_001",
-  "stage": "review_failed",
-  "review_passed": false,
-  "blocking_codes": [
-    "essential_information_missing"
-  ],
-  "content_hash": "e2f99fff603739f4b1bdcde911fa85d82f7e577a37ef30ddcb97101ebb82ef1b",
-  "elapsed_seconds": 61.25,
+  "stage": "compile_candidate_ready",
+  "review_passed": true,
+  "blocking_codes": [],
+  "content_hash": "a0291e03518e4050a400618eaa41eabc3ad3768a0e6ed75a6b3b2c026b4c917c",
+  "elapsed_seconds": 40.828000000008615,
   "prompt_tokens": 533,
-  "completion_tokens": 2562,
-  "total_tokens": 3095,
-  "canon_patch_count": 0,
-  "state_candidate_count": 0
+  "completion_tokens": 2094,
+  "total_tokens": 2627,
+  "canon_patch_count": 1,
+  "state_candidate_count": 3
 }
