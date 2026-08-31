@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 import pytest
 
 from creative_os.projection.filesystem_source import FilesystemProjectSource, ProjectionSourceError
+from creative_os.domains.reader_engagement_store import ReaderEngagementStore
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -16,6 +18,48 @@ def _write_json(path: Path, value: object) -> None:
 def _make_project(root: Path, project_id: str = "book-a") -> Path:
     _write_json(root / "project.json", {"id": project_id, "name": "测试小说", "domain": "novel"})
     return root
+
+
+def _rewrite_engagement_record(project: Path, record_type: str, mutate) -> None:
+    records_path = project / ".creative_os/engagement/records.jsonl"
+    envelopes = [json.loads(line) for line in records_path.read_text(encoding="utf-8").splitlines()]
+    for envelope in envelopes:
+        if envelope["record"]["record_type"] == record_type:
+            mutate(envelope["record"])
+    previous_hash = "0" * 64
+    for sequence, envelope in enumerate(envelopes, start=1):
+        envelope["sequence"] = sequence
+        envelope["previous_hash"] = previous_hash
+        base = {key: value for key, value in envelope.items() if key != "entry_hash"}
+        envelope["entry_hash"] = hashlib.sha256(
+            json.dumps(base, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        previous_hash = envelope["entry_hash"]
+    records_path.write_text(
+        "".join(json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n" for item in envelopes),
+        encoding="utf-8",
+    )
+    (project / ".creative_os/engagement/head.json").write_text(
+        json.dumps({"count": len(envelopes), "head_hash": previous_hash}, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _materialized_expectation(project: Path):
+    store = ReaderEngagementStore(project)
+    candidate = store.append_expectation_candidate({
+        "expectation_id": "expectation-1",
+        "from_state": "absent",
+        "to_state": "open",
+        "content_hash": "a" * 64,
+        "evidence": [{"kind": "intent", "value": "promise"}],
+    })
+    transition = store.materialize_transition(
+        candidate.record_id,
+        {"actor": "editor", "reason": "reviewed", "disposition": "approved"},
+        json.loads(store.head_path.read_text(encoding="utf-8"))["head_hash"],
+    )
+    return candidate, transition
 
 
 def test_source_uses_project_metadata_identity_instead_of_global_state(tmp_path: Path) -> None:
@@ -123,3 +167,162 @@ def test_invalid_project_metadata_fails_closed(tmp_path: Path) -> None:
 
     with pytest.raises(ProjectionSourceError, match="project_id_missing"):
         FilesystemProjectSource(project).read_facts()
+
+
+def test_source_excludes_state_snapshot_whose_memory_is_still_candidate(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    _write_json(
+        project / ".creative_os/memory/items/state-chapter-001-character.json",
+        {"id": "state-chapter-001-character", "status": "candidate"},
+    )
+    _write_json(
+        project / ".creative_os/state/snapshots/character/林子轩.json",
+        {
+            "schema_version": 2,
+            "kind": "character",
+            "subject": "林子轩",
+            "fields": {"current_goal": "候选内容"},
+            "latest_change": "state-chapter-001-character",
+        },
+    )
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert facts.active_states == ()
+
+
+def test_read_facts_validates_engagement_without_creating_authority_lock(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    records_path = project / ".creative_os/engagement/records.jsonl"
+    records_path.parent.mkdir(parents=True)
+    records_path.write_text("not-json\n", encoding="utf-8")
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert any(item.code == "engagement_authority_chain_invalid" for item in facts.diagnostics)
+    assert not (project / ".creative_os/memory").exists()
+
+
+def test_read_head_tracks_memory_item_status_changes(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    memory_path = project / ".creative_os/memory/items/state-hook-001.json"
+    _write_json(memory_path, {"id": "state-hook-001", "status": "active"})
+
+    source = FilesystemProjectSource(project)
+    before = source.read_head()
+    _write_json(memory_path, {"id": "state-hook-001", "status": "archived"})
+
+    after = source.read_head()
+
+    assert before != after
+
+
+def test_source_diagnoses_unproven_open_loop_without_inventing_one(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    _write_json(
+        project / ".creative_os/memory/items/state-hook-001.json",
+        {"id": "state-hook-001", "status": "active"},
+    )
+    _write_json(
+        project / ".creative_os/state/snapshots/hook/钥匙线.json",
+        {
+            "schema_version": 2,
+            "kind": "hook",
+            "subject": "钥匙线",
+            "fields": {"status": "open"},
+            "latest_change": "state-hook-001",
+        },
+    )
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert json.loads(facts.active_states[0].fields_json) == {"status": "open"}
+    assert any(item.code == "story_thread_open_loop_unproven" for item in facts.diagnostics)
+
+
+def test_source_projects_only_approved_expectation_transition(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    store = ReaderEngagementStore(project)
+    candidate = store.append_expectation_candidate({
+        "expectation_id": "expectation-1",
+        "from_state": "absent",
+        "to_state": "open",
+        "content_hash": "a" * 64,
+        "evidence": [{"kind": "intent", "value": "promise"}],
+    })
+    transition = store.materialize_transition(
+        candidate.record_id,
+        {"actor": "editor", "reason": "reviewed", "disposition": "approved"},
+        json.loads(store.head_path.read_text(encoding="utf-8"))["head_hash"],
+    )
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert len(facts.engagement_expectations) == 1
+    fact = facts.engagement_expectations[0]
+    assert fact.expectation_id == "expectation-1"
+    assert fact.source_ref.source_id == transition.record_id
+    assert fact.decision_source_ref.source_id == candidate.record_id
+    assert not any(item.code == "engagement_authority_incomplete" for item in facts.diagnostics)
+
+
+@pytest.mark.parametrize(
+    ("record_type", "mutation"),
+    [
+        ("expectation_decision", lambda record: record["payload"].update({"candidate_id": "other-candidate"})),
+        ("expectation_decision", lambda record: record["payload"].update({"decision_hash": "f" * 64})),
+        ("expectation_decision", lambda record: record["payload"].update({"actor": ""})),
+        ("expectation_decision", lambda record: record["payload"].update({"reason": ""})),
+        ("expectation_decision", lambda record: record["payload"].update({"disposition": "rejected"})),
+        ("expectation_decision", lambda record: record.update({"record_id": "other-decision"})),
+        ("expectation_transition", lambda record: record.update({"record_id": "other-transition"})),
+        ("expectation_transition", lambda record: record["payload"].update({"candidate": {"expectation_id": "other"}})),
+        ("expectation_transition", lambda record: record["payload"].update({"decision_hash": "f" * 64})),
+        ("expectation_transition", lambda record: record.update({"content_hash": "b" * 64})),
+    ],
+)
+def test_source_rejects_cryptographically_valid_but_semantically_unbound_expectation_chain(
+    tmp_path: Path, record_type: str, mutation,
+) -> None:
+    project = _make_project(tmp_path / "book")
+    _materialized_expectation(project)
+    _rewrite_engagement_record(project, record_type, mutation)
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert facts.engagement_expectations == ()
+    assert any(item.code == "engagement_authority_incomplete" for item in facts.diagnostics)
+
+
+def test_engagement_authority_head_tracks_records_file(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    store = ReaderEngagementStore(project)
+    store.append_expectation_candidate({
+        "expectation_id": "expectation-1",
+        "from_state": "absent",
+        "to_state": "open",
+        "content_hash": "a" * 64,
+        "evidence": [{"kind": "intent", "value": "promise"}],
+    })
+
+    head = next(item for item in FilesystemProjectSource(project).read_head() if item.source_kind == "engagement_authority")
+
+    assert head.source_id == "records"
+    assert head.content_hash
+    assert head.cursor is None
+
+
+def test_source_keeps_candidate_or_incomplete_engagement_chain_empty(tmp_path: Path) -> None:
+    project = _make_project(tmp_path / "book")
+    ReaderEngagementStore(project).append_expectation_candidate({
+        "expectation_id": "expectation-1",
+        "from_state": "absent",
+        "to_state": "open",
+        "content_hash": "a" * 64,
+        "evidence": [{"kind": "intent", "value": "promise"}],
+    })
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert facts.engagement_expectations == ()
+    assert any(item.code == "engagement_authority_incomplete" for item in facts.diagnostics)

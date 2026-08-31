@@ -208,6 +208,10 @@ class ReaderEngagementStore:
         with project_authority_lock(self.project_root):
             return self._recover_locked()
 
+    def recover_read_only(self) -> tuple[EngagementAuthorityRecord, ...]:
+        """只读校验 authority 链，不创建锁文件、目录或其他状态。"""
+        return self._recover_locked()
+
     def _recover_locked(self) -> tuple[EngagementAuthorityRecord, ...]:
         if self.journal_path.exists():
             raise ValueError("tampered_journal")

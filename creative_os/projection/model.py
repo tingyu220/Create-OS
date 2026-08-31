@@ -11,9 +11,10 @@ from creative_os.projection.overview import OverviewSnapshot
 from creative_os.projection.provenance import SourceHead, SourceRef
 from creative_os.projection.quality import QualitySnapshot
 from creative_os.projection.trace import TraceSnapshot
+from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
 
 
-PROJECT_SNAPSHOT_SCHEMA_VERSION = 1
+PROJECT_SNAPSHOT_SCHEMA_VERSION = 2
 
 
 class DiagnosticSeverity(StrEnum):
@@ -41,6 +42,9 @@ class ProjectSnapshot:
     chapters: tuple[ChapterSnapshot, ...]
     quality: QualitySnapshot
     trace: TraceSnapshot
+    characters: tuple[CharacterSnapshot, ...] = ()
+    story_threads: tuple[StoryThreadSnapshot, ...] = ()
+    timeline: tuple[TimelineEntrySnapshot, ...] = ()
     diagnostics: tuple[ProjectionDiagnostic, ...] = ()
 
     @classmethod
@@ -54,6 +58,9 @@ class ProjectSnapshot:
         chapters: tuple[ChapterSnapshot, ...],
         quality: QualitySnapshot,
         trace: TraceSnapshot,
+        characters: tuple[CharacterSnapshot, ...] = (),
+        story_threads: tuple[StoryThreadSnapshot, ...] = (),
+        timeline: tuple[TimelineEntrySnapshot, ...] = (),
         diagnostics: tuple[ProjectionDiagnostic, ...] = (),
     ) -> "ProjectSnapshot":
         normalized_project_id = project_id.strip()
@@ -71,6 +78,9 @@ class ProjectSnapshot:
             "chapters": chapters,
             "quality": quality,
             "trace": trace,
+            "characters": characters,
+            "story_threads": story_threads,
+            "timeline": timeline,
             "diagnostics": diagnostics,
         }
         digest = hashlib.sha256(
@@ -86,6 +96,9 @@ class ProjectSnapshot:
             chapters=chapters,
             quality=quality,
             trace=trace,
+            characters=characters,
+            story_threads=story_threads,
+            timeline=timeline,
             diagnostics=diagnostics,
         )
 

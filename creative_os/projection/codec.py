@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from typing import Any
 
 from creative_os.projection.chapters import (
@@ -15,15 +16,24 @@ from creative_os.projection.model import (
     DiagnosticSeverity,
     ProjectSnapshot,
     ProjectionDiagnostic,
+    _canonical,
 )
 from creative_os.projection.overview import OverviewBlocker, OverviewSnapshot, ProjectRunStatus
 from creative_os.projection.provenance import Derivation, SourceHead, SourceRef
 from creative_os.projection.quality import GateResultSnapshot, QualityIssueSnapshot, QualitySnapshot
 from creative_os.projection.trace import TraceEntrySnapshot, TraceSnapshot
+from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
 
 
 class ProjectionCodecError(ValueError):
     pass
+
+
+_V1_FIELDS = {
+    "schema_version", "snapshot_id", "project_id", "built_at", "source_heads",
+    "overview", "chapters", "quality", "trace", "diagnostics",
+}
+_V2_FIELDS = _V1_FIELDS | {"characters", "story_threads", "timeline"}
 
 
 def encode_project_snapshot(snapshot: ProjectSnapshot) -> str:
@@ -37,6 +47,9 @@ def encode_project_snapshot(snapshot: ProjectSnapshot) -> str:
         "chapters": [_encode_chapter(item) for item in snapshot.chapters],
         "quality": _encode_quality(snapshot.quality),
         "trace": _encode_trace(snapshot.trace),
+        "characters": [_encode_character(item) for item in snapshot.characters],
+        "story_threads": [_encode_story_thread(item) for item in snapshot.story_threads],
+        "timeline": [_encode_timeline(item) for item in snapshot.timeline],
         "diagnostics": [_encode_diagnostic(item) for item in snapshot.diagnostics],
     }
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -45,11 +58,15 @@ def encode_project_snapshot(snapshot: ProjectSnapshot) -> str:
 def decode_project_snapshot(payload: str) -> ProjectSnapshot:
     try:
         raw = json.loads(payload)
-        _keys(raw, {
-            "schema_version", "snapshot_id", "project_id", "built_at", "source_heads",
-            "overview", "chapters", "quality", "trace", "diagnostics",
-        }, "project_snapshot_fields_invalid")
-        if raw["schema_version"] != PROJECT_SNAPSHOT_SCHEMA_VERSION:
+        raw = _object(raw)
+        if type(raw.get("schema_version")) is not int:
+            raise ProjectionCodecError("project_snapshot_schema_unsupported")
+        schema_version = raw["schema_version"]
+        if schema_version == 1:
+            _keys(raw, _V1_FIELDS, "project_snapshot_fields_invalid")
+        elif schema_version == PROJECT_SNAPSHOT_SCHEMA_VERSION:
+            _keys(raw, _V2_FIELDS, "project_snapshot_fields_invalid")
+        else:
             raise ProjectionCodecError("project_snapshot_schema_unsupported")
         snapshot = ProjectSnapshot.create(
             project_id=_text(raw["project_id"]),
@@ -59,15 +76,35 @@ def decode_project_snapshot(payload: str) -> ProjectSnapshot:
             chapters=tuple(_decode_chapter(item) for item in _list(raw["chapters"])),
             quality=_decode_quality(raw["quality"]),
             trace=_decode_trace(raw["trace"]),
+            characters=tuple(_decode_character(item) for item in _list(raw.get("characters", []))),
+            story_threads=tuple(_decode_story_thread(item) for item in _list(raw.get("story_threads", []))),
+            timeline=tuple(_decode_timeline(item) for item in _list(raw.get("timeline", []))),
             diagnostics=tuple(_decode_diagnostic(item) for item in _list(raw["diagnostics"])),
         )
-        if snapshot.snapshot_id != raw["snapshot_id"]:
+        expected_id = snapshot.snapshot_id if schema_version == PROJECT_SNAPSHOT_SCHEMA_VERSION else _legacy_snapshot_id(snapshot)
+        if expected_id != _text(raw["snapshot_id"]):
             raise ProjectionCodecError("project_snapshot_id_mismatch")
         return snapshot
     except ProjectionCodecError:
         raise
     except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
         raise ProjectionCodecError("project_snapshot_invalid") from error
+
+
+def _legacy_snapshot_id(snapshot: ProjectSnapshot) -> str:
+    identity = {
+        "schema_version": 1,
+        "project_id": snapshot.project_id,
+        "source_heads": snapshot.source_heads,
+        "overview": snapshot.overview,
+        "chapters": snapshot.chapters,
+        "quality": snapshot.quality,
+        "trace": snapshot.trace,
+        "diagnostics": snapshot.diagnostics,
+    }
+    return hashlib.sha256(
+        json.dumps(_canonical(identity), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _encode_ref(value: SourceRef) -> dict[str, object]:
@@ -287,6 +324,53 @@ def _decode_trace(value: object) -> TraceSnapshot:
             source_refs=tuple(_decode_ref(ref) for ref in _list(entry["source_refs"])),
         ))
     return TraceSnapshot(tuple(entries), tuple(_decode_ref(item) for item in _list(raw["source_refs"])))
+
+
+def _encode_character(value: CharacterSnapshot) -> dict[str, object]:
+    return {"subject": value.subject, "fields_json": value.fields_json,
+            "source_refs": [_encode_ref(item) for item in value.source_refs],
+            "derivation": _encode_derivation(value.derivation)}
+
+
+def _decode_character(value: object) -> CharacterSnapshot:
+    raw = _object(value)
+    _keys(raw, {"subject", "fields_json", "source_refs", "derivation"}, "character_fields_invalid")
+    return CharacterSnapshot(_text(raw["subject"]), _text(raw["fields_json"], allow_empty=True),
+                             tuple(_decode_ref(item) for item in _list(raw["source_refs"])),
+                             _decode_derivation(raw["derivation"]))
+
+
+def _encode_story_thread(value: StoryThreadSnapshot) -> dict[str, object]:
+    return {"subject": value.subject, "thread_type": value.thread_type, "status": value.status,
+            "fields_json": value.fields_json, "source_refs": [_encode_ref(item) for item in value.source_refs],
+            "derivation": _encode_derivation(value.derivation), "open_loop": value.open_loop}
+
+
+def _decode_story_thread(value: object) -> StoryThreadSnapshot:
+    raw = _object(value)
+    _keys(raw, {"subject", "thread_type", "status", "fields_json", "source_refs", "derivation", "open_loop"}, "story_thread_fields_invalid")
+    return StoryThreadSnapshot(_text(raw["subject"]), _text(raw["thread_type"]), _text(raw["status"]),
+                               _text(raw["fields_json"], allow_empty=True),
+                               tuple(_decode_ref(item) for item in _list(raw["source_refs"])),
+                               _decode_derivation(raw["derivation"]),
+                               _optional_text(raw["open_loop"]))
+
+
+def _encode_timeline(value: TimelineEntrySnapshot) -> dict[str, object]:
+    return {"subject": value.subject, "precision": value.precision, "relative_order": value.relative_order,
+            "conflict_status": value.conflict_status, "fields_json": value.fields_json,
+            "source_refs": [_encode_ref(item) for item in value.source_refs],
+            "derivation": _encode_derivation(value.derivation)}
+
+
+def _decode_timeline(value: object) -> TimelineEntrySnapshot:
+    raw = _object(value)
+    _keys(raw, {"subject", "precision", "relative_order", "conflict_status", "fields_json", "source_refs", "derivation"}, "timeline_fields_invalid")
+    return TimelineEntrySnapshot(_text(raw["subject"]), _text(raw["precision"]), _text(raw["relative_order"]),
+                                 _text(raw["conflict_status"]),
+                                 _text(raw["fields_json"], allow_empty=True),
+                                 tuple(_decode_ref(item) for item in _list(raw["source_refs"])),
+                                 _decode_derivation(raw["derivation"]))
 
 
 def _encode_diagnostic(value: ProjectionDiagnostic) -> dict[str, object]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +16,10 @@ from creative_os.projection.source import (
     ProjectionCursor,
     QualityIssueFact,
     RuntimeReportFact,
+    ActiveStateFact,
+    EngagementExpectationFact,
 )
+from creative_os.domains.reader_engagement_store import ReaderEngagementStore
 from creative_os.runtime.events import AppendOnlyEventLog, EventLogError
 
 
@@ -36,6 +40,10 @@ class FilesystemProjectSource:
         heads = [self._file_head("project_metadata", "project", metadata_path)]
         heads.append(self._collection_head("chapter_statuses", "chapter-statuses", status_paths))
         heads.append(self._collection_head("writer_validation_reports", "writer-validation", self._report_paths()))
+        heads.append(self._collection_head("active_state_snapshots", "state-snapshots", self._state_paths()))
+        heads.append(self._collection_head("memory_items", "memory-items", self._memory_item_paths()))
+        engagement_path = self.project_root / ".creative_os" / "engagement" / "records.jsonl"
+        heads.append(self._file_head("engagement_authority", "records", engagement_path))
         if event_path.is_file():
             try:
                 events = AppendOnlyEventLog(event_path).events()
@@ -79,6 +87,29 @@ class FilesystemProjectSource:
         quality_issues: list[QualityIssueFact] = []
         gate_results: list[GateResultFact] = []
         runtime_reports: list[RuntimeReportFact] = []
+        active_states: list[ActiveStateFact] = []
+        engagement_expectations: list[EngagementExpectationFact] = []
+        active_memory_ids = self._active_memory_ids()
+        for path in self._state_paths():
+            payload = self._read_json_object(path, "state_snapshot_invalid")
+            if payload.get("latest_change") not in active_memory_ids:
+                continue
+            kind = str(payload.get("kind", "")); subject = str(payload.get("subject", ""))
+            if kind not in {"character", "hook", "timeline"} or not subject:
+                continue
+            reference = self._reference("active_state", f"{kind}:{subject}", path)
+            references.append(reference)
+            state_fields = payload.get("fields", {})
+            if not isinstance(state_fields, dict):
+                diagnostics.append(self._diagnostic("active_state_fields_invalid", f"{kind}:{subject} 的 fields 不是结构化对象，相关字段保持缺失。"))
+                state_fields = {}
+            elif kind in {"hook", "foreshadow"} and not (
+                isinstance(state_fields.get("open_loop"), str) and state_fields["open_loop"].strip()
+            ):
+                diagnostics.append(self._diagnostic("story_thread_open_loop_unproven", f"{subject} 没有权威 open_loop 字段，保持缺失。"))
+            active_states.append(ActiveStateFact(kind, subject, json.dumps(state_fields, ensure_ascii=False, sort_keys=True, separators=(",", ":")), reference))
+
+        self._read_engagement_expectations(engagement_expectations, references, diagnostics)
         report_paths = self._report_paths()
         if not report_paths:
             diagnostics.append(self._missing("writer_validation_report_source_missing"))
@@ -162,9 +193,90 @@ class FilesystemProjectSource:
             gate_results=tuple(sorted(gate_results, key=lambda item: (item.gate_id, item.source_ref.source_id))),
             execution_events=tuple(sorted(execution_events, key=lambda item: item.sequence)),
             runtime_reports=tuple(sorted(runtime_reports, key=lambda item: item.report_id)),
+            active_states=tuple(sorted(active_states, key=lambda item: (item.kind, item.subject))),
             diagnostics=tuple(diagnostics),
             source_refs=tuple(dict.fromkeys(references)),
+            engagement_expectations=tuple(sorted(engagement_expectations, key=lambda item: item.expectation_id)),
         )
+
+    def _read_engagement_expectations(
+        self,
+        facts: list[EngagementExpectationFact],
+        references: list[SourceRef],
+        diagnostics: list[ProjectionDiagnostic],
+    ) -> None:
+        path = self.project_root / ".creative_os" / "engagement" / "records.jsonl"
+        if not path.is_file():
+            diagnostics.append(self._missing("engagement_authority_source_missing"))
+            return
+        try:
+            records = ReaderEngagementStore(self.project_root).recover_read_only()
+        except ValueError:
+            diagnostics.append(self._diagnostic("engagement_authority_chain_invalid", "engagement authority 链无法验证，投影保持为空。"))
+            return
+        by_key = {(record.record_type, record.record_id): record for record in records}
+        incomplete = False
+        for transition in records:
+            if transition.record_type != "expectation_transition":
+                continue
+            decision = by_key.get(("expectation_decision", transition.record_id))
+            candidate = by_key.get(("expectation_candidate", transition.record_id))
+            decision_payload = decision.payload if decision is not None else None
+            candidate_payload = candidate.payload if candidate is not None else None
+            transition_payload = transition.payload
+            decision_is_valid = (
+                candidate is not None
+                and decision is not None
+                and isinstance(candidate_payload, dict)
+                and isinstance(decision_payload, dict)
+                and decision.record_id == candidate.record_id
+            )
+            if decision_is_valid:
+                decision_is_valid = (
+                    decision_payload.get("candidate_id") == candidate.record_id
+                    and decision_payload.get("decision_hash") == decision.content_hash
+                    and type(decision_payload.get("actor")) is str
+                    and bool(decision_payload["actor"].strip())
+                    and type(decision_payload.get("reason")) is str
+                    and bool(decision_payload["reason"].strip())
+                    and decision_payload.get("disposition") == "approved"
+                )
+            chain_is_valid = (
+                candidate is not None
+                and decision_is_valid
+                and transition.record_id == candidate.record_id == decision.record_id
+                and isinstance(transition_payload, dict)
+                and transition_payload.get("candidate") == candidate_payload
+                and type(transition.content_hash) is str
+                and type(candidate.content_hash) is str
+                and type(candidate_payload.get("content_hash")) is str
+                and re.fullmatch(r"[0-9a-f]{64}", transition.content_hash) is not None
+                and transition.content_hash == candidate.content_hash == candidate_payload["content_hash"]
+            )
+            if not chain_is_valid:
+                incomplete = True
+                continue
+            if transition_payload.get("decision_hash") != decision.content_hash:
+                incomplete = True
+                continue
+            transition_ref = self._engagement_reference(path, transition.record_id, transition.content_hash)
+            decision_ref = self._engagement_reference(path, decision.record_id, decision.content_hash)
+            references.extend((transition_ref, decision_ref))
+            facts.append(EngagementExpectationFact(
+                expectation_id=str(candidate.payload["expectation_id"]),
+                from_state=str(candidate.payload["from_state"]),
+                to_state=str(candidate.payload["to_state"]),
+                content_hash=str(candidate.payload["content_hash"]),
+                source_ref=transition_ref,
+                decision_source_ref=decision_ref,
+            ))
+        if any(record.record_type in {"expectation_candidate", "expectation_decision"} for record in records):
+            complete_ids = {item.expectation_id for item in facts}
+            if any(record.record_id not in complete_ids for record in records if record.record_type in {"expectation_candidate", "expectation_decision"}):
+                incomplete = True
+        if incomplete:
+            facts.clear()
+            diagnostics.append(self._diagnostic("engagement_authority_incomplete", "engagement expectation 缺少批准 decision 或 transition 绑定不完整。"))
 
     def _read_project_identity(self) -> tuple[str, SourceRef]:
         path = self.project_root / "project.json"
@@ -180,6 +292,25 @@ class FilesystemProjectSource:
 
     def _event_path(self) -> Path:
         return self.project_root / ".creative_os" / "runtime" / "events.jsonl"
+
+    def _state_paths(self) -> tuple[Path, ...]:
+        root = self.project_root / ".creative_os" / "state" / "snapshots"
+        return tuple(sorted(root.glob("*/*.json"))) if root.is_dir() else ()
+
+    def _memory_item_paths(self) -> tuple[Path, ...]:
+        root = self.project_root / ".creative_os" / "memory" / "items"
+        return tuple(sorted(root.glob("*.json"))) if root.is_dir() else ()
+
+    def _active_memory_ids(self) -> frozenset[str]:
+        paths = self._memory_item_paths()
+        if not paths:
+            return frozenset()
+        active_ids: set[str] = set()
+        for path in paths:
+            payload = self._read_json_object(path, "memory_item_invalid")
+            if payload.get("status") == "active" and isinstance(payload.get("id"), str):
+                active_ids.add(payload["id"])
+        return frozenset(active_ids)
 
     def _report_paths(self) -> tuple[Path, ...]:
         report_dir = self.project_root / "production" / "reports"
@@ -203,6 +334,9 @@ class FilesystemProjectSource:
 
     def _reference(self, source_kind: str, source_id: str, path: Path) -> SourceRef:
         return SourceRef(source_kind, source_id, self._relative(path), self._hash_file(path))
+
+    def _engagement_reference(self, path: Path, record_id: str, content_hash: str) -> SourceRef:
+        return SourceRef("engagement_authority", record_id, f"{self._relative(path)}:record={record_id}", content_hash)
 
     def _relative(self, path: Path) -> str:
         try:
@@ -231,6 +365,10 @@ class FilesystemProjectSource:
             severity=DiagnosticSeverity.WARNING,
             message="权威来源不存在，相关投影必须保持 unknown。",
         )
+
+    @staticmethod
+    def _diagnostic(code: str, message: str) -> ProjectionDiagnostic:
+        return ProjectionDiagnostic(code=code, severity=DiagnosticSeverity.WARNING, message=message)
 
     @staticmethod
     def _chapter_number(chapter_id: str) -> int | None:

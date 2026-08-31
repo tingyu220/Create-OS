@@ -24,14 +24,18 @@ from creative_os.projection.overview import OverviewBlocker, OverviewSnapshot, P
 from creative_os.projection.provenance import Derivation, SourceHead, SourceRef
 from creative_os.projection.quality import GateResultSnapshot, QualityIssueSnapshot, QualitySnapshot
 from creative_os.projection.trace import TraceEntrySnapshot, TraceSnapshot
+from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
+from creative_os.projection.source import EngagementExpectationFact, ProjectFacts
 
 __all__ = [
     "PROJECT_SNAPSHOT_SCHEMA_VERSION",
     "ChapterSnapshot",
+    "CharacterSnapshot",
     "ChapterStage",
     "ChapterStageSnapshot",
     "ChapterStatus",
     "Derivation",
+    "EngagementExpectationFact",
     "DiagnosticSeverity",
     "GateResultSnapshot",
     "OverviewBlocker",
@@ -40,6 +44,7 @@ __all__ = [
     "ProjectProjectionBuilder",
     "ProjectProjectionRequest",
     "ProjectSnapshot",
+    "ProjectFacts",
     "ProjectionBuildError",
     "ProjectionBuildResult",
     "ProjectionConsistencyError",
@@ -51,6 +56,8 @@ __all__ = [
     "SourceHead",
     "SourceRef",
     "StageStatus",
+    "StoryThreadSnapshot",
+    "TimelineEntrySnapshot",
     "TraceEntrySnapshot",
     "TraceSnapshot",
     "decode_project_snapshot",

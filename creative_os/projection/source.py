@@ -69,6 +69,27 @@ class RuntimeReportFact:
 
 
 @dataclass(frozen=True, slots=True)
+class ActiveStateFact:
+    kind: str
+    subject: str
+    fields_json: str
+    source_ref: SourceRef
+    evidence_refs: tuple[SourceRef, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class EngagementExpectationFact:
+    """已获批准且完成 transition 的 engagement 事实。"""
+
+    expectation_id: str
+    from_state: str
+    to_state: str
+    content_hash: str
+    source_ref: SourceRef
+    decision_source_ref: SourceRef
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectFacts:
     project_id: str
     chapter_statuses: tuple[ChapterStatusFact, ...]
@@ -78,6 +99,8 @@ class ProjectFacts:
     runtime_reports: tuple[RuntimeReportFact, ...]
     diagnostics: tuple[ProjectionDiagnostic, ...]
     source_refs: tuple[SourceRef, ...]
+    active_states: tuple[ActiveStateFact, ...] = ()
+    engagement_expectations: tuple[EngagementExpectationFact, ...] = ()
 
 
 class ProjectSource(Protocol):

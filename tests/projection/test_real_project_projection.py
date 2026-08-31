@@ -39,3 +39,16 @@ def test_civilization_project_uses_status_and_event_log_without_modifying_them()
     assert [item.chapter_number for item in result.snapshot.chapters][-4:] == [29, 30, 31, 32]
     assert result.snapshot.trace.entries
     assert source.read_head() == before
+
+
+def test_real_project_snapshot_exposes_story_threads_section() -> None:
+    project = REPO_ROOT / "projects" / "文明升阶"
+
+    result = ProjectProjectionBuilder(FilesystemProjectSource(project)).build(
+        ProjectProjectionRequest(project_id="文明升阶")
+    )
+
+    assert len(result.snapshot.story_threads) == 5
+    assert {item.thread_type for item in result.snapshot.story_threads} == {"foreshadow"}
+    assert all(item.open_loop is None for item in result.snapshot.story_threads)
+    assert any(item.code == "story_thread_open_loop_unproven" for item in result.snapshot.diagnostics)

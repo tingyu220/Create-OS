@@ -9,6 +9,7 @@ from creative_os.projection.projectors.chapters import project_chapters
 from creative_os.projection.projectors.overview import project_overview
 from creative_os.projection.projectors.quality import project_quality
 from creative_os.projection.projectors.trace import project_trace
+from creative_os.projection.projectors.narrative import project_characters, project_story_threads, project_timeline
 from creative_os.projection.source import ProjectSource, ProjectionCursor
 
 
@@ -28,7 +29,7 @@ class ProjectionProjectMismatchError(ProjectionBuildError):
 class ProjectProjectionRequest:
     project_id: str
     previous_cursor: ProjectionCursor | None = None
-    requested_sections: tuple[str, ...] = ("overview", "chapters", "quality", "trace")
+    requested_sections: tuple[str, ...] = ("overview", "chapters", "quality", "trace", "characters", "story_threads", "timeline")
 
     def __post_init__(self) -> None:
         if not self.project_id.strip():
@@ -58,7 +59,7 @@ class ProjectProjectionBuilder:
         self.clock = clock or (lambda: datetime.now(timezone.utc).isoformat())
 
     def build(self, request: ProjectProjectionRequest) -> ProjectionBuildResult:
-        required = {"overview", "chapters", "quality", "trace"}
+        required = {"overview", "chapters", "quality", "trace", "characters", "story_threads", "timeline"}
         if set(request.requested_sections) != required:
             raise ProjectionBuildError("projection_partial_sections_not_supported")
         for attempt in range(1, self.max_attempts + 1):
@@ -70,6 +71,9 @@ class ProjectProjectionBuilder:
             quality = project_quality(facts)
             trace = project_trace(facts)
             overview = project_overview(chapters=chapters, quality=quality, trace=trace)
+            characters = project_characters(facts)
+            story_threads = project_story_threads(facts)
+            timeline = project_timeline(facts)
             after = self.source.read_head()
             if before != after:
                 continue
@@ -81,6 +85,9 @@ class ProjectProjectionBuilder:
                 chapters=chapters,
                 quality=quality,
                 trace=trace,
+                characters=characters,
+                story_threads=story_threads,
+                timeline=timeline,
                 diagnostics=facts.diagnostics,
             )
             return ProjectionBuildResult(
