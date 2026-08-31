@@ -308,6 +308,14 @@ git commit -m "feat: 增加独立小说 Writer 端到端验收"
 
 ### Task 6: 完成回归、硬编码审计与真实验收门禁
 
+#### 当前进度（2026-08-31）
+
+- Fake 验收与通用源码专名审计已通过。
+- Live 调用已成功到达 Reviewer，但报告为 `stage=review_failed`，唯一阻断码为 `essential_information_missing`。
+- 根因是 Writer 消息仅列出“必要信息”，没有要求逐条逐字复现；Reviewer 则按逐字包含执行合同校验。
+- 已在 Writer 的场景合同消息中补齐“每条必要信息必须在正文中逐字出现，不得同义改写、概括或转述替代”的通用约束，并由提示词测试覆盖。
+- 尚未重跑 Live 验收；在新的脱敏报告达到 `compile_candidate_ready` 前，真实 Writer 接入与可视化数据投影层仍不得标记完成。
+
 **Files:**
 - Create when live configuration exists: `projects/novel_domain_validation/production/reports/real_writer_validation.json`
 - Modify: `docs/novel-production-roadmap.md`

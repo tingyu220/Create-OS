@@ -51,7 +51,7 @@
 
 - Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
 - 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
-- Live 验收：`live_validation=blocked_missing_configuration`。当前未检测到 `CREATIVE_OS_LLM_API_KEY`、`CREATIVE_OS_LLM_MODEL`，且项目根不存在 `.env`；未执行真实模型调用，也未生成真实验收报告。
+- Live 验收：已完成一次真实调用，脱敏报告为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`。调用成功到达 Reviewer，但 `stage=review_failed`，唯一阻断码为 `essential_information_missing`。根因是 Writer 消息未要求必要信息逐字出现在正文，而 Reviewer 已严格按逐字包含校验；该提示词契约已修复，等待重跑 Live 验收。
 - 可视化数据投影层：准入保持关闭，须待 Live 验收达到 `compile_candidate_ready` 且审查通过后才可开始设计。
 
 下一阶段：

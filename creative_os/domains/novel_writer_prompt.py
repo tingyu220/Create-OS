@@ -63,6 +63,7 @@ def _scene_line(scene: SceneContract) -> str:
     return (
         f"{scene.order}. {scene.place_label}（{scene.place_id}，{scene.time_window}，{scene.interior_exterior}）；"
         f"目的：{scene.narrative_purpose}；目标：{scene.goal}；冲突：{scene.conflict}；行动：{scene.action}；"
+        "必要信息执行规则：每条必要信息必须在正文中逐字出现，不得同义改写、概括或转述替代；"
         f"必要信息：{'；'.join(scene.essential_information)}；情绪变化：{scene.emotional_change}；"
         "闭合要求："
         f"目标={closure.goal_addressed}；冲突={closure.conflict_advanced}；"

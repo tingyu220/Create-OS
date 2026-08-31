@@ -1,0 +1,18 @@
+{
+  "mode": "live",
+  "provider_kind": "openai_compatible",
+  "model": "deepseek-v4-pro",
+  "chapter_id": "chapter_001",
+  "stage": "review_failed",
+  "review_passed": false,
+  "blocking_codes": [
+    "essential_information_missing"
+  ],
+  "content_hash": "1456840e8d3867dded4eb5f2d75c7467fae06e22bfef6b89eb2ff3a86416afbb",
+  "elapsed_seconds": 48.937999999994645,
+  "prompt_tokens": 507,
+  "completion_tokens": 2282,
+  "total_tokens": 2789,
+  "canon_patch_count": 0,
+  "state_candidate_count": 0
+}

@@ -51,6 +51,17 @@ def test_prompt_projects_enhanced_scene_semantics_and_closure(chapter_contract):
     assert "闭合要求：目标=True；冲突=True；选择=True；结果=True" in rendered
 
 
+def test_prompt_requires_each_essential_information_verbatim_in_draft(chapter_contract):
+    messages = build_novel_writer_messages(
+        NovelWritingRequest("chapter_001", chapter_contract, "a" * 64, "补充语气"),
+        "系统要求",
+    )
+    rendered = messages[1].content
+
+    assert "每条必要信息必须在正文中逐字出现" in rendered
+    assert "不得同义改写" in rendered
+
+
 def test_prompt_requires_complete_novel_scene_contract(chapter_contract):
     scene = chapter_contract.scene_plan.scenes[0]
     incomplete = replace(scene, closure=SceneClosure(True, True, True, False))
