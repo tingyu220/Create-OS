@@ -3,6 +3,7 @@ from __future__ import annotations
 from creative_os.console_dashboard import render_console_dashboard
 from creative_os.projection.chapters import ChapterSnapshot, ChapterStatus
 from creative_os.projection.model import ProjectSnapshot
+from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
 from creative_os.projection.overview import OverviewBlocker, OverviewSnapshot, ProjectRunStatus
 from creative_os.projection.provenance import Derivation, SourceHead, SourceRef
 from creative_os.projection.quality import GateResultSnapshot, QualityIssueSnapshot, QualitySnapshot
@@ -42,6 +43,15 @@ def _snapshot() -> ProjectSnapshot:
         chapters=chapters,
         quality=quality,
         trace=trace,
+        characters=(CharacterSnapshot("林遥", '{"role":"主角"}', (reference,), derivation),),
+        story_threads=(StoryThreadSnapshot(
+            "钥匙线", "foreshadow", "open", '{"status":"open"}', (reference,), derivation,
+            open_loop="钥匙仍未解释",
+        ),),
+        timeline=(TimelineEntrySnapshot(
+            "旧灯巷事故", "chapter_only", "第1章内", "clear", '{"precision":"chapter_only"}',
+            (reference,), derivation,
+        ),),
     )
 
 
@@ -56,6 +66,12 @@ def test_render_console_dashboard_reads_only_snapshot() -> None:
     assert "chapter-002 blocked" in output
     assert "missing_fact" in output
     assert "TaskFailed task=chapter-002" in output
+    assert "人物" in output
+    assert "林遥 role=主角" in output
+    assert "故事线" in output
+    assert "钥匙线 foreshadow open loop=钥匙仍未解释" in output
+    assert "时间线" in output
+    assert "旧灯巷事故 precision=chapter_only order=第1章内 conflict=clear" in output
 
 
 def test_render_console_dashboard_handles_empty_snapshot() -> None:
@@ -74,3 +90,6 @@ def test_render_console_dashboard_handles_empty_snapshot() -> None:
     assert "暂无章节投影" in output
     assert "暂无质量问题" in output
     assert "暂无运行轨迹" in output
+    assert "暂无人物投影" in output
+    assert "暂无故事线投影" in output
+    assert "暂无时间线投影" in output

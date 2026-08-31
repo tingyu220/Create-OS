@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from creative_os.projection.chapters import ChapterStatus
 from creative_os.projection.model import ProjectSnapshot
 
@@ -40,4 +42,38 @@ def render_console_dashboard(snapshot: ProjectSnapshot) -> str:
         lines.append("暂无运行轨迹")
     else:
         lines.extend(item.summary for item in snapshot.trace.entries)
+
+    lines.extend(["", "人物"])
+    if not snapshot.characters:
+        lines.append("暂无人物投影")
+    else:
+        lines.extend(f"{item.subject} {_field_summary(item.fields_json)}" for item in snapshot.characters)
+
+    lines.extend(["", "故事线"])
+    if not snapshot.story_threads:
+        lines.append("暂无故事线投影")
+    else:
+        for item in snapshot.story_threads:
+            open_loop = f" loop={item.open_loop}" if item.open_loop else ""
+            lines.append(f"{item.subject} {item.thread_type} {item.status}{open_loop}")
+
+    lines.extend(["", "时间线"])
+    if not snapshot.timeline:
+        lines.append("暂无时间线投影")
+    else:
+        lines.extend(
+            f"{item.subject} precision={item.precision} order={item.relative_order} conflict={item.conflict_status}"
+            for item in snapshot.timeline
+        )
     return "\n".join(lines)
+
+
+def _field_summary(fields_json: str) -> str:
+    """以稳定的键值文本展示快照字段，解析失败时保留原始摘要。"""
+    try:
+        fields = json.loads(fields_json)
+    except (TypeError, json.JSONDecodeError):
+        return f"fields={fields_json}"
+    if not isinstance(fields, dict) or not fields:
+        return ""
+    return " ".join(f"{key}={fields[key]}" for key in sorted(fields))
