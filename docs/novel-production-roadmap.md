@@ -56,5 +56,8 @@
 
 下一阶段：
 
-- 开始统一只读可视化数据投影层设计；
-- 保持完整 Web UI 开发关闭，直至单独满足工作台准入条件。
+- PR #2 的 head `4fe0816` 已通过 merge commit `02c623c` 进入 `origin/main`。
+- 真实 Writer 独立短篇验证已通过；证据仍以 `projects/novel_domain_validation/production/reports/real_writer_validation.json` 为准。
+- Projection Layer Phase 1 与 Phase 2 均已实现并提交：Phase 1 为 `820c0bc`，Phase 2 为 `bdc9dd3`。Phase 2 已覆盖 Characters、Story Threads、Timeline，并保持来源引用、权限边界与只读约束。
+- Characters、Story Threads、Timeline，以及 authority、provenance 和只读边界已稳定；只读控制台扩展已提交 `7de9cfb`。
+- 完整 Web UI 仍未开发；后续工作不得将只读投影或控制台扩展扩大为 Web 工作台开发。
