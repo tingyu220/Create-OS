@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative OS · Workspace</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">CO</span><span>Creative OS</span></div>
+      <div class="project-label">NOVEL WORKSPACE</div>
+      <div id="project-name" class="project-name">加载中…</div>
+      <nav aria-label="工作区导航">
+        <a class="nav-item active" href="#overview">Overview <span>01</span></a>
+        <a class="nav-item" href="#chapters">Chapter Matrix <span>02</span></a>
+        <a class="nav-item" href="#quality">Quality <span>03</span></a>
+        <a class="nav-item" href="#runtime">Runtime / Trace <span>04</span></a>
+      </nav>
+      <div class="sidebar-foot">READ-ONLY SURFACE<br><span>Command boundary reserved</span></div>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div><div class="eyebrow">PROJECT CONTROL PLANE / OBSERVE</div><h1>Workspace</h1></div>
+        <div id="overall-status" class="status-badge">读取中</div>
+      </header>
+      <div id="notice" class="notice" hidden></div>
+      <section id="overview" class="view-section">
+        <div class="section-heading"><div><div class="eyebrow">01 / ORIENTATION</div><h2>Overview</h2></div><div><div id="overview-section-status" class="tag">—</div><div id="refresh-meta" class="meta">—</div></div></div>
+        <div class="overview-grid">
+          <article class="hero-card"><div class="card-kicker">CURRENT STAGE</div><div id="current-stage" class="hero-value">—</div><div id="run-status" class="muted">—</div></article>
+          <article class="metric-card"><div class="card-kicker">CHAPTERS</div><div id="chapter-count" class="metric-value">—</div><div class="muted">总章节投影</div></article>
+          <article class="metric-card accent"><div class="card-kicker">BLOCKED</div><div id="blocked-count" class="metric-value">—</div><div class="muted">需要关注</div></article>
+        </div>
+        <div class="two-column"><article class="panel"><div class="panel-title">阻塞摘要</div><div id="blockers" class="stack">—</div></article><article class="panel"><div class="panel-title">数据来源</div><div id="overview-sources" class="source-list">—</div></article></div>
+      </section>
+      <section id="chapters" class="view-section">
+        <div class="section-heading"><div><div class="eyebrow">02 / PRODUCTION MAP</div><h2>Chapter Matrix</h2></div><div><div id="chapters-section-status" class="tag">—</div><div class="section-note">每行均带来源引用</div></div></div>
+        <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>CHAPTER</th><th>STATUS</th><th>ATTEMPTS</th><th>ELAPSED</th><th>STAGES</th><th>PROVENANCE</th></tr></thead><tbody id="chapters-table"></tbody></table></div></article>
+      </section>
+      <section id="quality" class="view-section">
+        <div class="section-heading"><div><div class="eyebrow">03 / INTEGRITY SIGNALS</div><h2>Quality</h2></div><div><div id="quality-section-status" class="tag">—</div><div id="quality-summary" class="section-note">—</div></div></div>
+        <div class="two-column"><article class="panel"><div class="panel-title">Issues</div><div id="quality-issues" class="stack">—</div></article><article class="panel"><div class="panel-title">Gate results</div><div id="gate-results" class="stack">—</div></article></div>
+      </section>
+      <section id="runtime" class="view-section">
+        <div class="section-heading"><div><div class="eyebrow">04 / OBSERVABILITY</div><h2>Runtime / Trace</h2></div><div><div id="runtime-section-status" class="tag">—</div><div id="runtime-summary" class="section-note">—</div></div></div>
+        <div class="runtime-metrics"><article class="metric-card"><div class="card-kicker">EXECUTIONS</div><div id="execution-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">ATTEMPTS</div><div id="attempt-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">TOKEN USAGE</div><div id="usage" class="metric-value small">未提供</div></article></div>
+        <article class="panel table-panel"><div class="panel-title">Trace entries</div><div id="trace-list" class="trace-list">—</div></article>
+      </section>
+      <footer class="footer">Projection is disposable, traceable, and read-only. No domain facts are created here.</footer>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

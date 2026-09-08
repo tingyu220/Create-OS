@@ -1,0 +1,117 @@
+const $ = (id) => document.getElementById(id);
+
+function text(value, fallback = "未提供") {
+  return value === null || value === undefined || value === "" ? fallback : String(value);
+}
+
+function setStatus(element, status) {
+  element.textContent = text(status);
+  element.className = `status-badge status-${status || "unavailable"}`;
+}
+
+function setSectionStatus(element, status) {
+  element.textContent = text(status);
+  element.className = `tag tag-${status || "unknown"}`;
+}
+
+function tag(status) {
+  const span = document.createElement("span");
+  span.className = `tag tag-${status || "unknown"}`;
+  span.textContent = text(status, "unknown");
+  return span;
+}
+
+function sourceLabel(ref) {
+  return `${text(ref.source_kind)} / ${text(ref.source_id)} / ${text(ref.locator)} · ${text(ref.content_hash, "无 hash")}`;
+}
+
+function renderSources(container, refs) {
+  container.replaceChildren();
+  if (!refs || refs.length === 0) { container.textContent = "未提供来源引用"; return; }
+  refs.forEach((ref) => { const item = document.createElement("div"); item.className = "source-item"; item.textContent = sourceLabel(ref); container.append(item); });
+}
+
+function renderStack(container, items, empty) {
+  container.replaceChildren();
+  if (!items || items.length === 0) { container.textContent = empty; return; }
+  items.forEach((item) => {
+    const block = document.createElement("div"); block.className = "stack-item";
+    const title = document.createElement("strong"); title.textContent = text(item.code || item.gate_id || item.message); block.append(title);
+    const detail = document.createElement("small"); detail.textContent = text(item.message || item.status || item.scope); block.append(detail);
+    if (item.source_refs?.length) { const refs = document.createElement("small"); refs.textContent = item.source_refs.map(sourceLabel).join("\n"); block.append(refs); }
+    container.append(block);
+  });
+}
+
+function render(data) {
+  $("project-name").textContent = text(data.project_id);
+  setStatus($("overall-status"), data.overall);
+  setSectionStatus($("overview-section-status"), data.sections?.project?.status);
+  setSectionStatus($("chapters-section-status"), data.sections?.project?.status);
+  setSectionStatus($("quality-section-status"), data.sections?.project?.status);
+  setSectionStatus($("runtime-section-status"), data.sections?.operations?.status);
+  $("refresh-meta").textContent = `refresh ${text(data.refresh_id, "未提供")} · snapshot ${text(data.snapshot?.snapshot_id, "未提供")}`;
+  const diagnostics = Object.entries(data.sections || {}).flatMap(([section, value]) => (value.diagnostics || []).map((item) => `${section}: ${item.code} · ${item.message}`));
+  const uniqueDiagnostics = [...new Set(diagnostics)];
+  $("notice").hidden = uniqueDiagnostics.length === 0;
+  if (uniqueDiagnostics.length) $("notice").textContent = `投影诊断（${uniqueDiagnostics.length}）：${uniqueDiagnostics.slice(0, 3).join(" ｜ ")}${uniqueDiagnostics.length > 3 ? " ｜ …" : ""}`;
+  const snapshot = data.snapshot;
+  if (!snapshot) {
+    $("notice").hidden = false; $("notice").textContent = "当前投影不可用，工作台没有根据来源文件推断业务状态。";
+    return;
+  }
+  const overview = snapshot.overview;
+  $("current-stage").textContent = text(overview.current_stage);
+  $("run-status").replaceChildren(tag(overview.run_status));
+  $("chapter-count").textContent = text(overview.chapter_count, "0");
+  $("blocked-count").textContent = text(overview.blocked_chapter_count, "0");
+  renderStack($("blockers"), overview.blockers, "暂无阻塞摘要");
+  renderSources($("overview-sources"), overview.source_refs);
+
+  const tbody = $("chapters-table"); tbody.replaceChildren();
+  (snapshot.chapters || []).forEach((chapter) => {
+    const row = document.createElement("tr");
+    const name = document.createElement("td"); name.innerHTML = `<div class="chapter-title"></div><div class="chapter-id"></div>`; name.firstChild.textContent = chapter.title; name.lastChild.textContent = chapter.chapter_id; row.append(name);
+    const status = document.createElement("td"); status.append(tag(chapter.status)); row.append(status);
+    const attempts = document.createElement("td"); attempts.textContent = text(chapter.attempts, "未提供"); row.append(attempts);
+    const elapsed = document.createElement("td"); elapsed.textContent = chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`; row.append(elapsed);
+    const stages = document.createElement("td"); stages.className = "stage-list"; (chapter.stages || []).forEach((stage) => { const item = document.createElement("span"); item.className = "tag tag-unknown"; item.textContent = `${stage.stage}:${stage.status}`; stages.append(item); }); row.append(stages);
+    const refs = document.createElement("td"); refs.className = "provenance"; refs.textContent = chapter.source_refs?.map(sourceLabel).join("\n") || "未提供来源引用"; row.append(refs);
+    tbody.append(row);
+  });
+
+  const quality = snapshot.quality;
+  $("quality-summary").textContent = `${quality.issues.length} issues · ${quality.gate_results.length} gates · ${quality.issues.filter((item) => item.blocking).length} blocking`;
+  renderStack($("quality-issues"), quality.issues, "暂无质量问题");
+  renderStack($("gate-results"), quality.gate_results, "暂无 Gate 结果");
+  const operations = data.operations;
+  if (operations) {
+    $("execution-count").textContent = text(operations.execution_count, "未提供");
+    $("attempt-count").textContent = text(operations.attempts, "未提供");
+    $("usage").textContent = operations.usage ? text(operations.usage.total_tokens) : "未提供";
+    $("runtime-summary").textContent = `${text(operations.diagnostics?.length, "0")} diagnostics · ${text(operations.errors?.length, "0")} errors`;
+  }
+  const trace = $("trace-list"); trace.replaceChildren();
+  const entries = (snapshot.trace?.entries || []).slice(-100);
+  if (!entries.length) { trace.textContent = "暂无运行轨迹"; }
+  entries.forEach((entry) => {
+    const item = document.createElement("div"); item.className = "trace-entry";
+    const seq = document.createElement("div"); seq.className = "trace-seq"; seq.textContent = entry.sequence == null ? "REPORT" : `#${entry.sequence}`; item.append(seq);
+    const summary = document.createElement("div"); summary.className = "trace-summary"; summary.textContent = entry.summary; item.append(summary);
+    const meta = document.createElement("div"); meta.className = "trace-meta"; meta.textContent = `${entry.event_type} · ${entry.occurred_at}${entry.source_refs?.length ? `\n${entry.source_refs.map(sourceLabel).join("\n")}` : ""}`; item.append(meta);
+    trace.append(item);
+  });
+}
+
+async function loadWorkspace() {
+  try {
+    const response = await fetch("/api/workspace", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    render(await response.json());
+  } catch (error) {
+    $("overall-status").textContent = "读取失败";
+    $("notice").hidden = false; $("notice").textContent = `只读投影 API 暂时不可用：${error.message}`;
+  }
+}
+
+loadWorkspace();

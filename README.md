@@ -107,6 +107,16 @@ releases\雾城回声\
 ```powershell
 python scripts\novel_console.py --project-root projects\雾城回声
 ```
+
+## 只读 Web Workspace
+
+Web Workspace 是单小说项目的只读观察面板，页面和 API 只经由 `WorkspaceQueryAdapter` 读取统一投影 DTO，不提供编辑、审批或生产控制路由。首次使用可显式重建可丢弃的投影缓存：
+
+```powershell
+python scripts\novel_web_workspace.py --project-root projects\文明升阶 --refresh
+```
+
+打开命令输出的地址即可查看 Overview、Chapter Matrix、Quality、Runtime / Trace。API 为 `GET /api/workspace`；投影的 `fresh`、`stale`、`partial`、`unavailable` 与来源引用会原样展示。省略 `--refresh` 时不会写入项目，只读取已有投影缓存。
 # Reader Engagement Foundation
 
 Phase E-A 的 Reader Engagement 权威入口位于 `creative_os.domains.reader_engagement_*`：Plan、Ledger、Curve 与人工 Review 通过追加式 Store 管理。迁移工具仅做只读审计，不从旧正文推断 payoff、abandoned 或自动激活计划。

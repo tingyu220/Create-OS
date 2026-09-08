@@ -1,7 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
+import json
 from typing import Mapping
+from creative_os.projection.codec import encode_project_snapshot
 from creative_os.projection.model import ProjectSnapshot, ProjectionDiagnostic, DiagnosticSeverity
 from creative_os.projection.provenance import SourceHead, SourceRef
 
@@ -111,3 +113,74 @@ class ProjectionBundle:
     freshness: Mapping[ProjectionSection, Freshness]
     diagnostics: tuple[ProjectionDiagnostic, ...] = ()
     refresh_id: str | None = None
+
+
+def encode_workspace_envelope(envelope: ProjectionEnvelope) -> dict[str, object]:
+    """将 Workspace DTO 编码为稳定的 JSON-safe 结构，隔离 Projection 内部类型。"""
+    return {
+        "project_id": envelope.project_id,
+        "overall": envelope.overall.value,
+        "sections": {key.value: _encode_section(value) for key, value in sorted(envelope.sections.items(), key=lambda item: item[0].value)},
+        "snapshot": None if envelope.snapshot is None else json.loads(encode_project_snapshot(envelope.snapshot)),
+        "operations": None if envelope.operations is None else _encode_operations(envelope.operations),
+        "source_heads": [_encode_head(item) for item in envelope.source_heads],
+        "refresh_id": envelope.refresh_id,
+    }
+
+
+def _encode_section(value: SectionEnvelope) -> dict[str, object]:
+    return {"status": value.status.value, "diagnostics": [_encode_diagnostic(item) for item in value.diagnostics]}
+
+
+def _encode_operations(value: OperationsSnapshot) -> dict[str, object]:
+    return {
+        "project_id": value.project_id,
+        "task_count": value.task_count,
+        "execution_count": value.execution_count,
+        "failed_count": value.failed_count,
+        "attempts": value.attempts,
+        "usage": None if value.usage is None else {
+            "prompt_tokens": value.usage.prompt_tokens,
+            "completion_tokens": value.usage.completion_tokens,
+            "total_tokens": value.usage.total_tokens,
+        },
+        "source_refs": [_encode_ref(item) for item in value.source_refs],
+        "diagnostics": [_encode_diagnostic(item) for item in value.diagnostics],
+        "tasks": [_encode_task(item) for item in value.tasks],
+        "executions": [_encode_execution(item) for item in value.executions],
+        "errors": [_encode_error(item) for item in value.errors],
+        "recovery": None if value.recovery is None else _encode_recovery(value.recovery),
+        "retries": [_encode_retry(item) for item in value.retries],
+    }
+
+
+def _encode_ref(value: SourceRef) -> dict[str, object]:
+    return {"source_kind": value.source_kind, "source_id": value.source_id, "locator": value.locator, "content_hash": value.content_hash}
+
+
+def _encode_head(value: SourceHead) -> dict[str, object]:
+    return {"source_kind": value.source_kind, "source_id": value.source_id, "cursor": value.cursor, "content_hash": value.content_hash}
+
+
+def _encode_diagnostic(value: ProjectionDiagnostic) -> dict[str, object]:
+    return {"code": value.code, "severity": value.severity.value, "message": value.message, "source_refs": [_encode_ref(item) for item in value.source_refs]}
+
+
+def _encode_task(value: TaskDTO) -> dict[str, object]:
+    return {"task_id": value.task_id, "status": value.status, "attempts": value.attempts, "elapsed_seconds": value.elapsed_seconds, "source_refs": [_encode_ref(item) for item in value.source_refs]}
+
+
+def _encode_execution(value: ExecutionDTO) -> dict[str, object]:
+    return {"execution_id": value.execution_id, "identity_kind": value.identity_kind, "event_type": value.event_type, "occurred_at": value.occurred_at, "source_refs": [_encode_ref(item) for item in value.source_refs]}
+
+
+def _encode_error(value: ErrorDTO) -> dict[str, object]:
+    return {"code": value.code, "message": value.message, "retryable": value.retryable, "source_refs": [_encode_ref(item) for item in value.source_refs]}
+
+
+def _encode_recovery(value: RecoveryDTO) -> dict[str, object]:
+    return {"state": value.state, "source_refs": [_encode_ref(item) for item in value.source_refs]}
+
+
+def _encode_retry(value: RetryDTO) -> dict[str, object]:
+    return {"attempts": value.attempts, "source_refs": [_encode_ref(item) for item in value.source_refs]}
