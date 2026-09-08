@@ -428,7 +428,8 @@ def _integer(value: object) -> int:
 def _number(value: object) -> float:
     if type(value) not in {int, float}:
         raise ProjectionCodecError("number_required")
-    return float(value)
+    # 保留权威投影的 int/float 语义，避免重建 snapshot_id 时发生隐式类型漂移。
+    return value  # type: ignore[return-value]
 
 
 def _boolean(value: object) -> bool:

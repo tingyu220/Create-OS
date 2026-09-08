@@ -11,7 +11,7 @@ from creative_os.projection.model import ProjectSnapshot
 from creative_os.projection.overview import OverviewSnapshot, ProjectRunStatus
 from creative_os.projection.provenance import SourceHead, SourceRef
 from creative_os.projection.quality import QualitySnapshot
-from creative_os.projection.trace import TraceSnapshot
+from creative_os.projection.trace import TraceSnapshot, TraceEntrySnapshot
 from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
 from creative_os.projection.provenance import Derivation
 
@@ -38,6 +38,13 @@ def test_snapshot_codec_round_trips_and_is_deterministic() -> None:
 
     assert first == second
     assert decode_project_snapshot(first) == snapshot
+
+def test_snapshot_codec_round_trips_nonempty_trace_entry() -> None:
+    snapshot = _snapshot()
+    ref = snapshot.overview.source_refs[0]
+    trace = TraceSnapshot((TraceEntrySnapshot("event", 1, "event-1", "TaskStarted", "2026-09-01T00:00:00+00:00", "task-1", None, "TaskStarted task=task-1", (ref,)),), (ref,))
+    snapshot = ProjectSnapshot.create(project_id=snapshot.project_id, built_at=snapshot.built_at, source_heads=snapshot.source_heads, overview=snapshot.overview, chapters=snapshot.chapters, quality=snapshot.quality, trace=trace)
+    assert decode_project_snapshot(encode_project_snapshot(snapshot)) == snapshot
 
 
 def test_snapshot_payload_has_no_absolute_machine_path() -> None:
