@@ -104,6 +104,7 @@ class ContractRecordStore:
             raise ContractRecordStoreError("trusted project root is unavailable") from error
         self.root = self.project_root / ".creative_os" / "memory" / "contract_records"
         self.journal_dir = self.root / "journal"
+        self._command_receipts_path = self.root / "command-receipts.json"
         self._directories = {
             record_type: self.root / directory
             for record_type, directory in _RECORD_DIRECTORIES.items()
@@ -149,6 +150,48 @@ class ContractRecordStore:
             validate_binding=True,
         )
 
+    def load_command_receipt(self, idempotency_key: str) -> tuple[str, dict[str, Any], str] | None:
+        _require_exact_text(idempotency_key, "idempotency_key")
+        with self._authority_lock():
+            if not self._filesystem.exists_regular(self._command_receipts_path):
+                return None
+            payload = self._read_json(self._command_receipts_path)
+            records = _command_receipt_records(payload)
+            record = records.get(idempotency_key)
+            if record is None:
+                return None
+            return record["fingerprint"], dict(record["receipt"]), record["state"]
+
+    def save_command_receipt(
+        self, idempotency_key: str, fingerprint: str, receipt: dict[str, Any],
+        *, state: str = "completed",
+    ) -> None:
+        _require_exact_text(idempotency_key, "idempotency_key")
+        _require_sha256(fingerprint, "command fingerprint")
+        if type(receipt) is not dict:
+            raise ContractRecordStoreError("command receipt must be an object")
+        if state not in {"pending", "completed"}:
+            raise ContractRecordStoreError("command receipt state invalid")
+        with self._authority_lock():
+            records: dict[str, dict[str, Any]] = {}
+            path_exists = self._filesystem.exists_regular(self._command_receipts_path)
+            current = None
+            if path_exists:
+                current = self._read_json(self._command_receipts_path)
+                records = _command_receipt_records(current)
+            existing = records.get(idempotency_key)
+            if existing is not None:
+                if existing["fingerprint"] != fingerprint or existing["receipt"] != receipt:
+                    raise ContractRecordConflictError("command idempotency conflict")
+                if existing["state"] == "completed" or state == "pending":
+                    return
+                existing["state"] = "completed"
+            else:
+                records[idempotency_key] = {
+                    "fingerprint": fingerprint, "state": state, "receipt": receipt,
+                }
+            self._write_json(self._command_receipts_path, {"schema_version": 1, "records": records}, expected=current)
+
     def save_continuation_authorization(self, authorization: WriterRunContinuationAuthorization) -> str:
         return self._save(
             "continuation_authorization", _continuation_authorization_to_payload(authorization),
@@ -188,6 +231,32 @@ class ContractRecordStore:
 
     def load_reviewer_result(self, record_id: str) -> PrewriteReviewerResult:
         return self._load("reviewer_result", record_id)
+
+    def find_reviewer_result(self, result_id: str) -> PrewriteReviewerResult | None:
+        _require_exact_text(result_id, "reviewer_result_id")
+        with self._authority_lock():
+            matches = tuple(
+                record
+                for _, record in self._scan_locked("reviewer_result")
+                if isinstance(record, PrewriteReviewerResult) and record.result_id == result_id
+            )
+            if len(matches) > 1:
+                raise ContractRecordConflictError("duplicate reviewer result id")
+            return matches[0] if matches else None
+
+    def find_dispositions(
+        self, reviewer_result_id: str, reviewer_result_hash: str,
+    ) -> tuple[tuple[str, ReviewIssueDisposition], ...]:
+        _require_exact_text(reviewer_result_id, "reviewer_result_id")
+        _require_sha256(reviewer_result_hash, "reviewer_result_hash")
+        with self._authority_lock():
+            return tuple(
+                (record_id, record)
+                for record_id, record in self._scan_locked("disposition")
+                if isinstance(record, ReviewIssueDisposition)
+                and record.reviewer_result_id == reviewer_result_id
+                and record.reviewer_result_hash == reviewer_result_hash
+            )
 
     def load_disposition(self, record_id: str) -> ReviewIssueDisposition:
         return self._load("disposition", record_id)
@@ -674,6 +743,31 @@ def _record_id_for(
         assert isinstance(model, WriterRunContinuationAuthorization)
         result = f"continuation-{_require_slug(model.authorization_id, 'authorization_id')}-{payload_hash}"
     _require_record_id(result)
+    return result
+
+
+def _command_receipt_records(payload: object) -> dict[str, dict[str, Any]]:
+    if type(payload) is not dict or set(payload) != {"schema_version", "records"}:
+        raise ContractRecordStoreError("command receipt schema invalid")
+    if payload["schema_version"] != 1 or type(payload["records"]) is not dict:
+        raise ContractRecordStoreError("command receipt schema invalid")
+    result: dict[str, dict[str, Any]] = {}
+    for key, value in payload["records"].items():
+        _require_exact_text(key, "idempotency_key")
+        if type(value) is not dict or set(value) not in (
+            {"fingerprint", "receipt"}, {"fingerprint", "state", "receipt"},
+        ):
+            raise ContractRecordStoreError("command receipt record invalid")
+        _require_sha256(value["fingerprint"], "command fingerprint")
+        if type(value["receipt"]) is not dict:
+            raise ContractRecordStoreError("command receipt payload invalid")
+        state = value.get("state", "completed")
+        if state not in {"pending", "completed"}:
+            raise ContractRecordStoreError("command receipt state invalid")
+        result[key] = {
+            "fingerprint": value["fingerprint"], "state": state,
+            "receipt": dict(value["receipt"]),
+        }
     return result
 
 
