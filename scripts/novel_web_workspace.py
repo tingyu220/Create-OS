@@ -12,9 +12,16 @@ if str(ROOT) not in sys.path:
 
 from creative_os.projection.filesystem_source import FilesystemProjectSource
 from creative_os.projection.repository import FileProjectionRepository, RepositoryRefreshBuilder
+from creative_os.domains.contract_record_store import ContractRecordStore
 from creative_os.web_workspace import WorkspaceWebAdapter, create_server
 from creative_os.workspace import CommandBoundary, FileCommandResultStore, ProjectionRefreshCoordinator, ProjectionSection
-from creative_os.workspace_command_adapter import WorkspaceCommandAdapter, WorkspaceProjectionRefreshScheduler, WorkspaceRefreshCommandHandler
+from creative_os.workspace_command_adapter import (
+    WorkspaceCommandAdapter,
+    WorkspaceProjectionRefreshScheduler,
+    WorkspaceRefreshCommandHandler,
+    WorkspaceReviewIssueCommandHandler,
+    WorkspaceReviewIssueProjectionRefreshScheduler,
+)
 from creative_os.workspace_query import WorkspaceQueryAdapter
 
 
@@ -50,9 +57,20 @@ def main() -> None:
         refresh_scheduler=WorkspaceProjectionRefreshScheduler(coordinator),
         request_validator=command_handler.validate,
     )
+    review_events: list[object] = []
+    review_store = ContractRecordStore(project_root)
+    review_handler = WorkspaceReviewIssueCommandHandler(project_id, review_store, review_events)
+    review_boundary = CommandBoundary(
+        review_handler,
+        version_reader=_workspace_version_reader,
+        store=FileCommandResultStore(project_root),
+        refresh_scheduler=WorkspaceReviewIssueProjectionRefreshScheduler(coordinator),
+        request_validator=review_handler.validate,
+    )
     server = create_server(
         adapter,
         command_adapter=WorkspaceCommandAdapter(command_boundary),
+        review_command_adapter=WorkspaceCommandAdapter(review_boundary),
         host=args.host,
         port=args.port,
     )

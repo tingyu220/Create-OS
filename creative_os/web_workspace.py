@@ -31,10 +31,11 @@ class WorkspaceWebAdapter:
 
 
 class WorkspaceRequestHandler(BaseHTTPRequestHandler):
-    """单项目工作台 HTTP 边界，只开放一个受限的投影刷新命令。"""
+    """单项目工作台 HTTP 边界，只开放显式声明的工作区命令。"""
 
     workspace_adapter: WorkspaceWebAdapter
     command_adapter: object | None = None
+    review_command_adapter: object | None = None
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
@@ -62,7 +63,10 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         route = urlsplit(self.path).path
         if route == "/api/commands/refresh-workspace":
-            self._handle_refresh_command()
+            self._handle_command(self.command_adapter)
+            return
+        if route == "/api/commands/accept-review-issue":
+            self._handle_command(self.review_command_adapter or self.command_adapter)
             return
         if route == "/api/workspace":
             self.send_response(405)
@@ -72,9 +76,9 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             return
         self._send_text(404, "Not found")
 
-    def _handle_refresh_command(self) -> None:
+    def _handle_command(self, command_adapter: object | None) -> None:
         self.close_connection = True
-        if self.command_adapter is None:
+        if command_adapter is None:
             self._send_json(503, json.dumps({"error": {"code": "command_unavailable", "message": "命令边界不可用。"}}).encode("utf-8"), close=True)
             return
         if self.headers.get_content_type() != "application/json":
@@ -100,7 +104,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             body = json.dumps({"error": {"code": error.code, "message": error.message}}, ensure_ascii=False).encode("utf-8")
             self._send_json(400, body, close=True)
             return
-        result = self.command_adapter.execute(request)
+        result = command_adapter.execute(request)
         status = _command_http_status(result)
         self._send_json(status, json.dumps(encode_command_result(result), ensure_ascii=False, sort_keys=True).encode("utf-8"), close=True)
 
@@ -130,6 +134,7 @@ def create_server(
     adapter: WorkspaceWebAdapter,
     *,
     command_adapter: object | None = None,
+    review_command_adapter: object | None = None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -139,10 +144,12 @@ def create_server(
         raise TypeError("workspace_web_adapter_required")
     asset_root = Path(web_root)
     bound_command_adapter = command_adapter
+    bound_review_command_adapter = review_command_adapter
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
         command_adapter = bound_command_adapter
+        review_command_adapter = bound_review_command_adapter
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)
@@ -156,5 +163,10 @@ def _command_http_status(result: object) -> int:
         return 202
     if status == "rejected":
         code = getattr(getattr(result, "error", None), "code", None)
-        return 409 if code == "idempotency_conflict" else 422
+        return 409 if code in {
+            "idempotency_conflict",
+            "version_conflict",
+            "reviewer_disposition_conflict",
+            "disposition_conflict",
+        } else 422
     return 503
