@@ -23,9 +23,11 @@
     <main class="content">
       <header class="topbar">
         <div><div class="eyebrow">PROJECT CONTROL PLANE / OBSERVE</div><h1>Workspace</h1></div>
-        <div id="overall-status" class="status-badge">读取中</div>
+        <div class="topbar-actions"><div id="overall-status" class="status-badge">读取中</div><button id="refresh-workspace" data-command="refresh-workspace" type="button" aria-label="刷新工作区投影">刷新投影</button></div>
       </header>
       <div id="notice" class="notice" hidden></div>
+      <div id="command-status" class="command-status" aria-live="polite">命令就绪</div>
+      <div id="command-diagnostics" class="command-diagnostics" aria-live="polite" hidden></div>
       <section id="overview" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">01 / ORIENTATION</div><h2>Overview</h2></div><div><div id="overview-section-status" class="tag">—</div><div id="refresh-meta" class="meta">—</div></div></div>
         <div class="overview-grid">

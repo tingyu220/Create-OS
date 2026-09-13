@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+let currentProjectId = "";
 
 function text(value, fallback = "未提供") {
   return value === null || value === undefined || value === "" ? fallback : String(value);
@@ -44,6 +45,7 @@ function renderStack(container, items, empty) {
 }
 
 function render(data) {
+  currentProjectId = text(data.project_id, "");
   $("project-name").textContent = text(data.project_id);
   setStatus($("overall-status"), data.overall);
   setSectionStatus($("overview-section-status"), data.sections?.project?.status);
@@ -103,6 +105,59 @@ function render(data) {
   });
 }
 
+function commandIdentity() {
+  const id = crypto.randomUUID();
+  return { request_id: id, idempotency_key: id };
+}
+
+function renderCommandResult(result) {
+  const status = $("command-status");
+  const diagnostics = $("command-diagnostics");
+  const error = result.error;
+  const code = error?.code ? ` · ${error.code}` : "";
+  status.textContent = result.status === "accepted" ? "刷新已接受" : `${result.status || "失败"}${code}`;
+  diagnostics.hidden = false;
+  diagnostics.textContent = [
+    error?.message,
+    result.trace_id ? `trace_id: ${result.trace_id}` : "",
+    result.projection_refresh_id ? `projection_refresh_id: ${result.projection_refresh_id}` : "",
+  ].filter(Boolean).join(" · ") || "未提供诊断信息";
+}
+
+async function refreshWorkspace() {
+  const button = $("refresh-workspace");
+  const status = $("command-status");
+  const diagnostics = $("command-diagnostics");
+  button.disabled = true;
+  status.textContent = "刷新中…";
+  diagnostics.hidden = true;
+  try {
+    const identity = commandIdentity();
+    const response = await fetch("/api/commands/refresh-workspace", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        command_id: "refresh_workspace_projection",
+        request_id: identity.request_id,
+        actor: "local-user",
+        target: currentProjectId,
+        payload: { sections: ["project", "operations"] },
+        expected_version: null,
+        idempotency_key: identity.idempotency_key,
+      }),
+    });
+    const result = await response.json();
+    renderCommandResult(result);
+    if (result.status === "accepted") await loadWorkspace();
+  } catch (error) {
+    status.textContent = "刷新失败";
+    diagnostics.hidden = false;
+    diagnostics.textContent = `请求失败 · ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function loadWorkspace() {
   try {
     const response = await fetch("/api/workspace", { headers: { Accept: "application/json" } });
@@ -115,3 +170,4 @@ async function loadWorkspace() {
 }
 
 loadWorkspace();
+$("refresh-workspace").addEventListener("click", refreshWorkspace);
