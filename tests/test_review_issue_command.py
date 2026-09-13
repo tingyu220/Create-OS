@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from creative_os.domains.contract_issue import EvidenceCheck
-from creative_os.domains.contract_record_store import ContractRecordStore
+from creative_os.domains.contract_record_store import ContractRecordStore, ContractRecordStoreError
 from creative_os.domains.contract_review import PrewriteReviewerResult, ReviewIssue
 from creative_os.domains.review_issue_command import (
     AcceptReviewIssueCommand,
@@ -24,7 +24,7 @@ def _issue() -> ReviewIssue:
     )
 
 
-def _review() -> PrewriteReviewerResult:
+def _review(issue: ReviewIssue | None = None) -> PrewriteReviewerResult:
     return PrewriteReviewerResult.build(
         result_id="review-001",
         contract_id="project-a",
@@ -33,7 +33,7 @@ def _review() -> PrewriteReviewerResult:
         baseline_fingerprint="b" * 64,
         ruleset_version="prewrite-v1",
         semantic_asset_versions=(("function_semantics", "v1"),),
-        issues=(_issue(),),
+        issues=(issue or _issue(),),
     )
 
 
@@ -163,6 +163,78 @@ def test_accept_review_issue_rejects_old_expected_version(tmp_path):
     assert outcome.status == "conflict"
     assert outcome.error is not None
     assert outcome.error.code == "version_conflict"
+
+
+def test_accept_review_issue_rejects_high_issue_with_authoritative_gate(tmp_path):
+    high_issue = ReviewIssue.build(
+        issue_id="issue-high",
+        code="missing_required_fact",
+        severity="high",
+        blocking=True,
+        requires_human_disposition=False,
+        field_path="chapter_contract.required_fact",
+        evidence_checks=(EvidenceCheck("field_found", False, "未找到必要事实"),),
+        repair_hint="补充必要事实",
+    )
+    review = _review(high_issue)
+    store = _store(tmp_path, review)
+
+    outcome = accept_review_issue(_command(review, target={"project_id": "project-a", "issue_id": "issue-high"}), store, [])
+
+    assert outcome.status == "rejected"
+    assert outcome.error is not None
+    assert outcome.error.code == "reviewer_gate_blocked"
+
+
+def test_accept_review_issue_retries_partial_sink_with_same_event_id(tmp_path):
+    review = _review()
+    store = _store(tmp_path, review)
+
+    class _PartialSink:
+        def __init__(self):
+            self.events: list[object] = []
+            self.fail_once = True
+
+        def append(self, event):
+            self.events.append(event)
+            if self.fail_once:
+                self.fail_once = False
+                raise RuntimeError("sink disconnected after append")
+
+    sink = _PartialSink()
+    first = accept_review_issue(_command(review), store, sink)
+    pending = store.load_command_receipt("idem-001")
+    second = accept_review_issue(_command(review), ContractRecordStore(tmp_path), sink)
+
+    assert first.status == "failed"
+    assert pending is not None and pending[2] == "pending"
+    assert second.status == "accepted"
+    assert len(sink.events) == 2
+    assert sink.events[0].event_id == sink.events[1].event_id == second.event_id
+
+
+def test_accept_review_issue_retries_when_receipt_save_fails_before_event(tmp_path, monkeypatch):
+    review = _review()
+    store = _store(tmp_path, review)
+    original = store.save_command_receipt
+    calls = 0
+
+    def fail_once(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise ContractRecordStoreError("receipt store unavailable")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(store, "save_command_receipt", fail_once)
+    events: list[object] = []
+
+    first = accept_review_issue(_command(review), store, events)
+    second = accept_review_issue(_command(review), store, events)
+
+    assert first.status == "failed"
+    assert second.status == "accepted"
+    assert len(events) == 1
 
 
 def test_accept_review_issue_replays_same_idempotency_key_without_duplicate_event(tmp_path):

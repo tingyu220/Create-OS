@@ -7,7 +7,6 @@ from enum import StrEnum
 import hashlib
 import json
 from typing import Any, Protocol
-from uuid import uuid4
 
 from creative_os.domains.contract_record_store import (
     ContractRecordConflictError,
@@ -17,6 +16,7 @@ from creative_os.domains.contract_record_store import (
 from creative_os.domains.contract_review import (
     PrewriteReviewerResult,
     ReviewIssueDisposition,
+    validate_reviewer_gate,
 )
 
 
@@ -153,13 +153,29 @@ def accept_review_issue(
     except ContractRecordStoreError:
         return _failed(command, "command_store_unavailable", "命令幂等记录暂时不可读取。", True)
     if stored is not None:
-        stored_fingerprint, stored_payload = stored
+        stored_fingerprint, stored_payload, state = stored
         if stored_fingerprint != fingerprint:
             return _conflict(command, "idempotency_conflict", "幂等键对应不同请求。")
         try:
             receipt = CommandReceipt.from_payload(stored_payload)
         except ValueError:
             return _failed(command, "command_receipt_invalid", "命令幂等记录无效。")
+        if state == "completed":
+            return CommandOutcome(CommandStatus.ACCEPTED, command.command_id, command.request_id, receipt.trace_id, receipt)
+        if state != "pending":
+            return _failed(command, "command_receipt_invalid", "命令幂等状态无效。")
+        event = _build_event(command, target, payload, reviewer_result, issue, receipt)
+        try:
+            _emit(event_sink, event)
+            store.save_command_receipt(
+                command.idempotency_key, fingerprint, asdict(receipt), state="completed",
+            )
+        except ContractRecordConflictError:
+            return _conflict(command, "idempotency_conflict", "幂等键对应不同请求。")
+        except ContractRecordStoreError:
+            return _failed(command, "command_store_unavailable", "命令幂等记录暂时无法完成。", True)
+        except Exception:
+            return _failed(command, "event_publish_failed", "审阅事件发布失败，结果需要对账。", False)
         return CommandOutcome(CommandStatus.ACCEPTED, command.command_id, command.request_id, receipt.trace_id, receipt)
 
     disposition = ReviewIssueDisposition(
@@ -176,14 +192,92 @@ def accept_review_issue(
         reviewer_result_hash=reviewer_result.result_hash,
     )
     try:
-        disposition_record_id = store.save_disposition(disposition)
+        existing_records = store.find_dispositions(
+            reviewer_result.result_id, reviewer_result.result_hash,
+        )
+    except ContractRecordConflictError:
+        return _conflict(command, "reviewer_disposition_conflict", "审阅裁决事实存在冲突。")
+    except ContractRecordStoreError:
+        return _failed(command, "disposition_lookup_failed", "审阅裁决暂时无法读取。", True)
+
+    existing = tuple(record for _, record in existing_records)
+    matching = next((item for item in existing_records if _same_disposition(item[1], disposition)), None)
+    gate_dispositions = existing if matching is not None else existing + (disposition,)
+    gate = validate_reviewer_gate(
+        reviewer_result,
+        gate_dispositions,
+        contract_id=reviewer_result.contract_id,
+        contract_version=reviewer_result.contract_version,
+        contract_content_hash=reviewer_result.contract_content_hash,
+        baseline_fingerprint=reviewer_result.baseline_fingerprint,
+        ruleset_version=reviewer_result.ruleset_version,
+        semantic_asset_versions=reviewer_result.semantic_asset_versions,
+    )
+    if not gate.is_ready:
+        return _rejected(command, "reviewer_gate_blocked", "当前审阅结果仍包含不可接受的阻断问题。")
+
+    try:
+        disposition_record_id = matching[0] if matching is not None else store.save_disposition(disposition)
     except ContractRecordConflictError:
         return _conflict(command, "disposition_conflict", "审阅裁决事实已存在冲突。")
     except ContractRecordStoreError:
         return _failed(command, "disposition_save_failed", "审阅裁决暂时无法保存。", True)
 
-    event = ReviewIssueAcceptedEvent(
-        event_id=f"event-{uuid4().hex}",
+    event_id = f"event-{fingerprint}"
+    receipt = CommandReceipt(
+        command_id=command.command_id,
+        request_id=command.request_id,
+        idempotency_key=command.idempotency_key,
+        fingerprint=fingerprint,
+        audit_ref=f"audit-{command.request_id}",
+        trace_id=command.trace_id,
+        disposition_record_id=disposition_record_id,
+        event_id=event_id,
+    )
+    event = _build_event(command, target, payload, reviewer_result, issue, receipt)
+    try:
+        store.save_command_receipt(
+            command.idempotency_key, fingerprint, asdict(receipt), state="pending",
+        )
+    except ContractRecordConflictError:
+        return _conflict(command, "idempotency_conflict", "幂等键对应不同请求。")
+    except ContractRecordStoreError:
+        return _failed(command, "command_store_unavailable", "命令幂等记录暂时无法保存。", True)
+    try:
+        _emit(event_sink, event)
+    except Exception:
+        return _failed(command, "event_publish_failed", "审阅事件发布失败，结果需要对账。", False)
+    try:
+        store.save_command_receipt(
+            command.idempotency_key, fingerprint, asdict(receipt), state="completed",
+        )
+    except ContractRecordConflictError:
+        return _conflict(command, "idempotency_conflict", "幂等键对应不同请求。")
+    except ContractRecordStoreError:
+        return _failed(command, "command_store_unavailable", "命令幂等记录暂时无法完成。", True)
+    return CommandOutcome(CommandStatus.ACCEPTED, command.command_id, command.request_id, command.trace_id, receipt)
+
+
+def _same_disposition(left: ReviewIssueDisposition, right: ReviewIssueDisposition) -> bool:
+    return all(
+        getattr(left, field) == getattr(right, field)
+        for field in (
+            "issue_id", "canonical_issue_hash", "issue_code", "field_path", "evidence_hash",
+            "status", "reason", "actor", "reviewer_result_id", "reviewer_result_hash",
+        )
+    )
+
+
+def _build_event(
+    command: AcceptReviewIssueCommand,
+    target: dict[str, str],
+    payload: dict[str, object],
+    reviewer_result: PrewriteReviewerResult,
+    issue,
+    receipt: CommandReceipt,
+) -> ReviewIssueAcceptedEvent:
+    return ReviewIssueAcceptedEvent(
+        event_id=receipt.event_id,
         event_type="ReviewIssueAccepted",
         occurred_at=datetime.now(timezone.utc).isoformat(),
         project_id=target["project_id"],
@@ -193,31 +287,9 @@ def accept_review_issue(
         reviewer_result_hash=reviewer_result.result_hash,
         actor=command.actor,
         reason=payload["reason"],
-        trace_id=command.trace_id,
-        disposition_record_id=disposition_record_id,
+        trace_id=receipt.trace_id,
+        disposition_record_id=receipt.disposition_record_id,
     )
-    try:
-        _emit(event_sink, event)
-    except Exception:
-        return _failed(command, "event_publish_failed", "审阅事件发布失败，结果需要对账。", False)
-
-    receipt = CommandReceipt(
-        command_id=command.command_id,
-        request_id=command.request_id,
-        idempotency_key=command.idempotency_key,
-        fingerprint=fingerprint,
-        audit_ref=f"audit-{command.request_id}",
-        trace_id=command.trace_id,
-        disposition_record_id=disposition_record_id,
-        event_id=event.event_id,
-    )
-    try:
-        store.save_command_receipt(command.idempotency_key, fingerprint, asdict(receipt))
-    except ContractRecordConflictError:
-        return _conflict(command, "idempotency_conflict", "幂等键对应不同请求。")
-    except ContractRecordStoreError:
-        return _failed(command, "command_store_unavailable", "命令幂等记录暂时无法保存。", True)
-    return CommandOutcome(CommandStatus.ACCEPTED, command.command_id, command.request_id, command.trace_id, receipt)
 
 
 def _validate_command(command: AcceptReviewIssueCommand) -> tuple[dict[str, str], dict[str, object]]:
