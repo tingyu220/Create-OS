@@ -232,7 +232,9 @@ def accept_review_issue(
         ruleset_version=reviewer_result.ruleset_version,
         semantic_asset_versions=reviewer_result.semantic_asset_versions,
     )
-    if not gate.is_ready:
+    if any(code in {"missing_prewrite_review", "stale_prewrite_review"} for code in gate.issue_codes):
+        return _rejected(command, "reviewer_result_stale", "审阅结果绑定已失效。")
+    if issue.severity == "high":
         return _rejected(command, "reviewer_gate_blocked", "当前审阅结果仍包含不可接受的阻断问题。")
 
     try:

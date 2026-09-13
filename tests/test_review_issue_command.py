@@ -39,6 +39,7 @@ def _review(
     *,
     contract_content_hash: str = _CURRENT_CONTENT_HASH,
     contract_version: int = _CURRENT_DECISION.contract_version,
+    issues: tuple[ReviewIssue, ...] | None = None,
 ) -> PrewriteReviewerResult:
     return PrewriteReviewerResult.build(
         result_id="review-001",
@@ -48,7 +49,7 @@ def _review(
         baseline_fingerprint="b" * 64,
         ruleset_version="prewrite-v1",
         semantic_asset_versions=(("function_semantics", "v1"),),
-        issues=(issue or _issue(),),
+        issues=issues or (issue or _issue(),),
     )
 
 
@@ -268,6 +269,36 @@ def test_accept_review_issue_rejects_reviewer_from_old_pointer_after_contract_sw
     assert outcome.status == "rejected"
     assert outcome.error is not None
     assert outcome.error.code == "current_contract_binding_mismatch"
+
+
+def test_accept_review_issue_accepts_multiple_warning_issues_one_at_a_time(tmp_path):
+    first_issue = _issue()
+    second_issue = ReviewIssue.build(
+        issue_id="issue-consequence",
+        code="missing_choice_consequence",
+        severity="warning",
+        blocking=True,
+        requires_human_disposition=False,
+        field_path="chapter_contract.protagonist_choice.consequence",
+        evidence_checks=(EvidenceCheck("field_found", False, "未找到选择后果"),),
+        repair_hint="补充选择后果或由人工裁决",
+    )
+    review = _review(issues=(first_issue, second_issue))
+    store = _store(tmp_path, review)
+    first = accept_review_issue(_command(review), store, [])
+    second_command = _command(
+        review,
+        target={"project_id": review.contract_id, "issue_id": second_issue.issue_id},
+        payload={**_command(review).payload, "reason": "第二条缺口也已由主编确认可接受"},
+        idempotency_key="idem-002",
+        trace_id="trace-002",
+    )
+
+    second = accept_review_issue(second_command, store, [])
+
+    assert first.status == "accepted"
+    assert second.status == "accepted"
+    assert len(store.find_dispositions(review.result_id, review.result_hash)) == 2
 
 
 def test_accept_review_issue_retries_partial_sink_with_same_event_id(tmp_path):
