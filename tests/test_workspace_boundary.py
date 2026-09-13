@@ -181,12 +181,42 @@ def test_command_boundary_does_not_invent_projection_refresh_id():
     assert result.status == CommandStatus.ACCEPTED
     assert result.projection_refresh_id is None
 
+
+def test_request_validator_failure_is_stable_and_has_no_side_effects(tmp_path):
+    calls = {"validator": 0, "handler": 0, "version": 0, "reserve": 0}
+
+    def validator(_request):
+        calls["validator"] += 1
+        raise RuntimeError("unexpected validator failure")
+
+    def handler(_request):
+        calls["handler"] += 1
+        return ()
+
+    class CountingStore(FileCommandResultStore):
+        def reserve(self, key, fingerprint):
+            calls["reserve"] += 1
+            return super().reserve(key, fingerprint)
+
+    result = CommandBoundary(
+        handler,
+        version_reader=lambda _target: calls.__setitem__("version", calls["version"] + 1) or 1,
+        store=CountingStore(tmp_path),
+        request_validator=validator,
+    ).execute(CommandRequest("command", "request", "actor", "target", {}, 1, "validator-failure"))
+
+    assert result.status is CommandStatus.FAILED
+    assert result.error.code == "command_validation_failed"
+    assert result.error.retryable is False
+    assert calls == {"validator": 1, "handler": 0, "version": 0, "reserve": 0}
+    assert not (tmp_path / ".creative_os" / "commands" / "results.json").exists()
+
 def test_command_boundary_returns_real_projection_refresh_receipt():
     calls = []
     boundary = CommandBoundary(
         lambda _request: calls.append("domain") or ("event-1",),
         version_reader=lambda _: 0,
-        refresh_scheduler=lambda refs, trace_id: calls.append((refs, trace_id)) or "refresh-real",
+        refresh_scheduler=lambda _request, refs, trace_id: calls.append((refs, trace_id)) or "refresh-real",
     )
     result = boundary.execute(CommandRequest("command", "request", "actor", "target", {}))
     assert result.status == CommandStatus.ACCEPTED

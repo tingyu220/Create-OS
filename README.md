@@ -116,7 +116,23 @@ Web Workspace 是单小说项目的只读观察面板，页面和 API 只经由 
 python scripts\novel_web_workspace.py --project-root projects\文明升阶 --refresh
 ```
 
-打开命令输出的地址即可查看 Overview、Chapter Matrix、Quality、Runtime / Trace。API 为 `GET /api/workspace`；投影的 `fresh`、`stale`、`partial`、`unavailable` 与来源引用会原样展示。省略 `--refresh` 时不会写入项目，只读取已有投影缓存。
+打开命令输出的地址即可查看 Overview、Chapter Matrix、Quality、Runtime / Trace。只读查询 API 为 `GET /api/workspace`；投影的 `fresh`、`stale`、`partial`、`unavailable` 与来源引用会原样展示。
+
+工作台唯一的写入口是 `POST /api/commands/refresh-workspace`，请求必须严格包含以下字段：
+
+```json
+{
+  "command_id": "refresh_workspace_projection",
+  "request_id": "request-1",
+  "actor": "local-user",
+  "target": "文明升阶",
+  "payload": {"sections": ["project", "operations"]},
+  "expected_version": null,
+  "idempotency_key": "refresh-1"
+}
+```
+
+响应固定包含 `status`、`error`、`audit_ref`、`trace_id`、`emitted_event_refs` 和 `projection_refresh_id`。重复幂等键返回原结果，冲突返回 `idempotency_conflict`。该命令只刷新可丢弃、可重建的 Projection，不创建小说领域事实，也不代表已经实现领域编辑、审批或生产控制流程。
 # Reader Engagement Foundation
 
 Phase E-A 的 Reader Engagement 权威入口位于 `creative_os.domains.reader_engagement_*`：Plan、Ledger、Curve 与人工 Review 通过追加式 Store 管理。迁移工具仅做只读审计，不从旧正文推断 payoff、abandoned 或自动激活计划。

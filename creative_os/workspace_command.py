@@ -6,7 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Mapping, Protocol
+from typing import Callable, Mapping, Protocol
 from uuid import uuid4
 
 SCHEMA_VERSION = 1
@@ -73,6 +73,14 @@ class ReserveOutcome:
 
 class CommandStoreError(RuntimeError):
     pass
+
+
+class CommandRejectedError(RuntimeError):
+    def __init__(self, code: str, message: str, retryable: bool = False) -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.retryable = retryable
 
 class CommandResultStore(Protocol):
     def read(self, key: str) -> CommandResultRecord | None: ...
@@ -177,7 +185,7 @@ class CommandHandler(Protocol):
     def __call__(self, request: CommandRequest) -> tuple[str, ...]: ...
 
 class ProjectionRefreshScheduler(Protocol):
-    def __call__(self, event_refs: tuple[str, ...], trace_id: str) -> str: ...
+    def __call__(self, request: CommandRequest, event_refs: tuple[str, ...], trace_id: str) -> str: ...
 
 class CommandBoundary:
     def __init__(
@@ -187,17 +195,33 @@ class CommandBoundary:
         version_reader,
         store: CommandResultStore | None = None,
         refresh_scheduler: ProjectionRefreshScheduler | None = None,
+        request_validator: Callable[[CommandRequest], None] | None = None,
     ) -> None:
         self._handler = handler
         self._version_reader = version_reader
         self._store = store
         self._refresh_scheduler = refresh_scheduler
+        self._request_validator = request_validator
         self._results: dict[str, tuple[str, CommandResult]] = {}
 
     def execute(self, request: CommandRequest) -> CommandResult:
         if not all(isinstance(value, str) and value.strip() for value in (request.command_id, request.request_id, request.actor, request.target)):
             return _rejected(request, "validation_failed", "命令身份字段不能为空。", False)
-        if not isinstance(request.payload, Mapping) or (request.expected_version is not None and (type(request.expected_version) is not int or request.expected_version < 0)):
+        if not isinstance(request.payload, Mapping):
+            return _rejected(request, "validation_failed", "命令载荷或版本格式无效。", False)
+        if self._request_validator is not None:
+            try:
+                self._request_validator(request)
+            except CommandRejectedError as error:
+                return _rejected(request, error.code, error.message, error.retryable)
+            except Exception:
+                return CommandResult(
+                    CommandStatus.FAILED,
+                    request.command_id,
+                    request.request_id,
+                    CommandError("command_validation_failed", "命令预校验失败。", False),
+                )
+        if request.expected_version is not None and (type(request.expected_version) is not int or request.expected_version < 0):
             return _rejected(request, "validation_failed", "命令载荷或版本格式无效。", False)
         key = request.idempotency_key or request.request_id
         try:
@@ -261,12 +285,14 @@ class CommandBoundary:
         trace_id = f"trace-{uuid4().hex}"
         try:
             refs = tuple(self._handler(request))
+        except CommandRejectedError as error:
+            return _rejected(request, error.code, error.message, error.retryable)
         except Exception:
             return _unknown(request, trace_id)
         refresh_id = None
         if self._refresh_scheduler is not None:
             try:
-                refresh_id = self._refresh_scheduler(refs, trace_id)
+                refresh_id = self._refresh_scheduler(request, refs, trace_id)
                 if not isinstance(refresh_id, str) or not refresh_id:
                     raise ValueError("projection_refresh_receipt_invalid")
             except Exception:

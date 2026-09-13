@@ -85,16 +85,19 @@ class FileRefreshStateStore:
 class ProjectionRefreshCoordinator:
     def __init__(self, builder: Callable[[str, frozenset[ProjectionSection], str], object], journal_path: str | Path | None = None, clock: Callable[[], str] | None = None) -> None:
         self._builder = builder
-        self._requests: dict[str, tuple[str, frozenset[ProjectionSection], int]] = {}
+        self._requests: dict[str, tuple[str, frozenset[ProjectionSection], int, str]] = {}
         self._journal_path = Path(journal_path) if journal_path else None
         self._clock = clock or (lambda: datetime.now(timezone.utc).isoformat())
         self._store = FileRefreshStateStore(self._journal_path) if self._journal_path else None
         if self._journal_path and self._journal_path.is_file():
-            for key, row in self._store.states.items(): self._requests[key] = (row["project_id"], frozenset(ProjectionSection(x) for x in row["sections"]), row["attempts"])
+            for key, row in self._store.states.items(): self._requests[key] = (row["project_id"], frozenset(ProjectionSection(x) for x in row["sections"]), row["attempts"], row["trace_id"])
 
-    def refresh(self, project_id: str, sections: set[ProjectionSection]) -> RefreshResult:
+    def refresh(self, project_id: str, sections: set[ProjectionSection], trace_id: str | None = None) -> RefreshResult:
         refresh_id = f"refresh-{uuid4().hex}"
-        self._requests[refresh_id] = (project_id, frozenset(sections), 0)
+        effective_trace_id = f"trace-{refresh_id}" if trace_id is None else trace_id
+        if not isinstance(effective_trace_id, str) or not effective_trace_id.strip():
+            raise ValueError("refresh_trace_id_invalid")
+        self._requests[refresh_id] = (project_id, frozenset(sections), 0, effective_trace_id)
         self._record(refresh_id, "requested", None)
         return self.retry(refresh_id)
 
@@ -104,13 +107,13 @@ class ProjectionRefreshCoordinator:
     def retry(self, refresh_id: str) -> RefreshResult:
         if refresh_id not in self._requests:
             raise KeyError("refresh_id_not_found")
-        project_id, sections, attempts = self._requests[refresh_id]
+        project_id, sections, attempts, trace_id = self._requests[refresh_id]
         if self._store and self._store.states.get(refresh_id, {}).get("terminal"):
             state = self._store.states[refresh_id]
             receipt = None if state.get("receipt") is None else RefreshReceipt(refresh_id, state["project_id"], tuple(state["sections"]), state["receipt"]["snapshot_id"], state["receipt"]["trace_id"])
             return RefreshResult(refresh_id, RefreshStatus.SUCCEEDED, attempts, None, state.get("trace_id"), receipt, state.get("requested_at"), state.get("completed_at"))
         attempts += 1
-        self._requests[refresh_id] = (project_id, sections, attempts)
+        self._requests[refresh_id] = (project_id, sections, attempts, trace_id)
         try:
             value = self._builder(project_id, sections, refresh_id)
             snapshot_id = getattr(value, "snapshot_id", None)
@@ -125,11 +128,15 @@ class ProjectionRefreshCoordinator:
         result = RefreshResult(refresh_id, RefreshStatus.SUCCEEDED, attempts, None, self._trace(refresh_id), receipt, requested, self._clock()); self._record(refresh_id, result.status.value, None, result); return result
 
     def _trace(self, refresh_id: str) -> str:
-        return self._store.states.get(refresh_id, {}).get("trace_id", f"trace-{refresh_id}") if self._store else f"trace-{refresh_id}"
+        if self._store:
+            stored_trace_id = self._store.states.get(refresh_id, {}).get("trace_id")
+            if stored_trace_id:
+                return stored_trace_id
+        return self._requests[refresh_id][3]
 
     def _record(self, refresh_id: str, status: str, diagnostic: RefreshDiagnostic | None, result: RefreshResult | None = None) -> None:
         if not self._journal_path: return
-        project_id, sections, attempts = self._requests[refresh_id]; self._journal_path.parent.mkdir(parents=True, exist_ok=True)
+        project_id, sections, attempts, _trace_id = self._requests[refresh_id]; self._journal_path.parent.mkdir(parents=True, exist_ok=True)
         receipt = None if result is None or result.receipt is None else {"refresh_id": result.receipt.refresh_id, "project_id": result.receipt.project_id, "sections": result.receipt.sections, "snapshot_id": result.receipt.snapshot_id, "trace_id": result.receipt.trace_id}
         requested_at = self._store.states.get(refresh_id, {}).get("requested_at") or self._clock()
         self._store.save(refresh_id, {"project_id": project_id, "sections": sorted(item.value for item in sections), "status": status, "attempts": attempts, "diagnostic": None if diagnostic is None else {"code": diagnostic.code, "message": diagnostic.message}, "trace_id": self._trace(refresh_id), "terminal": status == "succeeded", "receipt": receipt, "requested_at": requested_at, "completed_at": None if result is None else result.completed_at})

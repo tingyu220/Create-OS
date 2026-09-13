@@ -6,6 +6,8 @@ from http.client import HTTPConnection
 from pathlib import Path
 from threading import Thread
 
+import pytest
+
 from creative_os.projection.chapters import ChapterSnapshot, ChapterStatus
 from creative_os.projection.model import ProjectSnapshot
 from creative_os.projection.overview import OverviewSnapshot, ProjectRunStatus
@@ -20,6 +22,7 @@ from creative_os.workspace_dto import (
     SectionEnvelope,
 )
 from creative_os.workspace_query import WorkspaceQueryAdapter
+from creative_os.workspace_command import CommandError, CommandResult, CommandStatus
 
 
 HASH = "a" * 64
@@ -109,8 +112,137 @@ def test_frontend_reads_only_workspace_api_and_has_all_read_only_views():
 
     assert all(anchor in html for anchor in ("#overview", "#chapters", "#quality", "#runtime"))
     assert 'fetch("/api/workspace"' in javascript
-    assert "fetch(\"/api/" not in javascript.replace('fetch("/api/workspace"', "")
-    assert "POST" not in javascript
+    assert 'fetch("/api/commands/refresh-workspace"' in javascript
+    assert javascript.count('fetch("/api/') == 2
+    assert "/api/commands/" in javascript
+
+
+def _command_request() -> dict[str, object]:
+    return {
+        "command_id": "refresh_workspace_projection",
+        "request_id": "request-1",
+        "actor": "local-user",
+        "target": "p",
+        "payload": {"sections": ["project", "operations"]},
+        "expected_version": None,
+        "idempotency_key": "refresh-1",
+    }
+
+
+class CommandStub:
+    def __init__(self, result: CommandResult) -> None:
+        self.result = result
+        self.requests = []
+
+    def execute(self, request):
+        self.requests.append(request)
+        return self.result
+
+
+def _command_server(command_stub: CommandStub):
+    from creative_os.web_workspace import WorkspaceWebAdapter, create_server
+
+    return create_server(
+        WorkspaceWebAdapter(WorkspaceQueryAdapter(Reader()), "p"),
+        command_adapter=command_stub,
+        port=0,
+    )
+
+
+def _post(server, body: object, *, content_type: str = "application/json"):
+    connection = HTTPConnection(*server.server_address)
+    encoded = body if isinstance(body, bytes) else json.dumps(body).encode("utf-8")
+    connection.request(
+        "POST",
+        "/api/commands/refresh-workspace",
+        body=encoded,
+        headers={"Content-Type": content_type, "Content-Length": str(len(encoded))},
+    )
+    return connection.getresponse()
+
+
+def test_refresh_command_http_returns_202_and_stable_result():
+    command = CommandStub(CommandResult(CommandStatus.ACCEPTED, "refresh_workspace_projection", "request-1", trace_id="trace-1", projection_refresh_id="refresh-1"))
+    server = _command_server(command)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        response = _post(server, _command_request())
+        assert response.status == 202
+        assert response.getheader("Connection") == "close"
+        assert json.loads(response.read())["projection_refresh_id"] == "refresh-1"
+        assert command.requests[0].target == "p"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@pytest.mark.parametrize(
+    ("body", "content_type", "status"),
+    [
+        (b"{bad", "application/json", 400),
+        (b"{}", "text/plain", 415),
+        (b"x" * (16 * 1024 + 1), "application/json", 413),
+    ],
+)
+def test_refresh_command_http_rejects_invalid_transport(body, content_type, status):
+    command = CommandStub(CommandResult(CommandStatus.ACCEPTED, "refresh_workspace_projection", "request-1"))
+    server = _command_server(command)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        assert _post(server, body, content_type=content_type).status == status
+        assert command.requests == []
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+@pytest.mark.parametrize(
+    ("result", "status"),
+    [
+        (CommandResult(CommandStatus.REJECTED, "refresh_workspace_projection", "request-1", CommandError("validation_failed", "bad", False)), 422),
+        (CommandResult(CommandStatus.REJECTED, "refresh_workspace_projection", "request-1", CommandError("idempotency_conflict", "conflict", False)), 409),
+        (CommandResult(CommandStatus.FAILED, "refresh_workspace_projection", "request-1", CommandError("command_outcome_unknown", "unknown", False)), 503),
+    ],
+)
+def test_refresh_command_http_maps_command_statuses(result, status):
+    server = _command_server(CommandStub(result))
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        assert _post(server, _command_request()).status == status
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_arbitrary_post_route_is_not_a_generic_command_dispatcher():
+    command = CommandStub(CommandResult(CommandStatus.ACCEPTED, "refresh_workspace_projection", "request-1"))
+    server = _command_server(command)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        connection = HTTPConnection(*server.server_address)
+        connection.request("POST", "/api/commands/delete-project", body=b"{}", headers={"Content-Type": "application/json"})
+        assert connection.getresponse().status == 404
+        assert command.requests == []
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_frontend_exposes_only_refresh_workspace_command():
+    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+
+    assert 'data-command="refresh-workspace"' in html
+    assert 'fetch("/api/commands/refresh-workspace"' in javascript
+    assert 'loadWorkspace()' in javascript
+    assert 'aria-live="polite"' in html
+    assert "editor" not in html.lower()
+    assert "approval" not in html.lower()
+    assert "portfolio" not in html.lower()
 
 
 def test_read_only_http_workspace_serves_json_and_ui_without_write_routes():

@@ -5,11 +5,13 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
+from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
 from creative_os.workspace_dto import encode_workspace_envelope
 from creative_os.workspace_query import WorkspaceQueryAdapter
 
 
 WEB_ROOT = Path(__file__).with_name("web")
+MAX_COMMAND_BODY_BYTES = 16 * 1024
 
 
 class WorkspaceWebAdapter:
@@ -29,9 +31,10 @@ class WorkspaceWebAdapter:
 
 
 class WorkspaceRequestHandler(BaseHTTPRequestHandler):
-    """单项目只读工作台 HTTP 边界；没有写入或命令路由。"""
+    """单项目工作台 HTTP 边界，只开放一个受限的投影刷新命令。"""
 
     workspace_adapter: WorkspaceWebAdapter
+    command_adapter: object | None = None
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
@@ -57,18 +60,59 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_POST(self) -> None:  # noqa: N802
-        self.send_response(405)
-        self.send_header("Allow", "GET")
-        self.send_header("Content-Length", "0")
-        self.end_headers()
+        route = urlsplit(self.path).path
+        if route == "/api/commands/refresh-workspace":
+            self._handle_refresh_command()
+            return
+        if route == "/api/workspace":
+            self.send_response(405)
+            self.send_header("Allow", "GET")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self._send_text(404, "Not found")
+
+    def _handle_refresh_command(self) -> None:
+        self.close_connection = True
+        if self.command_adapter is None:
+            self._send_json(503, json.dumps({"error": {"code": "command_unavailable", "message": "命令边界不可用。"}}).encode("utf-8"), close=True)
+            return
+        if self.headers.get_content_type() != "application/json":
+            self._send_json(415, '{"error":{"code":"unsupported_media_type","message":"只接受 application/json。"}}'.encode("utf-8"), close=True)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "-1"))
+        except ValueError:
+            length = -1
+        if length < 0:
+            self._send_json(400, '{"error":{"code":"invalid_content_length","message":"请求体长度无效。"}}'.encode("utf-8"), close=True)
+            return
+        if length > MAX_COMMAND_BODY_BYTES:
+            self._send_json(413, '{"error":{"code":"payload_too_large","message":"命令请求体超过大小限制。"}}'.encode("utf-8"), close=True)
+            return
+        try:
+            raw = json.loads(self.rfile.read(length).decode("utf-8"))
+            request = decode_web_command(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self._send_json(400, '{"error":{"code":"invalid_json","message":"请求体不是有效 JSON。"}}'.encode("utf-8"), close=True)
+            return
+        except WebCommandValidationError as error:
+            body = json.dumps({"error": {"code": error.code, "message": error.message}}, ensure_ascii=False).encode("utf-8")
+            self._send_json(400, body, close=True)
+            return
+        result = self.command_adapter.execute(request)
+        status = _command_http_status(result)
+        self._send_json(status, json.dumps(encode_command_result(result), ensure_ascii=False, sort_keys=True).encode("utf-8"), close=True)
 
     def log_message(self, _format: str, *_args: object) -> None:
         return
 
-    def _send_json(self, status: int, content: bytes) -> None:
+    def _send_json(self, status: int, content: bytes, *, close: bool = False) -> None:
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        if close:
+            self.send_header("Connection", "close")
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
         self.wfile.write(content)
@@ -85,6 +129,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
 def create_server(
     adapter: WorkspaceWebAdapter,
     *,
+    command_adapter: object | None = None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -93,11 +138,23 @@ def create_server(
     if not isinstance(adapter, WorkspaceWebAdapter):
         raise TypeError("workspace_web_adapter_required")
     asset_root = Path(web_root)
+    bound_command_adapter = command_adapter
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
+        command_adapter = bound_command_adapter
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)
     server.daemon_threads = True
     return server
+
+
+def _command_http_status(result: object) -> int:
+    status = getattr(getattr(result, "status", None), "value", None)
+    if status == "accepted":
+        return 202
+    if status == "rejected":
+        code = getattr(getattr(result, "error", None), "code", None)
+        return 409 if code == "idempotency_conflict" else 422
+    return 503
