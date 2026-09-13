@@ -3,12 +3,22 @@ from __future__ import annotations
 from dataclasses import replace
 
 from creative_os.domains.contract_issue import EvidenceCheck
+from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator, ContractPointer
 from creative_os.domains.contract_record_store import ContractRecordStore, ContractRecordStoreError
 from creative_os.domains.contract_review import PrewriteReviewerResult, ReviewIssue
+from creative_os.domains.narrative_codec import NarrativeDecisionCodec
+from creative_os.domains.narrative_memory import build_narrative_candidate_item
+from creative_os.memory.model import MemoryEvidence
 from creative_os.domains.review_issue_command import (
     AcceptReviewIssueCommand,
     accept_review_issue,
 )
+from tests.test_contract_preflight import _candidate
+from tests.test_contract_revision import _replacement
+
+
+_CURRENT_DECISION = _candidate()
+_CURRENT_CONTENT_HASH = NarrativeDecisionCodec.content_hash(_CURRENT_DECISION)
 
 
 def _issue() -> ReviewIssue:
@@ -24,12 +34,17 @@ def _issue() -> ReviewIssue:
     )
 
 
-def _review(issue: ReviewIssue | None = None) -> PrewriteReviewerResult:
+def _review(
+    issue: ReviewIssue | None = None,
+    *,
+    contract_content_hash: str = _CURRENT_CONTENT_HASH,
+    contract_version: int = _CURRENT_DECISION.contract_version,
+) -> PrewriteReviewerResult:
     return PrewriteReviewerResult.build(
         result_id="review-001",
-        contract_id="project-a",
-        contract_version=3,
-        contract_content_hash="a" * 64,
+        contract_id=_CURRENT_DECISION.contract_id,
+        contract_version=contract_version,
+        contract_content_hash=contract_content_hash,
         baseline_fingerprint="b" * 64,
         ruleset_version="prewrite-v1",
         semantic_asset_versions=(("function_semantics", "v1"),),
@@ -42,7 +57,7 @@ def _command(review: PrewriteReviewerResult, **overrides: object) -> AcceptRevie
         "command_id": "accept_review_issue",
         "request_id": "request-001",
         "actor": "editor-tingyu",
-        "target": {"project_id": "project-a", "issue_id": review.issues[0].issue_id},
+        "target": {"project_id": review.contract_id, "issue_id": review.issues[0].issue_id},
         "payload": {
             "reason": "主编确认当前缺口可接受",
             "reviewer_result_id": review.result_id,
@@ -59,6 +74,29 @@ def _command(review: PrewriteReviewerResult, **overrides: object) -> AcceptRevie
 def _store(tmp_path, review: PrewriteReviewerResult) -> ContractRecordStore:
     store = ContractRecordStore(tmp_path)
     store.save_reviewer_result(review)
+    lifecycle = ContractLifecycleCoordinator(tmp_path)
+    item = build_narrative_candidate_item(
+        tmp_path,
+        _CURRENT_DECISION,
+        evidence=(MemoryEvidence("test", "current"),),
+        item_id=f"{_CURRENT_DECISION.contract_id}-v{_CURRENT_DECISION.contract_version:04d}",
+    ).activate(actor="editor")
+    lifecycle.store.add_immutable(item)
+    lifecycle.write_pointer(
+        ContractPointer.build(
+            physical_key=item.id,
+            contract_version=review.contract_version,
+            content_hash=_CURRENT_CONTENT_HASH,
+            baseline_fingerprint=review.baseline_fingerprint,
+            approval_record_id="approval-1",
+            approval_record_hash="c" * 64,
+            reviewer_result_id=review.result_id,
+            reviewer_result_hash=review.result_hash,
+            ruleset_version=review.ruleset_version,
+            semantic_asset_versions=review.semantic_asset_versions,
+            disposition_set_hash="d" * 64,
+        )
+    )
     return store
 
 
@@ -76,7 +114,7 @@ def test_accept_review_issue_saves_disposition_and_emits_traceable_event(tmp_pat
     assert outcome.receipt.disposition_record_id
     assert outcome.receipt.event_id == events[0].event_id
     assert events[0].event_type == "ReviewIssueAccepted"
-    assert events[0].project_id == "project-a"
+    assert events[0].project_id == review.contract_id
     assert events[0].issue_id == "issue-cost"
     assert events[0].canonical_issue_hash == review.issues[0].canonical_issue_hash
     assert events[0].reviewer_result_hash == review.result_hash
@@ -179,11 +217,57 @@ def test_accept_review_issue_rejects_high_issue_with_authoritative_gate(tmp_path
     review = _review(high_issue)
     store = _store(tmp_path, review)
 
-    outcome = accept_review_issue(_command(review, target={"project_id": "project-a", "issue_id": "issue-high"}), store, [])
+    outcome = accept_review_issue(_command(review, target={"project_id": review.contract_id, "issue_id": "issue-high"}), store, [])
 
     assert outcome.status == "rejected"
     assert outcome.error is not None
     assert outcome.error.code == "reviewer_gate_blocked"
+
+
+def test_accept_review_issue_rejects_same_version_reviewer_after_contract_content_changes(tmp_path):
+    review = _review(contract_content_hash="e" * 64)
+    store = _store(tmp_path, review)
+
+    outcome = accept_review_issue(_command(review), store, [])
+
+    assert outcome.status == "rejected"
+    assert outcome.error is not None
+    assert outcome.error.code == "current_contract_binding_mismatch"
+
+
+def test_accept_review_issue_rejects_reviewer_from_old_pointer_after_contract_switch(tmp_path):
+    review = _review()
+    store = _store(tmp_path, review)
+    lifecycle = ContractLifecycleCoordinator(tmp_path)
+    replacement = _replacement(_CURRENT_DECISION)
+    item = build_narrative_candidate_item(
+        tmp_path,
+        replacement,
+        evidence=(MemoryEvidence("test", "replacement"),),
+        item_id=f"{replacement.contract_id}-v{replacement.contract_version:04d}",
+    ).activate(actor="editor")
+    lifecycle.store.add_immutable(item)
+    lifecycle.write_pointer(
+        ContractPointer.build(
+            physical_key=item.id,
+            contract_version=replacement.contract_version,
+            content_hash=NarrativeDecisionCodec.content_hash(replacement),
+            baseline_fingerprint="f" * 64,
+            approval_record_id="approval-3",
+            approval_record_hash="a" * 64,
+            reviewer_result_id=review.result_id,
+            reviewer_result_hash=review.result_hash,
+            ruleset_version=review.ruleset_version,
+            semantic_asset_versions=review.semantic_asset_versions,
+            disposition_set_hash="b" * 64,
+        )
+    )
+
+    outcome = accept_review_issue(_command(review), store, [])
+
+    assert outcome.status == "rejected"
+    assert outcome.error is not None
+    assert outcome.error.code == "current_contract_binding_mismatch"
 
 
 def test_accept_review_issue_retries_partial_sink_with_same_event_id(tmp_path):

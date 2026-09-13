@@ -13,6 +13,7 @@ from creative_os.domains.contract_record_store import (
     ContractRecordStore,
     ContractRecordStoreError,
 )
+from creative_os.domains.contract_lifecycle import ContractLifecycleCoordinator
 from creative_os.domains.contract_review import (
     PrewriteReviewerResult,
     ReviewIssueDisposition,
@@ -107,6 +108,8 @@ class ReviewIssueAcceptedEvent:
 
 
 class EventSink(Protocol):
+    """至少一次投递；消费者必须按稳定 event_id 去重。"""
+
     def append(self, event: ReviewIssueAcceptedEvent) -> object: ...
 
 
@@ -141,6 +144,22 @@ def accept_review_issue(
         return _rejected(command, "reviewer_result_binding_mismatch", "审阅结果不属于目标项目。")
     if reviewer_result.result_hash != payload["reviewer_result_hash"]:
         return _rejected(command, "reviewer_result_hash_mismatch", "审阅结果哈希不匹配。")
+    try:
+        current_pointer = ContractLifecycleCoordinator(store.project_root).read_pointer(
+            target["project_id"]
+        )
+    except Exception:
+        return _rejected(command, "current_contract_unavailable", "当前活动合同暂时无法读取。")
+    if current_pointer is None:
+        return _rejected(command, "current_contract_unavailable", "当前活动合同不存在。")
+    if (
+        current_pointer.contract_version != reviewer_result.contract_version
+        or current_pointer.content_hash != reviewer_result.contract_content_hash
+        or current_pointer.baseline_fingerprint != reviewer_result.baseline_fingerprint
+        or current_pointer.reviewer_result_id != reviewer_result.result_id
+        or current_pointer.reviewer_result_hash != reviewer_result.result_hash
+    ):
+        return _rejected(command, "current_contract_binding_mismatch", "审阅结果不是当前活动合同的结果。")
     issue = next((item for item in reviewer_result.issues if item.issue_id == target["issue_id"]), None)
     if issue is None:
         return _rejected(command, "review_issue_not_found", "审阅问题不存在。")
