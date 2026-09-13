@@ -9,6 +9,7 @@ from creative_os.workspace_command import (
     CommandResult,
 )
 from creative_os.workspace_dto import ProjectionSection
+from creative_os.workspace_review_command import WorkspaceReviewIssueCommandHandler
 
 
 class ProjectionRefreshCoordinatorLike(Protocol):
@@ -60,6 +61,58 @@ class WorkspaceProjectionRefreshScheduler:
         if receipt.project_id != request.target:
             raise RuntimeError("projection_refresh_receipt_project_mismatch")
         if tuple(receipt.sections) != expected_sections:
+            raise RuntimeError("projection_refresh_receipt_sections_mismatch")
+        if not isinstance(receipt.snapshot_id, str) or not receipt.snapshot_id:
+            raise RuntimeError("projection_refresh_receipt_snapshot_missing")
+        if receipt.trace_id != trace_id:
+            raise RuntimeError("projection_refresh_receipt_trace_mismatch")
+        return refresh_id
+
+
+class WorkspaceReviewIssueProjectionRefreshScheduler:
+    """接受审阅问题后刷新质量所属的项目投影。"""
+
+    def __init__(self, coordinator: ProjectionRefreshCoordinatorLike) -> None:
+        self._coordinator = coordinator
+
+    def __call__(self, request: CommandRequest, event_refs: tuple[str, ...], trace_id: str) -> str:
+        return self.schedule_with_context(request, event_refs, trace_id, None)
+
+    def schedule_with_context(
+        self,
+        request: CommandRequest,
+        event_refs: tuple[str, ...],
+        trace_id: str,
+        audit_ref: str | None,
+    ) -> str:
+        target = request.target
+        if not isinstance(target, Mapping):
+            raise CommandRejectedError("validation_failed", "接受审阅问题命令目标格式无效。")
+        project_id = target.get("project_id")
+        if not isinstance(project_id, str) or not project_id:
+            raise CommandRejectedError("validation_failed", "接受审阅问题命令项目目标无效。")
+        refresh_with_context = getattr(self._coordinator, "refresh_command", None)
+        if callable(refresh_with_context):
+            result = refresh_with_context(
+                project_id,
+                {ProjectionSection.PROJECT},
+                event_refs=event_refs,
+                audit_ref=audit_ref,
+                trace_id=trace_id,
+            )
+        else:
+            result = self._coordinator.refresh(project_id, {ProjectionSection.PROJECT}, trace_id=trace_id)
+        if getattr(getattr(result, "status", None), "value", None) != "succeeded":
+            raise RuntimeError("projection_refresh_failed")
+        receipt = getattr(result, "receipt", None)
+        refresh_id = getattr(receipt, "refresh_id", None)
+        if not isinstance(refresh_id, str) or not refresh_id:
+            raise RuntimeError("projection_refresh_receipt_missing")
+        if result.refresh_id != refresh_id:
+            raise RuntimeError("projection_refresh_receipt_refresh_id_mismatch")
+        if receipt.project_id != project_id:
+            raise RuntimeError("projection_refresh_receipt_project_mismatch")
+        if tuple(receipt.sections) != (ProjectionSection.PROJECT.value,):
             raise RuntimeError("projection_refresh_receipt_sections_mismatch")
         if not isinstance(receipt.snapshot_id, str) or not receipt.snapshot_id:
             raise RuntimeError("projection_refresh_receipt_snapshot_missing")

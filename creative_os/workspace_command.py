@@ -31,11 +31,12 @@ class CommandRequest:
     command_id: str
     request_id: str
     actor: str
-    target: str
+    target: str | Mapping[str, object]
     payload: Mapping[str, object]
     expected_version: int | None = None
     idempotency_key: str = ""
     request_fingerprint: str = ""
+    status: str = "accepted"
 
 @dataclass(frozen=True, slots=True)
 class CommandError:
@@ -53,6 +54,22 @@ class CommandResult:
     trace_id: str | None = None
     emitted_event_refs: tuple[str, ...] = ()
     projection_refresh_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CommandHandlerResult:
+    """处理器返回的领域结果，供统一边界映射为 Web 命令结果。"""
+
+    status: CommandStatus = CommandStatus.ACCEPTED
+    error: CommandError | None = None
+    audit_ref: str | None = None
+    emitted_event_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.status is CommandStatus.ACCEPTED and self.error is not None:
+            raise ValueError("accepted_command_handler_result_must_not_have_error")
+        if self.status is not CommandStatus.ACCEPTED and self.error is None:
+            raise ValueError("rejected_command_handler_result_requires_error")
 
 @dataclass(frozen=True, slots=True)
 class CommandResultRecord:
@@ -205,7 +222,7 @@ class CommandBoundary:
         self._results: dict[str, tuple[str, CommandResult]] = {}
 
     def execute(self, request: CommandRequest) -> CommandResult:
-        if not all(isinstance(value, str) and value.strip() for value in (request.command_id, request.request_id, request.actor, request.target)):
+        if not all(isinstance(value, str) and value.strip() for value in (request.command_id, request.request_id, request.actor)) or not _valid_target(request.target):
             return _rejected(request, "validation_failed", "命令身份字段不能为空。", False)
         if not isinstance(request.payload, Mapping):
             return _rejected(request, "validation_failed", "命令载荷或版本格式无效。", False)
@@ -284,22 +301,48 @@ class CommandBoundary:
                 return _rejected(request, "version_conflict", "目标版本已变化。", True)
         trace_id = f"trace-{uuid4().hex}"
         try:
-            refs = tuple(self._handler(request))
+            handled = self._invoke_handler(request, trace_id)
         except CommandRejectedError as error:
             return _rejected(request, error.code, error.message, error.retryable)
         except Exception:
             return _unknown(request, trace_id)
+        if isinstance(handled, CommandHandlerResult):
+            if handled.status is not CommandStatus.ACCEPTED:
+                return CommandResult(
+                    handled.status,
+                    request.command_id,
+                    request.request_id,
+                    error=handled.error,
+                    audit_ref=handled.audit_ref,
+                    trace_id=trace_id,
+                    emitted_event_refs=handled.emitted_event_refs,
+                )
+            refs = handled.emitted_event_refs
+            audit_ref = handled.audit_ref
+        else:
+            refs = tuple(handled)
+            audit_ref = f"audit-{request.request_id}"
         refresh_id = None
         if self._refresh_scheduler is not None:
             try:
-                refresh_id = self._refresh_scheduler(request, refs, trace_id)
+                schedule_with_context = getattr(self._refresh_scheduler, "schedule_with_context", None)
+                if callable(schedule_with_context):
+                    refresh_id = schedule_with_context(request, refs, trace_id, audit_ref)
+                else:
+                    refresh_id = self._refresh_scheduler(request, refs, trace_id)
                 if not isinstance(refresh_id, str) or not refresh_id:
                     raise ValueError("projection_refresh_receipt_invalid")
             except Exception:
                 return _unknown(request, trace_id, refs)
         return CommandResult(CommandStatus.ACCEPTED, request.command_id, request.request_id,
-                             audit_ref=f"audit-{request.request_id}", trace_id=trace_id,
+                             audit_ref=audit_ref, trace_id=trace_id,
                              emitted_event_refs=refs, projection_refresh_id=refresh_id)
+
+    def _invoke_handler(self, request: CommandRequest, trace_id: str):
+        execute_with_trace = getattr(self._handler, "execute_with_trace", None)
+        if callable(execute_with_trace):
+            return execute_with_trace(request, trace_id)
+        return self._handler(request)
 
 def _rejected(request: CommandRequest, code: str, message: str, retryable: bool) -> CommandResult:
     return CommandResult(CommandStatus.REJECTED, request.command_id, request.request_id,
@@ -316,11 +359,20 @@ def _unknown(request: CommandRequest, trace_id=None, refs=()) -> CommandResult:
 def _fingerprint(request: CommandRequest) -> str:
     try:
         encoded = json.dumps({"command_id": request.command_id, "target": request.target,
-                              "payload": request.payload, "expected_version": request.expected_version},
+                              "payload": request.payload, "expected_version": request.expected_version,
+                              "status": request.status},
                              ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
     except (TypeError, ValueError) as error:
         raise ValueError("command_payload_not_json") from error
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _valid_target(target: object) -> bool:
+    if isinstance(target, str):
+        return bool(target.strip())
+    if not isinstance(target, Mapping) or not target:
+        return False
+    return all(isinstance(value, str) and value.strip() for value in target.values())
 
 def _encode_store(records: dict[str, CommandResultRecord]) -> dict[str, object]:
     return {"schema_version": SCHEMA_VERSION,
