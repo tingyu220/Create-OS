@@ -10,7 +10,7 @@ from creative_os.projection.codec import ProjectionCodecError, decode_project_sn
 from creative_os.projection.model import ProjectSnapshot
 from creative_os.projection.overview import OverviewSnapshot, ProjectRunStatus
 from creative_os.projection.provenance import SourceHead, SourceRef
-from creative_os.projection.quality import QualitySnapshot
+from creative_os.projection.quality import QualityIssueSnapshot, QualitySnapshot
 from creative_os.projection.trace import TraceSnapshot, TraceEntrySnapshot
 from creative_os.projection.narrative import CharacterSnapshot, StoryThreadSnapshot, TimelineEntrySnapshot
 from creative_os.projection.provenance import Derivation
@@ -38,6 +38,50 @@ def test_snapshot_codec_round_trips_and_is_deterministic() -> None:
 
     assert first == second
     assert decode_project_snapshot(first) == snapshot
+
+
+def test_snapshot_codec_round_trips_quality_disposition() -> None:
+    snapshot = _snapshot()
+    reference = snapshot.overview.source_refs[0]
+    quality = QualitySnapshot(
+        (QualityIssueSnapshot("issue-1", "repetition", "warning", False, "chapter_001", (reference,), "accepted"),),
+        (),
+        (reference,),
+    )
+    snapshot = ProjectSnapshot.create(
+        project_id=snapshot.project_id, built_at=snapshot.built_at, source_heads=snapshot.source_heads,
+        overview=snapshot.overview, chapters=snapshot.chapters, quality=quality, trace=snapshot.trace,
+    )
+
+    assert decode_project_snapshot(encode_project_snapshot(snapshot)) == snapshot
+
+
+def test_codec_reads_legacy_quality_issue_without_disposition() -> None:
+    snapshot = _snapshot()
+    reference = snapshot.overview.source_refs[0]
+    quality = QualitySnapshot(
+        (QualityIssueSnapshot("issue-1", "repetition", "warning", False, "chapter_001", (reference,), None),),
+        (),
+        (reference,),
+    )
+    current = ProjectSnapshot.create(
+        project_id=snapshot.project_id, built_at=snapshot.built_at, source_heads=snapshot.source_heads,
+        overview=snapshot.overview, chapters=snapshot.chapters, quality=quality, trace=snapshot.trace,
+    )
+    payload = json.loads(encode_project_snapshot(current))
+    for issue in payload["quality"]["issues"]:
+        issue.pop("disposition_status")
+    identity = {key: payload[key] for key in (
+        "schema_version", "project_id", "source_heads", "overview", "chapters", "quality", "trace",
+        "characters", "story_threads", "timeline", "diagnostics",
+    )}
+    payload["snapshot_id"] = hashlib.sha256(
+        json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    decoded = decode_project_snapshot(json.dumps(payload))
+
+    assert decoded.quality.issues[0].disposition_status is None
 
 def test_snapshot_codec_round_trips_nonempty_trace_entry() -> None:
     snapshot = _snapshot()

@@ -13,6 +13,7 @@ class QualityIssueSnapshot:
     blocking: bool
     scope: str
     source_refs: tuple[SourceRef, ...]
+    disposition_status: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
