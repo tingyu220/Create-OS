@@ -82,7 +82,11 @@ def decode_project_snapshot(payload: str) -> ProjectSnapshot:
             diagnostics=tuple(_decode_diagnostic(item) for item in _list(raw["diagnostics"])),
         )
         expected_id = snapshot.snapshot_id if schema_version == PROJECT_SNAPSHOT_SCHEMA_VERSION else _legacy_snapshot_id(snapshot)
-        if expected_id != _text(raw["snapshot_id"]):
+        actual_id = _text(raw["snapshot_id"])
+        if expected_id != actual_id and (
+            schema_version != PROJECT_SNAPSHOT_SCHEMA_VERSION
+            or _legacy_quality_snapshot_id(raw) != actual_id
+        ):
             raise ProjectionCodecError("project_snapshot_id_mismatch")
         return snapshot
     except ProjectionCodecError:
@@ -105,6 +109,23 @@ def _legacy_snapshot_id(snapshot: ProjectSnapshot) -> str:
     return hashlib.sha256(
         json.dumps(_canonical(identity), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def _legacy_quality_snapshot_id(raw: dict[str, Any]) -> str:
+    """计算加入 disposition_status 前的 v2 快照摘要，用于兼容旧缓存。"""
+    identity = {key: raw[key] for key in (
+        "schema_version", "project_id", "source_heads", "overview", "chapters", "quality", "trace",
+        "characters", "story_threads", "timeline", "diagnostics",
+    )}
+    quality = identity["quality"]
+    if isinstance(quality, dict) and isinstance(quality.get("issues"), list):
+        quality = dict(quality)
+        quality["issues"] = [
+            {key: item[key] for key in ("issue_id", "code", "severity", "blocking", "scope", "source_refs")}
+            for item in quality["issues"] if isinstance(item, dict)
+        ]
+        identity["quality"] = quality
+    return hashlib.sha256(json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def _encode_ref(value: SourceRef) -> dict[str, object]:
@@ -253,6 +274,7 @@ def _encode_quality(value: QualitySnapshot) -> dict[str, object]:
             "blocking": item.blocking,
             "scope": item.scope,
             "source_refs": [_encode_ref(ref) for ref in item.source_refs],
+            "disposition_status": item.disposition_status,
         } for item in value.issues],
         "gate_results": [{
             "gate_id": item.gate_id,
@@ -270,11 +292,17 @@ def _decode_quality(value: object) -> QualitySnapshot:
     issues = []
     for item in _list(raw["issues"]):
         issue = _object(item)
-        _keys(issue, {"issue_id", "code", "severity", "blocking", "scope", "source_refs"}, "quality_issue_fields_invalid")
+        keys = set(issue)
+        if keys not in (
+            {"issue_id", "code", "severity", "blocking", "scope", "source_refs"},
+            {"issue_id", "code", "severity", "blocking", "scope", "source_refs", "disposition_status"},
+        ):
+            raise ProjectionCodecError("quality_issue_fields_invalid")
         issues.append(QualityIssueSnapshot(
             _text(issue["issue_id"]), _text(issue["code"]), _text(issue["severity"]),
             _boolean(issue["blocking"]), _text(issue["scope"]),
             tuple(_decode_ref(ref) for ref in _list(issue["source_refs"])),
+            None if issue.get("disposition_status") is None else _text(issue["disposition_status"]),
         ))
     gates = []
     for item in _list(raw["gate_results"]):
