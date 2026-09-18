@@ -126,6 +126,14 @@ def test_frontend_exposes_read_only_chapter_matrix_filter():
     assert 'addEventListener("input", renderChapterMatrix)' in javascript
 
 
+def test_frontend_exposes_runtime_diagnostics_and_recovery_read_model():
+    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+    assert all(marker in html for marker in ("runtime-tasks", "runtime-errors", "runtime-recovery", "runtime-retries"))
+    assert all(marker in javascript for marker in ("operations.tasks", "operations.errors", "operations.recovery", "operations.retries"))
+    assert "retryable" in javascript
+
+
 def _command_request() -> dict[str, object]:
     return {
         "command_id": "refresh_workspace_projection",
