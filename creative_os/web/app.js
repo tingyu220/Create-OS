@@ -66,6 +66,25 @@ function openReviewForm(issue) {
 
 function closeReviewForm() { reviewIssue = null; $("review-accept-form").hidden = true; }
 
+function renderRuntimeDetails(operations) {
+  const tasks = operations ? operations.tasks || [] : [];
+  const errors = operations ? operations.errors || [] : [];
+  const retries = operations ? operations.retries || [] : [];
+  renderStack($("runtime-tasks"), tasks.map((item) => ({
+    code: item.task_id,
+    message: `${text(item.status)} · attempts ${text(item.attempts)} · elapsed ${item.elapsed_seconds == null ? "未提供" : `${item.elapsed_seconds}s`}`,
+    source_refs: item.source_refs,
+  })), "暂无任务记录");
+  renderStack($("runtime-errors"), errors.map((item) => ({
+    code: item.code,
+    message: `${text(item.message)} · ${item.retryable === true ? "可重试" : item.retryable === false ? "不可重试" : "重试性未提供"}`,
+    source_refs: item.source_refs,
+  })), "暂无错误记录");
+  const recovery = operations ? operations.recovery : null;
+  renderStack($("runtime-recovery"), recovery ? [{ code: "recovery", message: text(recovery.state), source_refs: recovery.source_refs }] : [], "未提供恢复状态");
+  renderStack($("runtime-retries"), retries.map((item) => ({ code: "retry", message: `attempts ${text(item.attempts)}`, source_refs: item.source_refs })), "未提供重试状态");
+}
+
 async function acceptReviewIssue(event) {
   event.preventDefault();
   if (!reviewIssue) return;
@@ -127,6 +146,9 @@ function render(data) {
     $("attempt-count").textContent = text(operations.attempts, "未提供");
     $("usage").textContent = operations.usage ? text(operations.usage.total_tokens) : "未提供";
     $("runtime-summary").textContent = `${text(operations.diagnostics?.length, "0")} diagnostics · ${text(operations.errors?.length, "0")} errors`;
+    renderRuntimeDetails(operations);
+  } else {
+    renderRuntimeDetails(null);
   }
   const trace = $("trace-list"); trace.replaceChildren();
   const entries = (snapshot.trace?.entries || []).slice(-100);
