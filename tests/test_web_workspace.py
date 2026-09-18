@@ -117,6 +117,15 @@ def test_frontend_reads_only_workspace_api_and_has_all_read_only_views():
     assert "/api/commands/" in javascript
 
 
+def test_frontend_exposes_read_only_chapter_matrix_filter():
+    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+    assert 'id="chapter-filter"' in html
+    assert 'id="chapter-filter-count"' in html
+    assert 'chapterRows.filter' in javascript
+    assert 'addEventListener("input", renderChapterMatrix)' in javascript
+
+
 def _command_request() -> dict[str, object]:
     return {
         "command_id": "refresh_workspace_projection",

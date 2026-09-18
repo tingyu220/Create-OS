@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
 let currentProjectId = "";
+let chapterRows = [];
 
 function text(value, fallback = "未提供") {
   return value === null || value === undefined || value === "" ? fallback : String(value);
@@ -70,17 +71,8 @@ function render(data) {
   renderStack($("blockers"), overview.blockers, "暂无阻塞摘要");
   renderSources($("overview-sources"), overview.source_refs);
 
-  const tbody = $("chapters-table"); tbody.replaceChildren();
-  (snapshot.chapters || []).forEach((chapter) => {
-    const row = document.createElement("tr");
-    const name = document.createElement("td"); name.innerHTML = `<div class="chapter-title"></div><div class="chapter-id"></div>`; name.firstChild.textContent = chapter.title; name.lastChild.textContent = chapter.chapter_id; row.append(name);
-    const status = document.createElement("td"); status.append(tag(chapter.status)); row.append(status);
-    const attempts = document.createElement("td"); attempts.textContent = text(chapter.attempts, "未提供"); row.append(attempts);
-    const elapsed = document.createElement("td"); elapsed.textContent = chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`; row.append(elapsed);
-    const stages = document.createElement("td"); stages.className = "stage-list"; (chapter.stages || []).forEach((stage) => { const item = document.createElement("span"); item.className = "tag tag-unknown"; item.textContent = `${stage.stage}:${stage.status}`; stages.append(item); }); row.append(stages);
-    const refs = document.createElement("td"); refs.className = "provenance"; refs.textContent = chapter.source_refs?.map(sourceLabel).join("\n") || "未提供来源引用"; row.append(refs);
-    tbody.append(row);
-  });
+  chapterRows = snapshot.chapters || [];
+  renderChapterMatrix();
 
   const quality = snapshot.quality;
   $("quality-summary").textContent = `${quality.issues.length} issues · ${quality.gate_results.length} gates · ${quality.issues.filter((item) => item.blocking).length} blocking`;
@@ -102,6 +94,24 @@ function render(data) {
     const summary = document.createElement("div"); summary.className = "trace-summary"; summary.textContent = entry.summary; item.append(summary);
     const meta = document.createElement("div"); meta.className = "trace-meta"; meta.textContent = `${entry.event_type} · ${entry.occurred_at}${entry.source_refs?.length ? `\n${entry.source_refs.map(sourceLabel).join("\n")}` : ""}`; item.append(meta);
     trace.append(item);
+  });
+}
+
+function renderChapterMatrix() {
+  const query = $("chapter-filter").value.trim().toLocaleLowerCase();
+  const visible = chapterRows.filter((chapter) => `${chapter.title || ""} ${chapter.chapter_id || ""}`.toLocaleLowerCase().includes(query));
+  const tbody = $("chapters-table"); tbody.replaceChildren();
+  $("chapter-filter-count").textContent = query ? `${visible.length}/${chapterRows.length} 章` : `${chapterRows.length} 章`;
+  if (!visible.length) { const row = document.createElement("tr"); const cell = document.createElement("td"); cell.colSpan = 6; cell.className = "empty-row"; cell.textContent = "没有匹配的章节"; row.append(cell); tbody.append(row); return; }
+  visible.forEach((chapter) => {
+    const row = document.createElement("tr");
+    const name = document.createElement("td"); name.innerHTML = `<div class="chapter-title"></div><div class="chapter-id"></div>`; name.firstChild.textContent = chapter.title; name.lastChild.textContent = chapter.chapter_id; row.append(name);
+    const status = document.createElement("td"); status.append(tag(chapter.status)); row.append(status);
+    const attempts = document.createElement("td"); attempts.textContent = text(chapter.attempts, "未提供"); row.append(attempts);
+    const elapsed = document.createElement("td"); elapsed.textContent = chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`; row.append(elapsed);
+    const stages = document.createElement("td"); stages.className = "stage-list"; (chapter.stages || []).forEach((stage) => { const item = document.createElement("span"); item.className = "tag tag-unknown"; item.textContent = `${stage.stage}:${stage.status}`; stages.append(item); }); row.append(stages);
+    const refs = document.createElement("td"); refs.className = "provenance"; refs.textContent = chapter.source_refs?.map(sourceLabel).join("\n") || "未提供来源引用"; row.append(refs);
+    tbody.append(row);
   });
 }
 
@@ -171,3 +181,4 @@ async function loadWorkspace() {
 
 loadWorkspace();
 $("refresh-workspace").addEventListener("click", refreshWorkspace);
+$("chapter-filter").addEventListener("input", renderChapterMatrix);
