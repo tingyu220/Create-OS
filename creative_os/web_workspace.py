@@ -36,6 +36,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     workspace_adapter: WorkspaceWebAdapter
     command_adapter: object | None = None
     review_command_adapter: object | None = None
+    chapter_command_adapter: object | None = None
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
@@ -67,6 +68,9 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             return
         if route == "/api/commands/accept-review-issue":
             self._handle_command(self.review_command_adapter or self.command_adapter)
+            return
+        if route == "/api/commands/start-chapter-run":
+            self._handle_command(self.chapter_command_adapter)
             return
         if route == "/api/workspace":
             self.send_response(405)
@@ -135,6 +139,7 @@ def create_server(
     *,
     command_adapter: object | None = None,
     review_command_adapter: object | None = None,
+    chapter_command_adapter: object | None = None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -145,11 +150,13 @@ def create_server(
     asset_root = Path(web_root)
     bound_command_adapter = command_adapter
     bound_review_command_adapter = review_command_adapter
+    bound_chapter_command_adapter = chapter_command_adapter
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
         command_adapter = bound_command_adapter
         review_command_adapter = bound_review_command_adapter
+        chapter_command_adapter = bound_chapter_command_adapter
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)

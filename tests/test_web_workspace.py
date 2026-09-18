@@ -113,7 +113,8 @@ def test_frontend_reads_only_workspace_api_and_has_all_read_only_views():
     assert all(anchor in html for anchor in ("#overview", "#chapters", "#quality", "#runtime"))
     assert 'fetch("/api/workspace"' in javascript
     assert 'fetch("/api/commands/refresh-workspace"' in javascript
-    assert javascript.count('fetch("/api/') == 2
+    assert javascript.count('fetch("/api/') == 3
+    assert 'fetch("/api/commands/start-chapter-run"' in javascript
     assert "/api/commands/" in javascript
 
 
@@ -124,6 +125,8 @@ def test_frontend_exposes_read_only_chapter_matrix_filter():
     assert 'id="chapter-filter-count"' in html
     assert 'chapterRows.filter' in javascript
     assert 'addEventListener("input", renderChapterMatrix)' in javascript
+    assert 'id="chapter-command-status"' in html
+    assert 'startChapterRun' in javascript
 
 
 def test_frontend_exposes_runtime_diagnostics_and_recovery_read_model():
@@ -189,6 +192,26 @@ def test_refresh_command_http_returns_202_and_stable_result():
         assert response.getheader("Connection") == "close"
         assert json.loads(response.read())["projection_refresh_id"] == "refresh-1"
         assert command.requests[0].target == "p"
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_start_chapter_run_http_uses_dedicated_command_adapter():
+    from creative_os.web_workspace import WorkspaceWebAdapter, create_server
+
+    chapter = CommandStub(CommandResult(CommandStatus.ACCEPTED, "start_chapter_run", "request-2", trace_id="trace-2", projection_refresh_id="refresh-2"))
+    server = create_server(WorkspaceWebAdapter(WorkspaceQueryAdapter(Reader()), "p"), chapter_command_adapter=chapter, port=0)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        body = {"command_id": "start_chapter_run", "request_id": "request-2", "actor": "local-user", "target": {"project_id": "p", "chapter_number": 1}, "payload": {}, "expected_version": None, "idempotency_key": "chapter-1"}
+        connection = HTTPConnection(*server.server_address)
+        encoded = json.dumps(body).encode()
+        connection.request("POST", "/api/commands/start-chapter-run", body=encoded, headers={"Content-Type": "application/json", "Content-Length": str(len(encoded))})
+        response = connection.getresponse()
+        assert response.status == 202
+        assert chapter.requests[0].target == {"project_id": "p", "chapter_number": 1}
     finally:
         server.shutdown()
         server.server_close()

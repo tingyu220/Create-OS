@@ -54,6 +54,12 @@ def decode_web_command(raw: object) -> CommandRequest:
         if expected_version is not None:
             raise WebCommandValidationError("validation_failed", "接受审阅问题命令不支持顶层 expected_version。")
         _validate_review_issue_payload(payload)
+    elif command_id == "start_chapter_run":
+        target = _chapter_run_target(target)
+        if expected_version is not None:
+            raise WebCommandValidationError("validation_failed", "章节运行命令不支持 expected_version。")
+        if payload:
+            raise WebCommandValidationError("validation_failed", "章节运行命令载荷必须为空对象。")
     else:
         raise WebCommandValidationError("command_not_allowed", "当前命令不在允许范围内。")
     idempotency_key = _required_string(raw["idempotency_key"], "idempotency_key")
@@ -103,6 +109,16 @@ def _review_issue_target(value: object) -> dict[str, str]:
         "project_id": _required_string(value["project_id"], "target.project_id"),
         "issue_id": _required_string(value["issue_id"], "target.issue_id"),
     }
+
+
+def _chapter_run_target(value: object) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != {"project_id", "chapter_number"}:
+        raise WebCommandValidationError("validation_failed", "target 必须严格包含 project_id 与 chapter_number。")
+    project_id = _required_string(value["project_id"], "target.project_id")
+    chapter_number = value["chapter_number"]
+    if type(chapter_number) is not int or chapter_number <= 0:
+        raise WebCommandValidationError("validation_failed", "target.chapter_number 必须是正整数。")
+    return {"project_id": project_id, "chapter_number": chapter_number}
 
 
 def _validate_review_issue_payload(payload: dict[str, object]) -> None:

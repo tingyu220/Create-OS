@@ -90,3 +90,22 @@ def test_encode_command_result_preserves_stable_error():
         "message": "目标项目不存在。",
         "retryable": False,
     }
+
+
+def test_decode_start_chapter_run_command_requires_project_and_positive_chapter():
+    raw = _raw(
+        command_id="start_chapter_run",
+        target={"project_id": "novel-1", "chapter_number": 7},
+        payload={},
+        idempotency_key="chapter-run-7",
+    )
+    request = decode_web_command(raw)
+    assert request.command_id == "start_chapter_run"
+    assert request.target == {"project_id": "novel-1", "chapter_number": 7}
+
+
+@pytest.mark.parametrize("target", [{"project_id": "novel-1", "chapter_number": 0}, {"project_id": "novel-1"}, "novel-1"])
+def test_decode_start_chapter_run_rejects_invalid_target(target):
+    with pytest.raises(WebCommandValidationError) as error:
+        decode_web_command(_raw(command_id="start_chapter_run", target=target, payload={}))
+    assert error.value.code == "validation_failed"

@@ -23,6 +23,8 @@ from creative_os.workspace_command_adapter import (
     WorkspaceReviewIssueProjectionRefreshScheduler,
 )
 from creative_os.workspace_query import WorkspaceQueryAdapter
+from creative_os.domains.chapter_production_orchestrator import ChapterProductionOrchestrator
+from creative_os.workspace_chapter_command import WorkspaceChapterRunCommandHandler
 
 
 def _workspace_version_reader(_target: str) -> NoReturn:
@@ -67,10 +69,21 @@ def main() -> None:
         refresh_scheduler=WorkspaceReviewIssueProjectionRefreshScheduler(coordinator),
         request_validator=review_handler.validate,
     )
+    chapter_handler = WorkspaceChapterRunCommandHandler(
+        project_id, ChapterProductionOrchestrator(project_root)
+    )
+    chapter_boundary = CommandBoundary(
+        chapter_handler,
+        version_reader=_workspace_version_reader,
+        store=FileCommandResultStore(project_root),
+        refresh_scheduler=WorkspaceProjectionRefreshScheduler(coordinator),
+        request_validator=chapter_handler.validate,
+    )
     server = create_server(
         adapter,
         command_adapter=WorkspaceCommandAdapter(command_boundary),
         review_command_adapter=WorkspaceCommandAdapter(review_boundary),
+        chapter_command_adapter=WorkspaceCommandAdapter(chapter_boundary),
         host=args.host,
         port=args.port,
     )
