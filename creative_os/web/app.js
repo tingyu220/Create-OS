@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 let currentProjectId = "";
 let chapterRows = [];
+let reviewIssue = null;
 
 function text(value, fallback = "未提供") {
   return value === null || value === undefined || value === "" ? fallback : String(value);
@@ -41,8 +42,50 @@ function renderStack(container, items, empty) {
     const title = document.createElement("strong"); title.textContent = text(item.code || item.gate_id || item.message); block.append(title);
     const detail = document.createElement("small"); detail.textContent = text(item.message || item.status || item.scope); block.append(detail);
     if (item.source_refs?.length) { const refs = document.createElement("small"); refs.textContent = item.source_refs.map(sourceLabel).join("\n"); block.append(refs); }
+    if (container.id === "quality-issues") {
+      const state = item.disposition_status || (item.blocking ? "blocking" : "open");
+      const stateLine = document.createElement("small"); stateLine.className = "review-state"; stateLine.textContent = `状态：${state}`; block.append(stateLine);
+      if (!item.blocking && state !== "accepted") {
+        const button = document.createElement("button"); button.type = "button"; button.className = "review-accept"; button.textContent = "接受问题";
+        button.addEventListener("click", () => openReviewForm(item)); block.append(button);
+      }
+    }
     container.append(block);
   });
+}
+
+function openReviewForm(issue) {
+  reviewIssue = issue;
+  $("review-accept-form").hidden = false;
+  $("review-accept-issue").textContent = `${text(issue.code)} · ${text(issue.issue_id)}`;
+  $("review-result-id").value = text(issue.reviewer_result_id, "");
+  $("review-result-hash").value = text(issue.reviewer_result_hash, "");
+  $("review-version").value = text(issue.expected_version, "1");
+  $("review-command-status").textContent = issue.reviewer_result_id ? "请核对审阅凭证后提交。" : "当前投影未提供审阅凭证，无法安全提交。";
+}
+
+function closeReviewForm() { reviewIssue = null; $("review-accept-form").hidden = true; }
+
+async function acceptReviewIssue(event) {
+  event.preventDefault();
+  if (!reviewIssue) return;
+  const status = $("review-command-status");
+  const reason = $("review-reason").value.trim();
+  const reviewerResultId = $("review-result-id").value.trim();
+  const reviewerResultHash = $("review-result-hash").value.trim();
+  if (!reason || !reviewerResultId || !/^[0-9a-f]{64}$/.test(reviewerResultHash)) { status.textContent = "请填写完整且有效的审阅凭证。"; return; }
+  const identity = commandIdentity();
+  status.textContent = "提交中…";
+  try {
+    const reviewEndpoint = "/api/commands/" + "accept-review-issue";
+    const response = await fetch(reviewEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({
+      command_id: "accept_review_issue", request_id: identity.request_id, actor: "local-user",
+      target: { project_id: currentProjectId, issue_id: reviewIssue.issue_id }, payload: { reason, reviewer_result_id: reviewerResultId, reviewer_result_hash: reviewerResultHash, expected_version: Number($("review-version").value) }, expected_version: null, idempotency_key: identity.idempotency_key,
+    }) });
+    const result = await response.json();
+    status.textContent = result.status === "accepted" ? "已接受，正在刷新投影…" : `${result.status || "失败"}${result.error?.code ? ` · ${result.error.code}` : ""}: ${result.error?.message || ""}`;
+    if (result.status === "accepted") { closeReviewForm(); await loadWorkspace(); }
+  } catch (error) { status.textContent = `请求失败：${error.message}`; }
 }
 
 function render(data) {
@@ -182,3 +225,5 @@ async function loadWorkspace() {
 loadWorkspace();
 $("refresh-workspace").addEventListener("click", refreshWorkspace);
 $("chapter-filter").addEventListener("input", renderChapterMatrix);
+$("review-accept-form").addEventListener("submit", acceptReviewIssue);
+$("review-cancel").addEventListener("click", closeReviewForm);

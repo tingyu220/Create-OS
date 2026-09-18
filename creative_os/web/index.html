@@ -44,6 +44,16 @@
       <section id="quality" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">03 / INTEGRITY SIGNALS</div><h2>Quality</h2></div><div><div id="quality-section-status" class="tag">—</div><div id="quality-summary" class="section-note">—</div></div></div>
         <div class="two-column"><article class="panel"><div class="panel-title">Issues</div><div id="quality-issues" class="stack">—</div></article><article class="panel"><div class="panel-title">Gate results</div><div id="gate-results" class="stack">—</div></article></div>
+        <form id="review-accept-form" class="review-form" hidden>
+          <div class="panel-title">接受审阅问题</div>
+          <p id="review-accept-issue" class="muted">—</p>
+          <label>接受理由<textarea id="review-reason" required minlength="1" rows="2"></textarea></label>
+          <label>审阅结果 ID<input id="review-result-id" required></label>
+          <label>审阅结果 hash<input id="review-result-hash" required pattern="[0-9a-f]{64}"></label>
+          <label>预期版本<input id="review-version" required type="number" min="1" value="1"></label>
+          <div class="review-actions"><button type="submit">提交接受</button><button id="review-cancel" type="button">取消</button></div>
+          <div id="review-command-status" class="command-status" aria-live="polite"></div>
+        </form>
       </section>
       <section id="runtime" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">04 / OBSERVABILITY</div><h2>Runtime / Trace</h2></div><div><div id="runtime-section-status" class="tag">—</div><div id="runtime-summary" class="section-note">—</div></div></div>
