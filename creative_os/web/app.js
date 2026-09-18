@@ -167,7 +167,7 @@ function renderChapterMatrix() {
   const visible = chapterRows.filter((chapter) => `${chapter.title || ""} ${chapter.chapter_id || ""}`.toLocaleLowerCase().includes(query));
   const tbody = $("chapters-table"); tbody.replaceChildren();
   $("chapter-filter-count").textContent = query ? `${visible.length}/${chapterRows.length} 章` : `${chapterRows.length} 章`;
-  if (!visible.length) { const row = document.createElement("tr"); const cell = document.createElement("td"); cell.colSpan = 6; cell.className = "empty-row"; cell.textContent = "没有匹配的章节"; row.append(cell); tbody.append(row); return; }
+  if (!visible.length) { const row = document.createElement("tr"); const cell = document.createElement("td"); cell.colSpan = 7; cell.className = "empty-row"; cell.textContent = "没有匹配的章节"; row.append(cell); tbody.append(row); return; }
   visible.forEach((chapter) => {
     const row = document.createElement("tr");
     const name = document.createElement("td"); name.innerHTML = `<div class="chapter-title"></div><div class="chapter-id"></div>`; name.firstChild.textContent = chapter.title; name.lastChild.textContent = chapter.chapter_id; row.append(name);
@@ -176,8 +176,28 @@ function renderChapterMatrix() {
     const elapsed = document.createElement("td"); elapsed.textContent = chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`; row.append(elapsed);
     const stages = document.createElement("td"); stages.className = "stage-list"; (chapter.stages || []).forEach((stage) => { const item = document.createElement("span"); item.className = "tag tag-unknown"; item.textContent = `${stage.stage}:${stage.status}`; stages.append(item); }); row.append(stages);
     const refs = document.createElement("td"); refs.className = "provenance"; refs.textContent = chapter.source_refs?.map(sourceLabel).join("\n") || "未提供来源引用"; row.append(refs);
+    const action = document.createElement("td");
+    const run = document.createElement("button"); run.type = "button"; run.className = "chapter-run"; run.textContent = "启动运行";
+    run.addEventListener("click", () => startChapterRun(chapter)); action.append(run); row.append(action);
     tbody.append(row);
   });
+}
+
+async function startChapterRun(chapter) {
+  const status = $("chapter-command-status");
+  const chapterNumber = Number(chapter.chapter_number);
+  if (!Number.isInteger(chapterNumber) || chapterNumber <= 0) { status.textContent = "章节编号不可用，已拒绝命令。"; return; }
+  const identity = commandIdentity();
+  status.textContent = `第 ${chapterNumber} 章启动中…`;
+  try {
+    const response = await fetch("/api/commands/start-chapter-run", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify({
+      command_id: "start_chapter_run", request_id: identity.request_id, actor: "local-user",
+      target: { project_id: currentProjectId, chapter_number: chapterNumber }, payload: {}, expected_version: null, idempotency_key: identity.idempotency_key,
+    }) });
+    const result = await response.json();
+    status.textContent = result.status === "accepted" ? `第 ${chapterNumber} 章运行已接受` : `${result.status || "失败"}${result.error?.code ? ` · ${result.error.code}` : ""}`;
+    if (result.status === "accepted") await loadWorkspace();
+  } catch (error) { status.textContent = `章节运行失败：${error.message}`; }
 }
 
 function commandIdentity() {
