@@ -171,7 +171,9 @@ function renderChapterMatrix() {
   visible.forEach((chapter) => {
     const row = document.createElement("tr");
     const name = document.createElement("td"); name.innerHTML = `<div class="chapter-title"></div><div class="chapter-id"></div>`; name.firstChild.textContent = chapter.title; name.lastChild.textContent = chapter.chapter_id; row.append(name);
-    const status = document.createElement("td"); status.append(tag(chapter.status)); row.append(status);
+    const status = document.createElement("td"); status.append(tag(chapter.status));
+    if (chapter.checkpoint_state) { const checkpoint = document.createElement("div"); checkpoint.className = "chapter-id"; checkpoint.textContent = `checkpoint: ${chapter.checkpoint_state}`; status.append(checkpoint); }
+    row.append(status);
     const attempts = document.createElement("td"); attempts.textContent = text(chapter.attempts, "未提供"); row.append(attempts);
     const elapsed = document.createElement("td"); elapsed.textContent = chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`; row.append(elapsed);
     const stages = document.createElement("td"); stages.className = "stage-list"; (chapter.stages || []).forEach((stage) => { const item = document.createElement("span"); item.className = "tag tag-unknown"; item.textContent = `${stage.stage}:${stage.status}`; stages.append(item); }); row.append(stages);

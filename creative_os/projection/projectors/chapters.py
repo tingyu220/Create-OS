@@ -34,6 +34,7 @@ def project_chapters(
     numbers.update(item.chapter_number for item in facts.gate_results if item.chapter_number is not None)
     numbers.update(number for item in facts.runtime_reports if (number := _chapter_number(item.chapter_id)) is not None)
     numbers.update(number for item in facts.execution_events if (number := _chapter_number(item.task_id)) is not None)
+    numbers.update(item.chapter_number for item in facts.chapter_checkpoints)
 
     status_by_chapter = {item.chapter_number: item for item in facts.chapter_statuses}
     gates_by_chapter: dict[int, list] = defaultdict(list)
@@ -45,16 +46,23 @@ def project_chapters(
         number = _chapter_number(report.chapter_id)
         if number is not None:
             reports_by_chapter[number].append(report)
+    checkpoints_by_chapter: dict[int, object] = {}
+    for checkpoint in facts.chapter_checkpoints:
+        current = checkpoints_by_chapter.get(checkpoint.chapter_number)
+        if current is None or checkpoint.sequence > current.sequence:
+            checkpoints_by_chapter[checkpoint.chapter_number] = checkpoint
 
     chapters: list[ChapterSnapshot] = []
     for number in sorted(numbers):
         status_fact = status_by_chapter.get(number)
         gates = gates_by_chapter[number]
         reports = reports_by_chapter[number]
+        checkpoint = checkpoints_by_chapter.get(number)
         references = _unique_refs([
             *(item.source_ref for item in ([status_fact] if status_fact else [])),
             *(item.source_ref for item in gates),
             *(item.source_ref for item in reports),
+            *( [checkpoint.source_ref] if checkpoint else []),
         ])
         derivations: list[Derivation] = []
         blocked_by: list[Derivation] = []
@@ -64,6 +72,8 @@ def project_chapters(
             if status is ChapterStatus.FAILED and status_fact.issues:
                 status = ChapterStatus.BLOCKED
             derivations.append(Derivation("chapter.status_from_task", (status_fact.source_ref,)))
+        if checkpoint is not None:
+            derivations.append(Derivation("chapter.checkpoint_state", (checkpoint.source_ref,), checkpoint.state))
         failed_gates = [gate for gate in gates if gate.status.lower() in {"failed", "blocked", "fail"}]
         if failed_gates:
             status = ChapterStatus.BLOCKED
@@ -89,6 +99,7 @@ def project_chapters(
             stages=_project_stages(gates, reports),
             derivations=tuple(derivations),
             blocked_by=tuple(blocked_by),
+            checkpoint_state=checkpoint.state if checkpoint is not None else None,
         ))
     return tuple(chapters)
 

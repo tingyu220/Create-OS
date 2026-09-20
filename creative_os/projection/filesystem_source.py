@@ -10,6 +10,7 @@ from creative_os.projection.model import DiagnosticSeverity, ProjectionDiagnosti
 from creative_os.projection.provenance import SourceHead, SourceRef
 from creative_os.projection.source import (
     ChapterStatusFact,
+    ChapterCheckpointFact,
     ExecutionEventFact,
     GateResultFact,
     ProjectFacts,
@@ -21,6 +22,7 @@ from creative_os.projection.source import (
 )
 from creative_os.domains.reader_engagement_store import ReaderEngagementStore
 from creative_os.runtime.events import AppendOnlyEventLog, EventLogError
+from creative_os.domains.chapter_run_checkpoint_store import ChapterRunCheckpointStore
 
 
 class ProjectionSourceError(ValueError):
@@ -39,6 +41,8 @@ class FilesystemProjectSource:
         event_path = self._event_path()
         heads = [self._file_head("project_metadata", "project", metadata_path)]
         heads.append(self._collection_head("chapter_statuses", "chapter-statuses", status_paths))
+        checkpoint_path = self.project_root / ".creative_os" / "production-runs" / "checkpoints.jsonl"
+        heads.append(self._file_head("chapter_checkpoints", "checkpoints", checkpoint_path))
         heads.append(self._collection_head("writer_validation_reports", "writer-validation", self._report_paths()))
         heads.append(self._collection_head("active_state_snapshots", "state-snapshots", self._state_paths()))
         heads.append(self._collection_head("memory_items", "memory-items", self._memory_item_paths()))
@@ -83,6 +87,20 @@ class FilesystemProjectSource:
                 ))
             except (KeyError, TypeError, ValueError) as error:
                 raise ProjectionSourceError("chapter_status_invalid") from error
+
+        checkpoints: list[ChapterCheckpointFact] = []
+        checkpoint_path = self.project_root / ".creative_os" / "production-runs" / "checkpoints.jsonl"
+        if checkpoint_path.is_file():
+            try:
+                records = ChapterRunCheckpointStore(self.project_root).recover()
+            except ValueError as error:
+                diagnostics.append(self._diagnostic("chapter_checkpoint_invalid", "章节运行 checkpoint 链无法验证，相关状态保持缺失。"))
+            else:
+                content_hash = self._hash_file(checkpoint_path)
+                for item in records:
+                    reference = SourceRef("chapter_checkpoint", f"chapter-{item.chapter_number:03d}", f"{self._relative(checkpoint_path)}:sequence={item.sequence}", content_hash)
+                    references.append(reference)
+                    checkpoints.append(ChapterCheckpointFact(item.chapter_number, item.state.value, item.sequence, item.checkpoint_hash, item.refs, reference))
 
         quality_issues: list[QualityIssueFact] = []
         gate_results: list[GateResultFact] = []
@@ -197,6 +215,7 @@ class FilesystemProjectSource:
             diagnostics=tuple(diagnostics),
             source_refs=tuple(dict.fromkeys(references)),
             engagement_expectations=tuple(sorted(engagement_expectations, key=lambda item: item.expectation_id)),
+            chapter_checkpoints=tuple(sorted(checkpoints, key=lambda item: (item.chapter_number, item.sequence))),
         )
 
     def _read_engagement_expectations(

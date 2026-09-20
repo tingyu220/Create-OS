@@ -235,12 +235,15 @@ def _encode_chapter(value: ChapterSnapshot) -> dict[str, object]:
         } for item in value.stages],
         "derivations": [_encode_derivation(item) for item in value.derivations],
         "blocked_by": [_encode_derivation(item) for item in value.blocked_by],
+        "checkpoint_state": value.checkpoint_state,
     }
 
 
 def _decode_chapter(value: object) -> ChapterSnapshot:
     raw = _object(value)
-    _keys(raw, {"chapter_id", "chapter_number", "title", "status", "attempts", "elapsed_seconds", "source_refs", "stages", "derivations", "blocked_by"}, "chapter_fields_invalid")
+    expected = {"chapter_id", "chapter_number", "title", "status", "attempts", "elapsed_seconds", "source_refs", "stages", "derivations", "blocked_by"}
+    if set(raw) not in (expected, expected | {"checkpoint_state"}):
+        raise ProjectionCodecError("chapter_fields_invalid")
     stages = []
     for item in _list(raw["stages"]):
         stage = _object(item)
@@ -262,6 +265,7 @@ def _decode_chapter(value: object) -> ChapterSnapshot:
         stages=tuple(stages),
         derivations=tuple(_decode_derivation(item) for item in _list(raw["derivations"])),
         blocked_by=tuple(_decode_derivation(item) for item in _list(raw["blocked_by"])),
+        checkpoint_state=_optional_text(raw.get("checkpoint_state")),
     )
 
 

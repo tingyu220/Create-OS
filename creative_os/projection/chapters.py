@@ -52,6 +52,7 @@ class ChapterSnapshot:
     stages: tuple[ChapterStageSnapshot, ...] = ()
     derivations: tuple[Derivation, ...] = ()
     blocked_by: tuple[Derivation, ...] = ()
+    checkpoint_state: str | None = None
 
     def __post_init__(self) -> None:
         if not self.chapter_id.strip() or self.chapter_number < 1:

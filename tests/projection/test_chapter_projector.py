@@ -5,6 +5,7 @@ from creative_os.projection.projectors.chapters import project_chapters
 from creative_os.projection.provenance import SourceRef
 from creative_os.projection.source import (
     ChapterStatusFact,
+    ChapterCheckpointFact,
     GateResultFact,
     ProjectFacts,
 )
@@ -53,3 +54,18 @@ def test_missing_status_is_unknown_not_not_started() -> None:
     chapter = project_chapters(facts)[0]
 
     assert chapter.status is ChapterStatus.UNKNOWN
+
+
+def test_checkpoint_state_is_projected_with_provenance() -> None:
+    checkpoint_ref = _ref("chapter_checkpoint", "chapter-007")
+    facts = ProjectFacts(
+        project_id="book-a", chapter_statuses=(), quality_issues=(), gate_results=(),
+        execution_events=(), runtime_reports=(), diagnostics=(), source_refs=(checkpoint_ref,),
+        chapter_checkpoints=(ChapterCheckpointFact(7, "readiness_approved", 2, "b" * 64, ("readiness",), checkpoint_ref),),
+    )
+
+    chapter = project_chapters(facts)[0]
+
+    assert chapter.checkpoint_state == "readiness_approved"
+    assert checkpoint_ref in chapter.source_refs
+    assert chapter.derivations[-1].rule_id == "chapter.checkpoint_state"

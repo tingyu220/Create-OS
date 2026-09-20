@@ -8,6 +8,8 @@ import pytest
 
 from creative_os.projection.filesystem_source import FilesystemProjectSource, ProjectionSourceError
 from creative_os.domains.reader_engagement_store import ReaderEngagementStore
+from creative_os.domains.chapter_run_checkpoint import ChapterRunCheckpoint, ChapterRunState
+from creative_os.domains.chapter_run_checkpoint_store import ChapterRunCheckpointStore
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -18,6 +20,20 @@ def _write_json(path: Path, value: object) -> None:
 def _make_project(root: Path, project_id: str = "book-a") -> Path:
     _write_json(root / "project.json", {"id": project_id, "name": "测试小说", "domain": "novel"})
     return root
+
+
+def test_source_reads_chapter_checkpoint_chain(tmp_path: Path) -> None:
+    project = _make_project(tmp_path)
+    store = ChapterRunCheckpointStore(project)
+    initial = ChapterRunCheckpoint.initial("book-a", 7)
+    store.append(initial)
+    store.append(initial.advance(ChapterRunState.READINESS_APPROVED, ("readiness",)))
+
+    facts = FilesystemProjectSource(project).read_facts()
+
+    assert facts.chapter_checkpoints[-1].state == "readiness_approved"
+    assert facts.chapter_checkpoints[-1].chapter_number == 7
+    assert any(item.source_kind == "chapter_checkpoint" for item in facts.source_refs)
 
 
 def _rewrite_engagement_record(project: Path, record_type: str, mutate) -> None:
