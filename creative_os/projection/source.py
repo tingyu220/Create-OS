@@ -28,6 +28,16 @@ class ChapterStatusFact:
 
 
 @dataclass(frozen=True, slots=True)
+class ChapterCheckpointFact:
+    chapter_number: int
+    state: str
+    sequence: int
+    checkpoint_hash: str
+    refs: tuple[str, ...]
+    source_ref: SourceRef
+
+
+@dataclass(frozen=True, slots=True)
 class QualityIssueFact:
     issue_id: str
     code: str
@@ -101,6 +111,7 @@ class ProjectFacts:
     source_refs: tuple[SourceRef, ...]
     active_states: tuple[ActiveStateFact, ...] = ()
     engagement_expectations: tuple[EngagementExpectationFact, ...] = ()
+    chapter_checkpoints: tuple[ChapterCheckpointFact, ...] = ()
 
 
 class ProjectSource(Protocol):
