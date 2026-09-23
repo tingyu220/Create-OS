@@ -87,7 +87,9 @@ def main() -> None:
         host=args.host,
         port=args.port,
     )
-    print(f"Creative OS Web Workspace: http://{args.host}:{server.server_address[1]}/")
+    base_url = f"http://{args.host}:{server.server_address[1]}"
+    print(f"Creative OS Web Workspace: {base_url}/")
+    print(f"Projection Inspector: {base_url}/inspector")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

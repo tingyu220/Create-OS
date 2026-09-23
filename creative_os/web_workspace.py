@@ -44,7 +44,13 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if route == "/api/workspace":
             self._send_json(200, self.workspace_adapter.read_json())
             return
-        static_files = {"/": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"), "/styles.css": ("styles.css", "text/css; charset=utf-8")}
+        static_files = {
+            "/": ("index.html", "text/html; charset=utf-8"),
+            "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+            "/styles.css": ("styles.css", "text/css; charset=utf-8"),
+            "/inspector": ("inspector.html", "text/html; charset=utf-8"),
+            "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
+        }
         file_info = static_files.get(route)
         if file_info is None:
             self._send_text(404, "Not found")
