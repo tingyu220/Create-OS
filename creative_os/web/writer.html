@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative OS · 写作工作台</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .writer-shell{max-width:1180px;margin:0 auto;padding:32px 28px}.writer-toolbar{display:flex;gap:12px;align-items:center;margin:18px 0}.writer-toolbar input{width:90px}.writer-editor{width:100%;min-height:60vh;border:1px solid #d9e0dc;border-radius:16px;padding:24px;font:17px/1.9 system-ui,sans-serif;background:#fff;box-sizing:border-box;resize:vertical}.writer-preview{white-space:pre-wrap;line-height:1.95;background:#fff;border-radius:16px;padding:28px;min-height:60vh}.writer-status{color:#63736d;font-size:14px}.writer-actions{display:flex;gap:10px}.writer-actions button{border:1px solid #9bb6aa;border-radius:10px;background:#f8fbf9;padding:8px 14px;cursor:pointer}.writer-actions button.primary{background:#17352d;color:#fff}
+  </style>
+</head>
+<body>
+  <main class="writer-shell">
+    <p class="eyebrow">CREATIVE OS / WRITER</p>
+    <h1>写作工作台</h1>
+    <div class="writer-toolbar">
+      <label>章节 <input id="chapter-number" type="number" min="1" value="1"></label>
+      <button id="open-chapter">打开章节</button>
+      <span id="source-status" class="writer-status">尚未打开章节</span>
+    </div>
+    <h2 id="chapter-title">请选择章节</h2>
+    <div class="writer-actions">
+      <button id="save-draft" class="primary">保存工作稿</button>
+      <button id="toggle-preview">预览</button>
+      <span id="save-status" class="writer-status"></span>
+    </div>
+    <textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea>
+    <article id="preview" class="writer-preview" hidden></article>
+  </main>
+  <script src="/writer.js"></script>
+</body>
+</html>

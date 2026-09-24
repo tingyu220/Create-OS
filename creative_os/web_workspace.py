@@ -84,6 +84,8 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             "/styles.css": ("styles.css", "text/css; charset=utf-8"),
             "/inspector": ("inspector.html", "text/html; charset=utf-8"),
             "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
+            "/writer": ("writer.html", "text/html; charset=utf-8"),
+            "/writer.js": ("writer.js", "text/javascript; charset=utf-8"),
         }
         file_info = static_files.get(route)
         if file_info is None:
