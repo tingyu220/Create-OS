@@ -3,6 +3,7 @@
   const editor = $("editor");
   let currentVersion = null;
   let projectId = "civilization-ascension";
+  let saveTimer = null;
   const chapter = () => Number($("chapter-number").value);
 
   async function openChapter() {
@@ -27,7 +28,25 @@
     else { $("save-status").textContent = data.error?.message || "保存失败"; }
   }
 
+  async function loadVersions() {
+    const response = await fetch(`/api/writer/chapters/${chapter()}/versions`);
+    const data = await response.json();
+    $("versions").innerHTML = data.versions.length ? data.versions.map(v => `<button data-version="${v.version}">版本 ${v.version} · ${v.actor}</button>`).join(" ") : "暂无工作稿版本";
+    $("versions").querySelectorAll("button").forEach(button => button.addEventListener("click", () => restoreVersion(Number(button.dataset.version))));
+  }
+
+  async function restoreVersion(version) {
+    const response = await fetch("/api/commands/restore-writer-version", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      command_id: "restore_writer_version", request_id: `restore-${Date.now()}`, actor: "作者", target: { project_id: projectId, chapter_number: chapter() }, payload: { version }, expected_version: currentVersion, idempotency_key: `restore-${chapter()}-${version}-${Date.now()}`
+    }) });
+    const data = await response.json();
+    if (data.status === "accepted") { currentVersion = (currentVersion || 0) + 1; await openChapter(); $("save-status").textContent = "已恢复并创建新版本"; await loadVersions(); }
+    else $("save-status").textContent = data.error?.message || "恢复失败";
+  }
+
   $("open-chapter").addEventListener("click", openChapter);
   $("save-draft").addEventListener("click", saveDraft);
+  $("load-versions").addEventListener("click", loadVersions);
+  editor.addEventListener("input", () => { window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
   $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();

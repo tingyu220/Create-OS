@@ -57,6 +57,14 @@ class WriterWebAdapter:
         chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, source, None, Freshness.FRESH, (source.source_key,))
         return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
 
+    def read_versions(self, chapter_number: int) -> bytes:
+        versions = self.store.versions(chapter_number)
+        payload = {"chapter_number": chapter_number, "versions": [
+            {"version": item.version, "created_at": item.created_at, "actor": item.actor, "parent_version": item.parent_version}
+            for item in reversed(versions)
+        ]}
+        return json.dumps(payload, ensure_ascii=False).encode("utf-8")
+
 
 class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     """单项目工作台 HTTP 边界，只开放显式声明的工作区命令。"""
@@ -77,6 +85,10 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         match = re.fullmatch(r"/api/writer/chapters/(\d+)", route)
         if match and self.writer_adapter is not None:
             self._send_json(200, self.writer_adapter.read_chapter(int(match.group(1))))
+            return
+        match = re.fullmatch(r"/api/writer/chapters/(\d+)/versions", route)
+        if match and self.writer_adapter is not None:
+            self._send_json(200, self.writer_adapter.read_versions(int(match.group(1))))
             return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
