@@ -4,10 +4,14 @@ import json
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
+import re
 
 from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
 from creative_os.workspace_dto import encode_workspace_envelope
 from creative_os.workspace_query import WorkspaceQueryAdapter
+from creative_os.writer_draft_store import WriterDraftStore
+from creative_os.writer_workspace_dto import WriterChapterEnvelope, WriterChapterDTO, WriterSourceDTO, WriterSourceRole, encode_writer_chapter
+from creative_os.workspace_dto import Freshness
 
 
 WEB_ROOT = Path(__file__).with_name("web")
@@ -30,6 +34,30 @@ class WorkspaceWebAdapter:
         return json.dumps(self.read(), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
+class WriterWebAdapter:
+    """Writer 只读查询适配器；工作稿读取来自独立版本存储。"""
+
+    def __init__(self, project_root: str | Path, project_id: str) -> None:
+        self.project_root = Path(project_root)
+        self.project_id = project_id
+        self.store = WriterDraftStore(project_root)
+
+    def read_chapter(self, chapter_number: int) -> bytes:
+        draft = self.store.current(chapter_number)
+        if draft is not None:
+            version, content = draft
+            source = WriterSourceDTO(WriterSourceRole.WORKING_DRAFT, "当前工作稿", True, version.source_key, content_hash=version.content_hash)
+            chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, source, version, Freshness.FRESH, (version.source_key,))
+            return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
+        path = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
+        if not path.exists():
+            return json.dumps(encode_writer_chapter(WriterChapterEnvelope(None, Freshness.UNAVAILABLE, ("章节内容暂不可用",))), ensure_ascii=False).encode("utf-8")
+        content = path.read_text(encoding="utf-8")
+        source = WriterSourceDTO(WriterSourceRole.CANONICAL, "正式章节（只读）", False, f"canonical:chapter-{chapter_number:03d}", str(path.relative_to(self.project_root)))
+        chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, source, None, Freshness.FRESH, (source.source_key,))
+        return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
+
+
 class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     """单项目工作台 HTTP 边界，只开放显式声明的工作区命令。"""
 
@@ -37,12 +65,18 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     command_adapter: object | None = None
     review_command_adapter: object | None = None
     chapter_command_adapter: object | None = None
+    writer_command_adapter: object | None = None
+    writer_adapter: WriterWebAdapter | None = None
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
         route = urlsplit(self.path).path
         if route == "/api/workspace":
             self._send_json(200, self.workspace_adapter.read_json())
+            return
+        match = re.fullmatch(r"/api/writer/chapters/(\d+)", route)
+        if match and self.writer_adapter is not None:
+            self._send_json(200, self.writer_adapter.read_chapter(int(match.group(1))))
             return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
@@ -77,6 +111,9 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             return
         if route == "/api/commands/start-chapter-run":
             self._handle_command(self.chapter_command_adapter)
+            return
+        if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/open-writer-chapter"}:
+            self._handle_command(self.writer_command_adapter)
             return
         if route == "/api/workspace":
             self.send_response(405)
@@ -146,6 +183,8 @@ def create_server(
     command_adapter: object | None = None,
     review_command_adapter: object | None = None,
     chapter_command_adapter: object | None = None,
+    writer_command_adapter: object | None = None,
+    writer_adapter: WriterWebAdapter | None = None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -157,12 +196,16 @@ def create_server(
     bound_command_adapter = command_adapter
     bound_review_command_adapter = review_command_adapter
     bound_chapter_command_adapter = chapter_command_adapter
+    bound_writer_command_adapter = writer_command_adapter
+    bound_writer_adapter = writer_adapter
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
         command_adapter = bound_command_adapter
         review_command_adapter = bound_review_command_adapter
         chapter_command_adapter = bound_chapter_command_adapter
+        writer_command_adapter = bound_writer_command_adapter
+        writer_adapter = bound_writer_adapter
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)
