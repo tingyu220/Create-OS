@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 from creative_os.projection.filesystem_source import FilesystemProjectSource
 from creative_os.projection.repository import FileProjectionRepository, RepositoryRefreshBuilder
 from creative_os.domains.contract_record_store import ContractRecordStore
-from creative_os.web_workspace import WorkspaceWebAdapter, create_server
+from creative_os.web_workspace import WorkspaceWebAdapter, WriterWebAdapter, create_server
 from creative_os.workspace import CommandBoundary, FileCommandResultStore, ProjectionRefreshCoordinator, ProjectionSection
 from creative_os.workspace_command_adapter import (
     WorkspaceCommandAdapter,
@@ -25,11 +25,20 @@ from creative_os.workspace_command_adapter import (
 from creative_os.workspace_query import WorkspaceQueryAdapter
 from creative_os.domains.chapter_production_orchestrator import ChapterProductionOrchestrator
 from creative_os.workspace_chapter_command import WorkspaceChapterRunCommandHandler
+from creative_os.writer_command import WriterDraftCommandHandler
+from creative_os.writer_draft_store import WriterDraftStore
 
 
 def _workspace_version_reader(_target: str) -> NoReturn:
     """当前项目未定义可用于命令并发控制的领域版本，故安全拒绝读取。"""
     raise RuntimeError("workspace_version_not_supported")
+
+
+def _writer_version_reader(store: WriterDraftStore, target: object) -> int:
+    if not isinstance(target, dict) or type(target.get("chapter_number")) is not int:
+        raise RuntimeError("writer_target_invalid")
+    current = store.current(target["chapter_number"])
+    return 0 if current is None else current[0].version
 
 
 def main() -> None:
@@ -51,6 +60,8 @@ def main() -> None:
         if refresh.status.value != "succeeded":
             raise RuntimeError(refresh.diagnostic.message if refresh.diagnostic else "projection_refresh_failed")
     adapter = WorkspaceWebAdapter(WorkspaceQueryAdapter(repository), project_id)
+    writer_store = WriterDraftStore(project_root)
+    writer_adapter = WriterWebAdapter(project_root, project_id)
     command_handler = WorkspaceRefreshCommandHandler(project_id)
     command_boundary = CommandBoundary(
         command_handler,
@@ -79,11 +90,20 @@ def main() -> None:
         refresh_scheduler=WorkspaceProjectionRefreshScheduler(coordinator),
         request_validator=chapter_handler.validate,
     )
+    writer_handler = WriterDraftCommandHandler(project_id, writer_store)
+    writer_boundary = CommandBoundary(
+        writer_handler,
+        version_reader=lambda target: _writer_version_reader(writer_store, target),
+        store=FileCommandResultStore(project_root),
+        request_validator=writer_handler.validate,
+    )
     server = create_server(
         adapter,
         command_adapter=WorkspaceCommandAdapter(command_boundary),
         review_command_adapter=WorkspaceCommandAdapter(review_boundary),
         chapter_command_adapter=WorkspaceCommandAdapter(chapter_boundary),
+        writer_command_adapter=WorkspaceCommandAdapter(writer_boundary),
+        writer_adapter=writer_adapter,
         host=args.host,
         port=args.port,
     )
