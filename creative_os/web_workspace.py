@@ -12,6 +12,7 @@ from creative_os.workspace_query import WorkspaceQueryAdapter
 from creative_os.writer_draft_store import WriterDraftStore
 from creative_os.writer_workspace_dto import WriterChapterEnvelope, WriterChapterDTO, WriterSourceDTO, WriterSourceRole, encode_writer_chapter
 from creative_os.workspace_dto import Freshness
+from creative_os.agent_intent import AgentIntentRequest, accept_agent_intent
 
 
 WEB_ROOT = Path(__file__).with_name("web")
@@ -129,6 +130,9 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/open-writer-chapter"}:
             self._handle_command(self.writer_command_adapter)
             return
+        if route == "/api/agent/intents":
+            self._handle_agent_intent()
+            return
         if route == "/api/workspace":
             self.send_response(405)
             self.send_header("Allow", "GET")
@@ -168,6 +172,16 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         result = command_adapter.execute(request)
         status = _command_http_status(result)
         self._send_json(status, json.dumps(encode_command_result(result), ensure_ascii=False, sort_keys=True).encode("utf-8"), close=True)
+
+    def _handle_agent_intent(self) -> None:
+        try:
+            length = int(self.headers.get("Content-Length", "-1"))
+            raw = json.loads(self.rfile.read(length).decode("utf-8"))
+            request = AgentIntentRequest(raw["project_id"], int(raw["chapter_number"]), raw["instruction"], raw.get("actor", "作者"))
+            receipt = accept_agent_intent(request)
+            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "status": receipt.status, "message": receipt.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            self._send_json(422, '{"error":{"code":"agent_intent_invalid","message":"Agent 检查请求无效。"}}'.encode("utf-8"), close=True)
 
     def log_message(self, _format: str, *_args: object) -> None:
         return

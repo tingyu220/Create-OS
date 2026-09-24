@@ -47,6 +47,11 @@
   $("open-chapter").addEventListener("click", openChapter);
   $("save-draft").addEventListener("click", saveDraft);
   $("load-versions").addEventListener("click", loadVersions);
+  $("agent-check").addEventListener("click", async () => {
+    const response = await fetch("/api/agent/intents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project_id: projectId, chapter_number: chapter(), actor: "作者", instruction: "这一章目前写得不对，你自己检查一下。" }) });
+    const data = await response.json();
+    $("agent-status").textContent = data.message || data.error?.message || "Agent 请求未完成";
+  });
   editor.addEventListener("input", () => { window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
   $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();
