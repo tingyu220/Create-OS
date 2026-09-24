@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative OS · Projection Inspector</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { min-height: 100vh; margin: 0; background: #111820; color: #e3eaf0; }
+    .inspector { display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 1rem; height: 100vh; box-sizing: border-box; padding: 1rem; }
+    .inspector-header, .inspector-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .inspector-header h1 { margin: .2rem 0; font-size: 1.25rem; }
+    .inspector-header a { color: #8dc5ff; }
+    .inspector-meta { color: #a9b7c4; font-size: .85rem; }
+    .inspector-toolbar button { cursor: pointer; }
+    .inspector-output { min-height: 0; overflow: auto; border: 1px solid #354453; border-radius: .5rem; background: #0b1015; }
+    .inspector-output pre { margin: 0; padding: 1rem; color: #c8d5df; font: 12px/1.55 Consolas, "Cascadia Code", monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    @media (max-width: 640px) { .inspector { padding: .6rem; } .inspector-header, .inspector-toolbar { align-items: flex-start; flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <main class="inspector">
+    <header class="inspector-header">
+      <div><div class="eyebrow">DEVELOPER / AUDIT SURFACE</div><h1>Projection Inspector</h1><div class="inspector-meta">完整 Workspace 投影、来源引用、Trace 与诊断</div></div>
+      <a href="/">返回 Creative OS Workspace</a>
+    </header>
+    <div class="inspector-toolbar">
+      <div id="inspector-status" role="status" aria-live="polite">正在读取完整投影…</div>
+      <button id="inspector-refresh" type="button">重新读取</button>
+    </div>
+    <section class="inspector-output" aria-label="完整 Projection JSON"><pre id="projection-json">正在读取…</pre></section>
+  </main>
+  <script src="/inspector.js"></script>
+</body>
+</html>
