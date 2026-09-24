@@ -208,14 +208,22 @@ function render(data) {
   const overview = snapshot.overview;
   const quality = snapshot.quality || { issues: [], gate_results: [] };
   const operations = data.operations;
-  $("current-stage").textContent = text(overview.current_stage);
+  const latestChapter = (snapshot.chapters || []).slice().sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))[0];
+  const stageValue = text(overview.current_stage, "");
+  $("current-stage").textContent = stageValue && stageValue.toLowerCase() !== "unknown"
+    ? stageValue
+    : (latestChapter ? "章节生产" : "尚未开始");
   $("run-status").replaceChildren(tag(overview.run_status));
   $("chapter-count").textContent = text(overview.chapter_count, "0");
   $("blocked-count").textContent = text(overview.blocked_chapter_count, "0");
   renderStack($("blockers"), overview.blockers, "暂无阻塞摘要");
   renderSources($("overview-sources"), overview.source_refs);
   const currentTask = operations?.tasks?.find((item) => ["running", "blocked", "failed"].includes(item.status));
-  $("current-task").textContent = currentTask ? `当前任务：${text(currentTask.task_id)} · ${text(currentTask.status)}` : "当前任务：未提供";
+  $("current-task").textContent = currentTask
+    ? `当前任务：${text(currentTask.task_id)} · ${text(currentTask.status)}`
+    : latestChapter
+      ? `当前任务：检查第 ${text(latestChapter.chapter_number)} 章`
+      : "当前任务：未提供";
   const blockingIssue = (quality?.issues || []).find((item) => item.blocking);
   $("next-action").textContent = currentTask
     ? `继续处理 ${text(currentTask.task_id)}`
