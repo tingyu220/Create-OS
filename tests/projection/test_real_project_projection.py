@@ -36,7 +36,7 @@ def test_civilization_project_uses_status_and_event_log_without_modifying_them()
 
     result = ProjectProjectionBuilder(source).build(ProjectProjectionRequest(project_id="文明升阶"))
 
-    assert [item.chapter_number for item in result.snapshot.chapters][-4:] == [29, 30, 31, 32]
+    assert [item.chapter_number for item in result.snapshot.chapters][-4:] == [75, 76, 77, 78]
     assert result.snapshot.trace.entries
     assert source.read_head() == before
 
