@@ -372,7 +372,11 @@ def _valid_target(target: object) -> bool:
         return bool(target.strip())
     if not isinstance(target, Mapping) or not target:
         return False
-    return all(isinstance(value, str) and value.strip() for value in target.values())
+    return all(
+        (isinstance(value, str) and value.strip())
+        or (type(value) is int and value > 0)
+        for value in target.values()
+    )
 
 def _encode_store(records: dict[str, CommandResultRecord]) -> dict[str, object]:
     return {"schema_version": SCHEMA_VERSION,

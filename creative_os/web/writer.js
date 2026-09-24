@@ -2,9 +2,14 @@
   const $ = (id) => document.getElementById(id);
   const editor = $("editor");
   let currentVersion = null;
-  let projectId = "civilization-ascension";
+  let projectId = null;
   let saveTimer = null;
   const chapter = () => Number($("chapter-number").value);
+
+  async function loadProjectId() {
+    const response = await fetch("/api/workspace");
+    if (response.ok) projectId = (await response.json()).project_id;
+  }
 
   async function openChapter() {
     $("source-status").textContent = "正在读取…";
@@ -53,5 +58,6 @@
     $("agent-status").textContent = data.message || data.error?.message || "Agent 请求未完成";
   });
   editor.addEventListener("input", () => { window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
+  loadProjectId();
   $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();
