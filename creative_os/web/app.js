@@ -31,6 +31,11 @@ function updateWorkspaceNavigation() {
     if (link.getAttribute("href") === activeHref) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+  document.querySelectorAll("[data-navigation-target]").forEach((section) => {
+    section.hidden = section.dataset.navigationTarget !== activeHref;
+  });
+  const active = workspaceNavigation.find((item) => item.href === activeHref) || workspaceNavigation[0];
+  document.title = `Creative OS · ${active?.label || "Workspace"}`;
 }
 
 function text(value, fallback = "未提供") {
@@ -88,7 +93,7 @@ function tag(status) {
 }
 
 function sourceLabel(ref) {
-  return `${text(ref.source_kind)} / ${text(ref.source_id)} / ${text(ref.locator)} · ${text(ref.content_hash, "无 hash")}`;
+  return `${text(ref.source_kind)} / ${text(ref.source_id)} / ${text(ref.locator)}`;
 }
 
 function renderSources(container, refs) {
@@ -144,12 +149,12 @@ function renderRuntimeDetails(operations) {
   const tasks = operations ? operations.tasks || [] : [];
   const errors = operations ? operations.errors || [] : [];
   const retries = operations ? operations.retries || [] : [];
-  renderStack($("runtime-tasks"), tasks.map((item) => ({
+  renderStack($("runtime-tasks"), tasks.slice(-5).reverse().map((item) => ({
     code: item.task_id,
     message: `${text(item.status)} · attempts ${text(item.attempts)} · elapsed ${item.elapsed_seconds == null ? "未提供" : `${item.elapsed_seconds}s`}`,
     source_refs: item.source_refs,
   })), "暂无任务记录");
-  renderStack($("runtime-errors"), errors.map((item) => ({
+  renderStack($("runtime-errors"), errors.slice(-5).reverse().map((item) => ({
     code: item.code,
     message: `${text(item.message)} · ${item.retryable === true ? "可重试" : item.retryable === false ? "不可重试" : "重试性未提供"}`,
     source_refs: item.source_refs,
@@ -194,23 +199,39 @@ function render(data) {
   const diagnostics = Object.entries(data.sections || {}).flatMap(([section, value]) => (value.diagnostics || []).map((item) => `${section}: ${item.code} · ${item.message}`));
   const uniqueDiagnostics = [...new Set(diagnostics)];
   $("notice").hidden = uniqueDiagnostics.length === 0;
-  if (uniqueDiagnostics.length) $("notice").textContent = `投影诊断（${uniqueDiagnostics.length}）：${uniqueDiagnostics.slice(0, 3).join(" ｜ ")}${uniqueDiagnostics.length > 3 ? " ｜ …" : ""}`;
+  if (uniqueDiagnostics.length) $("notice-summary").textContent = `发现 ${uniqueDiagnostics.length} 条投影诊断，普通工作区仅显示摘要。`;
   const snapshot = data.snapshot;
   if (!snapshot) {
-    $("notice").hidden = false; $("notice").textContent = "当前投影不可用，工作台没有根据来源文件推断业务状态。";
+    $("notice").hidden = false; $("notice-summary").textContent = "当前投影不可用，工作台没有根据来源文件推断业务状态。";
     return;
   }
   const overview = snapshot.overview;
   const quality = snapshot.quality || { issues: [], gate_results: [] };
   const operations = data.operations;
-  $("current-stage").textContent = text(overview.current_stage);
+  const latestChapter = (snapshot.chapters || []).slice().sort((a, b) => Number(b.chapter_number) - Number(a.chapter_number))[0];
+  const stageValue = text(overview.current_stage, "");
+  $("current-stage").textContent = stageValue && stageValue.toLowerCase() !== "unknown"
+    ? stageValue
+    : (latestChapter ? "章节生产" : "尚未开始");
   $("run-status").replaceChildren(tag(overview.run_status));
   $("chapter-count").textContent = text(overview.chapter_count, "0");
   $("blocked-count").textContent = text(overview.blocked_chapter_count, "0");
   renderStack($("blockers"), overview.blockers, "暂无阻塞摘要");
   renderSources($("overview-sources"), overview.source_refs);
   const currentTask = operations?.tasks?.find((item) => ["running", "blocked", "failed"].includes(item.status));
-  $("current-task").textContent = currentTask ? `${text(currentTask.task_id)} · ${text(currentTask.status)}` : "未提供";
+  $("current-task").textContent = currentTask
+    ? `当前任务：${text(currentTask.task_id)} · ${text(currentTask.status)}`
+    : latestChapter
+      ? `当前任务：检查第 ${text(latestChapter.chapter_number)} 章`
+      : "当前任务：未提供";
+  const blockingIssue = (quality?.issues || []).find((item) => item.blocking);
+  $("next-action").textContent = currentTask
+    ? `继续处理 ${text(currentTask.task_id)}`
+    : blockingIssue
+      ? `解决 ${text(blockingIssue.code || blockingIssue.message)}`
+      : (snapshot.chapters || []).length
+        ? `检查第 ${Math.max(...snapshot.chapters.map((item) => Number(item.chapter_number) || 0))} 章并规划下一章`
+        : "刷新投影并确认创作进度";
   renderPriorityList($("recent-activity"), snapshot.trace?.entries?.slice(-3).reverse().map((item) => item.summary), "暂无活动记录");
   renderPriorityList($("attention-items"), [...(overview.blockers || []), ...(quality?.issues || []).filter((item) => item.blocking)], "暂无重点关注");
 
@@ -363,6 +384,7 @@ async function loadWorkspace() {
 
 loadWorkspace();
 renderWorkspaceNavigation();
+updateWorkspaceNavigation();
 window.addEventListener("hashchange", updateWorkspaceNavigation);
 $("workspace-navigation").addEventListener("click", (event) => {
   if (event.target.closest(".nav-item")) updateWorkspaceNavigation();
