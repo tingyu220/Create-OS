@@ -5,6 +5,8 @@
   let projectId = null;
   let saveTimer = null;
   const chapter = () => Number($("chapter-number").value);
+  const initialChapter = new URLSearchParams(window.location.search).get("chapter");
+  if (initialChapter && Number.isInteger(Number(initialChapter))) $("chapter-number").value = initialChapter;
 
   async function loadProjectId() {
     const response = await fetch("/api/workspace");

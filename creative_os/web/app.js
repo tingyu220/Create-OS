@@ -4,6 +4,7 @@ const workspaceNavigation = Object.freeze([
   Object.freeze({ id: "chapters", label: "章节", href: "#chapters" }),
   Object.freeze({ id: "quality", label: "质量", href: "#quality" }),
   Object.freeze({ id: "runtime", label: "运行", href: "#runtime" }),
+  Object.freeze({ id: "writer", label: "写作工作台", href: "/writer", external: true }),
 ]);
 let currentProjectId = "";
 let chapterRows = [];
@@ -18,6 +19,7 @@ function renderWorkspaceNavigation(items = workspaceNavigation) {
     const link = document.createElement("a");
     link.className = "nav-item";
     link.href = item.href;
+    if (item.external) link.dataset.external = "true";
     link.dataset.moduleId = item.id;
     link.textContent = item.label;
     if (item.href === activeHref) link.setAttribute("aria-current", "page");
@@ -294,6 +296,7 @@ function openChapterDetail(chapter) {
   $("chapter-detail-meta").textContent = `章节 ID：${text(chapter.chapter_id)} · 尝试：${text(chapter.attempts, "未提供")} · 耗时：${chapter.elapsed_seconds == null ? "未提供" : `${chapter.elapsed_seconds}s`}${chapter.checkpoint_state ? ` · 检查点：${chapter.checkpoint_state}` : ""}`;
   renderSources($("chapter-detail-evidence-list"), chapter.source_refs);
   const run = $("chapter-detail-run"); run.hidden = !Number.isInteger(Number(chapter.chapter_number)); run.onclick = () => startChapterRun(chapter);
+  const write = $("chapter-detail-write"); write.hidden = !Number.isInteger(Number(chapter.chapter_number)); write.href = `/writer?chapter=${encodeURIComponent(chapter.chapter_number)}`;
   renderChapterMatrix();
 }
 
