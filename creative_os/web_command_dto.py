@@ -60,6 +60,16 @@ def decode_web_command(raw: object) -> CommandRequest:
             raise WebCommandValidationError("validation_failed", "章节运行命令不支持 expected_version。")
         if payload:
             raise WebCommandValidationError("validation_failed", "章节运行命令载荷必须为空对象。")
+    elif command_id in {"save_writer_draft", "restore_writer_version", "open_writer_chapter"}:
+        target = _writer_target(target)
+        if command_id == "save_writer_draft":
+            _required_string(payload.get("content"), "payload.content")
+        elif command_id == "restore_writer_version":
+            version = payload.get("version")
+            if type(version) is not int or version <= 0:
+                raise WebCommandValidationError("validation_failed", "payload.version 必须是正整数。")
+        elif payload:
+            raise WebCommandValidationError("validation_failed", "打开章节命令载荷必须为空对象。")
     else:
         raise WebCommandValidationError("command_not_allowed", "当前命令不在允许范围内。")
     idempotency_key = _required_string(raw["idempotency_key"], "idempotency_key")
@@ -112,6 +122,16 @@ def _review_issue_target(value: object) -> dict[str, str]:
 
 
 def _chapter_run_target(value: object) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != {"project_id", "chapter_number"}:
+        raise WebCommandValidationError("validation_failed", "target 必须严格包含 project_id 与 chapter_number。")
+    project_id = _required_string(value["project_id"], "target.project_id")
+    chapter_number = value["chapter_number"]
+    if type(chapter_number) is not int or chapter_number <= 0:
+        raise WebCommandValidationError("validation_failed", "target.chapter_number 必须是正整数。")
+    return {"project_id": project_id, "chapter_number": chapter_number}
+
+
+def _writer_target(value: object) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != {"project_id", "chapter_number"}:
         raise WebCommandValidationError("validation_failed", "target 必须严格包含 project_id 与 chapter_number。")
     project_id = _required_string(value["project_id"], "target.project_id")
