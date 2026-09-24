@@ -28,7 +28,7 @@
         <div><span class="status-label">正在读取工作区</span><span id="workspace-state-detail" class="state-detail">正在通过只读查询入口获取最新投影。</span></div>
         <button id="workspace-state-action" type="button" hidden>重新读取</button>
       </section>
-      <div id="notice" class="notice" hidden></div>
+      <div id="notice" class="notice" hidden><span id="notice-summary"></span><a href="/inspector.html" target="_blank" rel="noreferrer">查看诊断</a></div>
       <div id="command-status" class="command-status" aria-live="polite">命令就绪</div>
       <div id="command-diagnostics" class="command-diagnostics" aria-live="polite" hidden></div>
       <section id="overview" data-navigation-target="#overview" class="view-section">
@@ -39,7 +39,7 @@
           <article class="metric-card accent"><div class="card-kicker">BLOCKED</div><div id="blocked-count" class="metric-value">—</div><div class="muted">需要关注</div></article>
         </div>
         <div class="overview-priority-grid">
-          <article class="panel"><div class="panel-title">当前任务</div><div id="current-task" class="priority-value">未提供</div></article>
+          <article class="panel next-action-card"><div class="panel-title">下一步建议</div><div id="next-action" class="priority-value">正在分析项目状态…</div><div id="current-task" class="muted">当前任务：未提供</div></article>
           <article class="panel"><div class="panel-title">最近活动</div><div id="recent-activity" class="stack">暂无活动记录</div></article>
           <article class="panel"><div class="panel-title">重点关注</div><div id="attention-items" class="stack">暂无重点关注</div></article>
         </div>

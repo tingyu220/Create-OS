@@ -270,11 +270,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
   color: #315d57;
   overflow-wrap: anywhere;
 }
+.notice { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.notice[hidden] { display: none; }
+.notice a { flex: 0 0 auto; color: var(--accent); font-weight: 650; text-decoration: none; }
+.notice a:hover { text-decoration: underline; }
 
 .command-status, .command-diagnostics { font-size: 12px; }
 .command-status { margin: 0 0 var(--space-2); color: var(--text-muted); }
 
 .view-section { padding: var(--space-2) 0 var(--space-10); scroll-margin-top: 128px; }
+.view-section[hidden] { display: none; }
 
 .section-heading {
   display: flex;
@@ -377,6 +382,8 @@ td { font-size: 13px; }
 .workspace-state button { flex: 0 0 auto; min-height: 34px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text); cursor: pointer; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .overview-priority-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-3); }
+.next-action-card { border-color: #b8d8d2; background: #f5fbf9; }
+.priority-value { margin-bottom: var(--space-3); font-size: 17px; font-weight: 650; line-height: 1.45; }
 .priority-value { min-height: 42px; color: var(--text); font-size: 18px; font-weight: 620; }
 .evidence-details { color: var(--text-muted); }
 .evidence-details summary { cursor: pointer; color: var(--accent); }
