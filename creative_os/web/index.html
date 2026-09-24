@@ -7,41 +7,59 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="shell">
-    <aside class="sidebar">
+  <a class="skip-link" href="#workspace-main">跳到主要内容</a>
+  <div id="workspace-shell" class="workspace-shell">
+    <aside id="workspace-sidebar" class="workspace-sidebar">
       <div class="brand"><span class="brand-mark">CO</span><span>Creative OS</span></div>
-      <div class="project-label">NOVEL WORKSPACE</div>
-      <div id="project-name" class="project-name">加载中…</div>
-      <nav aria-label="工作区导航">
-        <a class="nav-item active" href="#overview">Overview <span>01</span></a>
-        <a class="nav-item" href="#chapters">Chapter Matrix <span>02</span></a>
-        <a class="nav-item" href="#quality">Quality <span>03</span></a>
-        <a class="nav-item" href="#runtime">Runtime / Trace <span>04</span></a>
-      </nav>
+      <div class="workspace-project">
+        <div class="project-label">当前项目</div>
+        <div id="project-name" class="project-name">加载中…</div>
+      </div>
+      <nav id="workspace-navigation" aria-label="工作区导航"></nav>
       <div class="sidebar-foot">READ-ONLY SURFACE<br><span>Command boundary reserved</span></div>
     </aside>
-    <main class="content">
-      <header class="topbar">
-        <div><div class="eyebrow">PROJECT CONTROL PLANE / OBSERVE</div><h1>Workspace</h1></div>
+    <main id="workspace-main" class="workspace-main" tabindex="-1">
+      <div class="workspace-content">
+      <header id="workspace-topbar" class="workspace-topbar">
+        <div><div class="eyebrow">CREATIVE OS / WORKSPACE</div><h1>创作工作台</h1></div>
         <div class="topbar-actions"><div id="overall-status" class="status-badge">读取中</div><button id="refresh-workspace" data-command="refresh-workspace" type="button" aria-label="刷新工作区投影">刷新投影</button></div>
       </header>
+      <section id="workspace-state" class="workspace-state state-loading" aria-live="polite">
+        <div><span class="status-label">正在读取工作区</span><span id="workspace-state-detail" class="state-detail">正在通过只读查询入口获取最新投影。</span></div>
+        <button id="workspace-state-action" type="button" hidden>重新读取</button>
+      </section>
       <div id="notice" class="notice" hidden></div>
       <div id="command-status" class="command-status" aria-live="polite">命令就绪</div>
       <div id="command-diagnostics" class="command-diagnostics" aria-live="polite" hidden></div>
-      <section id="overview" class="view-section">
+      <section id="overview" data-navigation-target="#overview" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">01 / ORIENTATION</div><h2>Overview</h2></div><div><div id="overview-section-status" class="tag">—</div><div id="refresh-meta" class="meta">—</div></div></div>
         <div class="overview-grid">
           <article class="hero-card"><div class="card-kicker">CURRENT STAGE</div><div id="current-stage" class="hero-value">—</div><div id="run-status" class="muted">—</div></article>
           <article class="metric-card"><div class="card-kicker">CHAPTERS</div><div id="chapter-count" class="metric-value">—</div><div class="muted">总章节投影</div></article>
           <article class="metric-card accent"><div class="card-kicker">BLOCKED</div><div id="blocked-count" class="metric-value">—</div><div class="muted">需要关注</div></article>
         </div>
-        <div class="two-column"><article class="panel"><div class="panel-title">阻塞摘要</div><div id="blockers" class="stack">—</div></article><article class="panel"><div class="panel-title">数据来源</div><div id="overview-sources" class="source-list">—</div></article></div>
+        <div class="overview-priority-grid">
+          <article class="panel"><div class="panel-title">当前任务</div><div id="current-task" class="priority-value">未提供</div></article>
+          <article class="panel"><div class="panel-title">最近活动</div><div id="recent-activity" class="stack">暂无活动记录</div></article>
+          <article class="panel"><div class="panel-title">重点关注</div><div id="attention-items" class="stack">暂无重点关注</div></article>
+        </div>
+        <div class="two-column"><article class="panel"><div class="panel-title">阻塞摘要</div><div id="blockers" class="stack">—</div></article><article class="panel"><div class="panel-title">证据</div><details class="evidence-details"><summary>查看来源引用</summary><div id="overview-sources" class="source-list">—</div></details></article></div>
       </section>
-      <section id="chapters" class="view-section">
+      <section id="chapters" data-navigation-target="#chapters" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">02 / PRODUCTION MAP</div><h2>Chapter Matrix</h2></div><div><div id="chapters-section-status" class="tag">—</div><div class="section-note">每行均带来源引用</div></div></div>
-        <article class="panel table-panel"><div class="matrix-toolbar"><label for="chapter-filter">筛选章节</label><input id="chapter-filter" type="search" placeholder="按标题或章节 ID 搜索" autocomplete="off"><span id="chapter-filter-count" class="section-note" aria-live="polite"></span><span id="chapter-command-status" class="section-note" aria-live="polite"></span></div><div class="table-wrap"><table><thead><tr><th>CHAPTER</th><th>STATUS</th><th>ATTEMPTS</th><th>ELAPSED</th><th>STAGES</th><th>PROVENANCE</th><th>ACTION</th></tr></thead><tbody id="chapters-table"></tbody></table></div></article>
+        <div class="chapter-workspace">
+          <article class="panel chapter-list-panel">
+            <div class="matrix-toolbar"><label for="chapter-filter">筛选章节</label><input id="chapter-filter" type="search" placeholder="按标题或章节编号搜索" autocomplete="off"><label class="sr-only" for="chapter-status-filter">按状态筛选</label><select id="chapter-status-filter"><option value="">全部状态</option><option value="passed">已通过</option><option value="running">运行中</option><option value="blocked">已阻塞</option><option value="failed">失败</option></select><span id="chapter-filter-count" class="section-note" aria-live="polite"></span><span id="chapter-command-status" class="section-note" aria-live="polite"></span></div>
+            <div id="chapter-list" class="chapter-list" role="list" aria-label="章节列表"></div>
+          </article>
+          <aside id="chapter-detail-drawer" class="chapter-detail-drawer" aria-labelledby="chapter-detail-title" hidden>
+            <div class="drawer-header"><div><div class="eyebrow">CHAPTER DETAIL</div><h3 id="chapter-detail-title">未选择章节</h3></div><button id="chapter-detail-close" class="drawer-close" type="button" aria-label="关闭章节详情">关闭</button></div>
+            <div id="chapter-detail-status" class="tag">—</div><div id="chapter-detail-meta" class="detail-meta">—</div><div id="chapter-detail-evidence" class="detail-evidence"><details class="evidence-details"><summary>查看证据</summary><div id="chapter-detail-evidence-list" class="source-list">未提供来源引用</div></details></div>
+            <button id="chapter-detail-run" class="chapter-run" type="button" hidden>启动运行</button>
+          </aside>
+        </div>
       </section>
-      <section id="quality" class="view-section">
+      <section id="quality" data-navigation-target="#quality" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">03 / INTEGRITY SIGNALS</div><h2>Quality</h2></div><div><div id="quality-section-status" class="tag">—</div><div id="quality-summary" class="section-note">—</div></div></div>
         <div class="two-column"><article class="panel"><div class="panel-title">Issues</div><div id="quality-issues" class="stack">—</div></article><article class="panel"><div class="panel-title">Gate results</div><div id="gate-results" class="stack">—</div></article></div>
         <form id="review-accept-form" class="review-form" hidden>
@@ -55,7 +73,7 @@
           <div id="review-command-status" class="command-status" aria-live="polite"></div>
         </form>
       </section>
-      <section id="runtime" class="view-section">
+      <section id="runtime" data-navigation-target="#runtime" class="view-section">
         <div class="section-heading"><div><div class="eyebrow">04 / OBSERVABILITY</div><h2>Runtime / Trace</h2></div><div><div id="runtime-section-status" class="tag">—</div><div id="runtime-summary" class="section-note">—</div></div></div>
         <div class="runtime-metrics"><article class="metric-card"><div class="card-kicker">EXECUTIONS</div><div id="execution-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">ATTEMPTS</div><div id="attempt-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">TOKEN USAGE</div><div id="usage" class="metric-value small">未提供</div></article></div>
         <article class="panel table-panel"><div class="panel-title">Trace entries</div><div id="trace-list" class="trace-list">—</div></article>
@@ -67,6 +85,7 @@
         </div>
       </section>
       <footer class="footer">Projection is disposable, traceable, and read-only. No domain facts are created here.</footer>
+      </div>
     </main>
   </div>
   <script src="/app.js"></script>
