@@ -12,10 +12,14 @@
     const response = await fetch("/api/workspace");
     if (!response.ok) return;
     const data = await response.json(); projectId = data.project_id;
+    const writerResponse = await fetch("/api/writer/context");
+    const writerContext = writerResponse.ok ? await writerResponse.json() : null;
     const snapshot = data.snapshot; const operations = data.operations;
     const items = [
       `项目：${projectId}`,
-      `章节投影：${snapshot?.chapters?.length ?? "暂不可用"} 章`,
+      `正式章节正文：${writerContext?.formal_chapter_count ?? "暂不可用"} 章`,
+      `当前工作稿：${writerContext?.working_draft_count ?? "暂不可用"} 章`,
+      `运行状态投影：${snapshot?.chapters?.length ?? "暂不可用"} 条${data.overall === "partial" ? "（数据不完整）" : ""}`,
       `当前阶段：${snapshot?.overview?.current_stage && snapshot.overview.current_stage !== "unknown" ? snapshot.overview.current_stage : "暂未提供"}`,
       `运行记录：${operations?.execution_count ?? "暂不可用"} 条`,
     ];

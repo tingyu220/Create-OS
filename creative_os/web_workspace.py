@@ -66,6 +66,13 @@ class WriterWebAdapter:
         ]}
         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
+    def read_context_summary(self) -> bytes:
+        final_root = self.project_root / "production" / "final_chapters"
+        final_count = len(tuple(final_root.glob("chapter_*.md"))) if final_root.exists() else 0
+        draft_count = len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0
+        payload = {"project_id": self.project_id, "formal_chapter_count": final_count, "working_draft_count": draft_count}
+        return json.dumps(payload, ensure_ascii=False).encode("utf-8")
+
 
 class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     """单项目工作台 HTTP 边界，只开放显式声明的工作区命令。"""
@@ -90,6 +97,12 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         match = re.fullmatch(r"/api/writer/chapters/(\d+)/versions", route)
         if match and self.writer_adapter is not None:
             self._send_json(200, self.writer_adapter.read_versions(int(match.group(1))))
+            return
+        if route == "/api/writer/context":
+            if self.writer_adapter is None:
+                self._send_text(503, "Writer unavailable")
+            else:
+                self._send_json(200, self.writer_adapter.read_context_summary())
             return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
