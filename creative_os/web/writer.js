@@ -16,7 +16,7 @@
     const items = [
       `项目：${projectId}`,
       `章节投影：${snapshot?.chapters?.length ?? "暂不可用"} 章`,
-      `当前阶段：${snapshot?.overview?.current_stage ?? "暂不可用"}`,
+      `当前阶段：${snapshot?.overview?.current_stage && snapshot.overview.current_stage !== "unknown" ? snapshot.overview.current_stage : "暂未提供"}`,
       `运行记录：${operations?.execution_count ?? "暂不可用"} 条`,
     ];
     $("agent-context").replaceChildren(...items.map(value => { const node=document.createElement("div"); node.className="context-item"; node.textContent=value; return node; }));
