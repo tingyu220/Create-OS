@@ -6,30 +6,35 @@
   <title>Creative OS · 写作工作台</title>
   <link rel="stylesheet" href="/styles.css">
   <style>
-    .writer-shell{max-width:1180px;margin:0 auto;padding:32px 28px}.writer-toolbar{display:flex;gap:12px;align-items:center;margin:18px 0}.writer-toolbar input{width:90px}.writer-editor{width:100%;min-height:60vh;border:1px solid #d9e0dc;border-radius:16px;padding:24px;font:17px/1.9 system-ui,sans-serif;background:#fff;box-sizing:border-box;resize:vertical}.writer-preview{white-space:pre-wrap;line-height:1.95;background:#fff;border-radius:16px;padding:28px;min-height:60vh}.writer-status{color:#63736d;font-size:14px}.writer-actions{display:flex;gap:10px}.writer-actions button{border:1px solid #9bb6aa;border-radius:10px;background:#f8fbf9;padding:8px 14px;cursor:pointer}.writer-actions button.primary{background:#17352d;color:#fff}
+    :root{--writer-border:#d9e0dc;--writer-ink:#183029;--writer-muted:#63736d;--writer-accent:#276657}.writer-shell{max-width:1480px;margin:0 auto;padding:24px 28px}.writer-topbar{display:flex;align-items:center;justify-content:space-between}.writer-home{color:var(--writer-accent);text-decoration:none}.writer-toolbar{display:flex;gap:12px;align-items:center;margin:18px 0}.writer-toolbar input{width:90px}.writer-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}.writer-document,.agent-panel{background:#fff;border:1px solid var(--writer-border);border-radius:18px}.writer-document{padding:24px}.agent-panel{position:sticky;top:20px;padding:20px}.writer-editor{width:100%;min-height:62vh;border:0;border-top:1px solid var(--writer-border);padding:24px 4px;font:17px/1.95 system-ui,sans-serif;background:#fff;box-sizing:border-box;resize:vertical;outline:none}.writer-editor:focus{border-top-color:var(--writer-accent)}.writer-preview{white-space:pre-wrap;line-height:1.95;background:#fff;padding:28px 4px;min-height:62vh}.writer-status{color:var(--writer-muted);font-size:14px}.writer-actions,.agent-quick-actions{display:flex;gap:10px;flex-wrap:wrap}.writer-actions button,.agent-panel button,.writer-toolbar button{border:1px solid #9bb6aa;border-radius:10px;background:#f8fbf9;padding:8px 14px;cursor:pointer}.writer-actions button.primary,.agent-panel button.primary{background:#17352d;color:#fff}.agent-state{display:flex;align-items:center;gap:8px;margin:10px 0 16px}.agent-dot{width:8px;height:8px;border-radius:50%;background:#3d927c}.context-list{display:grid;gap:8px;margin:14px 0 20px}.context-item{padding:10px 12px;background:#f4f7f5;border-radius:10px;font-size:14px}.agent-thread{min-height:150px;margin:14px 0;padding:14px;border:1px solid var(--writer-border);border-radius:12px;white-space:pre-wrap}.agent-input{width:100%;min-height:100px;box-sizing:border-box;border:1px solid var(--writer-border);border-radius:12px;padding:12px;font:15px/1.6 system-ui,sans-serif;margin:10px 0}.agent-note{font-size:13px;color:var(--writer-muted);line-height:1.55}.section-label{font-size:12px;letter-spacing:.08em;color:var(--writer-muted);font-weight:700}.versions-panel{margin-top:12px}.versions-panel button{margin:4px}.word-count{margin-left:auto}@media(max-width:920px){.writer-grid{grid-template-columns:1fr}.agent-panel{position:static}.writer-shell{padding:18px 14px}}
   </style>
 </head>
 <body>
   <main class="writer-shell">
-    <p class="eyebrow">CREATIVE OS / WRITER</p>
-    <h1>写作工作台</h1>
+    <div class="writer-topbar"><div><p class="eyebrow">CREATIVE OS / AGENTIC WRITER</p><h1>写作工作台</h1></div><a class="writer-home" href="/">返回项目总览</a></div>
     <div class="writer-toolbar">
       <label>章节 <input id="chapter-number" type="number" min="1" value="1"></label>
       <button id="open-chapter">打开章节</button>
       <span id="source-status" class="writer-status">尚未打开章节</span>
     </div>
-    <h2 id="chapter-title">请选择章节</h2>
-    <div class="writer-actions">
-      <button id="save-draft" class="primary">保存工作稿</button>
-      <button id="toggle-preview">预览</button>
-      <button id="load-versions">版本历史</button>
-      <button id="agent-check">让 Agent 自己检查</button>
-      <span id="save-status" class="writer-status"></span>
+    <div class="writer-grid">
+      <section class="writer-document">
+        <h2 id="chapter-title">请选择章节</h2>
+        <div class="writer-actions"><button id="save-draft" class="primary">保存工作稿</button><button id="toggle-preview">预览</button><button id="load-versions">版本历史</button><span id="save-status" class="writer-status"></span><span id="word-count" class="writer-status word-count">0 字</span></div>
+        <div id="versions" class="writer-status versions-panel"></div>
+        <textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea><article id="preview" class="writer-preview" hidden></article>
+      </section>
+      <aside class="agent-panel" aria-label="Agent 创作区">
+        <div class="section-label">WRITER AGENT</div><h2>让 Agent 参与创作</h2>
+        <div class="agent-state"><span class="agent-dot"></span><span id="agent-state-text">等待你的创作意图</span></div>
+        <div class="section-label">已读取的项目上下文</div><div id="agent-context" class="context-list"><div class="context-item">正在读取项目状态…</div></div>
+        <div class="agent-quick-actions"><button id="agent-continue">继续写这一章</button><button id="agent-check">自主检查本章</button></div>
+        <div id="agent-thread" class="agent-thread">Agent 会自行判断需要读取哪些人物、时间线、伏笔、反馈和相邻章节，不要求你选择固定检查项。</div>
+        <label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：读取前文和人物状态，继续写第 79 章。"></textarea>
+        <button id="agent-send" class="primary">交给 Agent</button>
+        <p class="agent-note">Agent 先生成工作稿或修改提案，不直接覆盖正式章节。技术来源和运行记录仍保留在 Inspector。</p>
+      </aside>
     </div>
-    <div id="versions" class="writer-status"></div>
-    <div id="agent-status" class="writer-status"></div>
-    <textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea>
-    <article id="preview" class="writer-preview" hidden></article>
   </main>
   <script src="/writer.js"></script>
 </body>

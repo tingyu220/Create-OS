@@ -10,7 +10,16 @@
 
   async function loadProjectId() {
     const response = await fetch("/api/workspace");
-    if (response.ok) projectId = (await response.json()).project_id;
+    if (!response.ok) return;
+    const data = await response.json(); projectId = data.project_id;
+    const snapshot = data.snapshot; const operations = data.operations;
+    const items = [
+      `项目：${projectId}`,
+      `章节投影：${snapshot?.chapters?.length ?? "暂不可用"} 章`,
+      `当前阶段：${snapshot?.overview?.current_stage ?? "暂不可用"}`,
+      `运行记录：${operations?.execution_count ?? "暂不可用"} 条`,
+    ];
+    $("agent-context").replaceChildren(...items.map(value => { const node=document.createElement("div"); node.className="context-item"; node.textContent=value; return node; }));
   }
 
   async function openChapter() {
@@ -21,8 +30,21 @@
     projectId = data.chapter.project_id;
     $("chapter-title").textContent = data.chapter.title;
     editor.value = data.chapter.content;
+    updateWordCount();
     currentVersion = data.chapter.version ? data.chapter.version.version : null;
     $("source-status").textContent = `${data.chapter.source.label} · ${data.chapter.source.editable ? "可编辑" : "首次编辑将创建工作稿"}`;
+  }
+
+  function updateWordCount() { $("word-count").textContent = `${editor.value.replace(/\s/g, "").length} 字`; }
+
+  async function submitAgentIntent(instruction) {
+    if (!instruction.trim()) { $("agent-thread").textContent = "请直接告诉 Agent 你的目标。"; return; }
+    $("agent-state-text").textContent = "正在读取上下文并建立任务…";
+    $("agent-thread").textContent = `你：${instruction}\n\nAgent：正在读取项目状态、当前章节与相关上下文。`;
+    const response = await fetch("/api/agent/intents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project_id: projectId, chapter_number: chapter(), actor: "作者", instruction }) });
+    const data = await response.json();
+    $("agent-state-text").textContent = data.status === "accepted" ? "任务已受理" : "任务未能受理";
+    $("agent-thread").textContent += `\n\nAgent：${data.message || data.error?.message || "请求未完成"}${data.intent_id ? `\n任务编号：${data.intent_id}` : ""}`;
   }
 
   async function saveDraft() {
@@ -54,12 +76,10 @@
   $("open-chapter").addEventListener("click", openChapter);
   $("save-draft").addEventListener("click", saveDraft);
   $("load-versions").addEventListener("click", loadVersions);
-  $("agent-check").addEventListener("click", async () => {
-    const response = await fetch("/api/agent/intents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project_id: projectId, chapter_number: chapter(), actor: "作者", instruction: "这一章目前写得不对，你自己检查一下。" }) });
-    const data = await response.json();
-    $("agent-status").textContent = data.message || data.error?.message || "Agent 请求未完成";
-  });
-  editor.addEventListener("input", () => { window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
+  $("agent-check").addEventListener("click", () => submitAgentIntent("这一章目前写得不对，你自己检查一下。"));
+  $("agent-continue").addEventListener("click", () => submitAgentIntent(`读取项目已有数据和前文，继续写第 ${chapter()} 章。`));
+  $("agent-send").addEventListener("click", () => submitAgentIntent($("agent-instruction").value));
+  editor.addEventListener("input", () => { updateWordCount(); window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
   loadProjectId();
   $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();
