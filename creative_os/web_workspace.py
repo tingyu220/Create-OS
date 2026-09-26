@@ -13,6 +13,7 @@ from creative_os.writer_draft_store import WriterDraftStore
 from creative_os.writer_workspace_dto import WriterChapterEnvelope, WriterChapterDTO, WriterSourceDTO, WriterSourceRole, encode_writer_chapter
 from creative_os.workspace_dto import Freshness
 from creative_os.agent_intent import AgentIntentRequest, accept_agent_intent
+from creative_os.agent_runtime import WriterAgentRuntime
 
 
 WEB_ROOT = Path(__file__).with_name("web")
@@ -83,6 +84,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     chapter_command_adapter: object | None = None
     writer_command_adapter: object | None = None
     writer_adapter: WriterWebAdapter | None = None
+    agent_runtime: WriterAgentRuntime | None = None
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
@@ -146,6 +148,14 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if route == "/api/agent/intents":
             self._handle_agent_intent()
             return
+        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)", route)
+        if match and self.agent_runtime is not None:
+            job = self.agent_runtime.get(match.group(1))
+            if job is None:
+                self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
+            else:
+                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version}, ensure_ascii=False).encode("utf-8"))
+            return
         if route == "/api/workspace":
             self.send_response(405)
             self.send_header("Allow", "GET")
@@ -192,7 +202,11 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             raw = json.loads(self.rfile.read(length).decode("utf-8"))
             request = AgentIntentRequest(raw["project_id"], int(raw["chapter_number"]), raw["instruction"], raw.get("actor", "作者"))
             receipt = accept_agent_intent(request)
-            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "status": receipt.status, "message": receipt.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
+            if self.agent_runtime is None:
+                self._send_json(503, json.dumps({"error": {"code": "agent_runtime_unavailable", "message": "Agent Runtime 尚未启动。"}}, ensure_ascii=False).encode("utf-8"), close=True)
+                return
+            job = self.agent_runtime.submit(receipt.instruction, request.chapter_number, request.actor)
+            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "job_id": job.job_id, "status": job.status, "message": job.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
         except (KeyError, TypeError, ValueError, json.JSONDecodeError):
             self._send_json(422, '{"error":{"code":"agent_intent_invalid","message":"Agent 检查请求无效。"}}'.encode("utf-8"), close=True)
 
@@ -226,6 +240,7 @@ def create_server(
     chapter_command_adapter: object | None = None,
     writer_command_adapter: object | None = None,
     writer_adapter: WriterWebAdapter | None = None,
+    agent_runtime: WriterAgentRuntime | None = None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -239,6 +254,7 @@ def create_server(
     bound_chapter_command_adapter = chapter_command_adapter
     bound_writer_command_adapter = writer_command_adapter
     bound_writer_adapter = writer_adapter
+    bound_agent_runtime = agent_runtime
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
@@ -247,6 +263,7 @@ def create_server(
         chapter_command_adapter = bound_chapter_command_adapter
         writer_command_adapter = bound_writer_command_adapter
         writer_adapter = bound_writer_adapter
+        agent_runtime = bound_agent_runtime
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)

@@ -47,8 +47,12 @@
     $("agent-thread").textContent = `你：${instruction}\n\nAgent：正在读取项目状态、当前章节与相关上下文。`;
     const response = await fetch("/api/agent/intents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ project_id: projectId, chapter_number: chapter(), actor: "作者", instruction }) });
     const data = await response.json();
-    $("agent-state-text").textContent = data.status === "accepted" ? "任务已受理" : "任务未能受理";
-    $("agent-thread").textContent += `\n\nAgent：${data.message || data.error?.message || "请求未完成"}${data.intent_id ? `\n任务编号：${data.intent_id}` : ""}`;
+    if (data.job_id) {
+      $("agent-state-text").textContent = "任务已排队";
+      $("agent-thread").textContent += `\n\nAgent：${data.message}\n任务编号：${data.job_id}`;
+      const poll = async () => { const result = await fetch(`/api/agent/jobs/${data.job_id}`); if (!result.ok) return; const job = await result.json(); $("agent-state-text").textContent = job.status; $("agent-thread").textContent = `你：${instruction}\n\nAgent：${job.message}`; if (!["completed", "failed"].includes(job.status)) window.setTimeout(poll, 1500); };
+      window.setTimeout(poll, 800);
+    } else { $("agent-state-text").textContent = "任务未能受理"; $("agent-thread").textContent += `\n\nAgent：${data.error?.message || "请求未完成"}`; }
   }
 
   async function saveDraft() {

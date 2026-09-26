@@ -27,6 +27,7 @@ from creative_os.domains.chapter_production_orchestrator import ChapterProductio
 from creative_os.workspace_chapter_command import WorkspaceChapterRunCommandHandler
 from creative_os.writer_command import WriterDraftCommandHandler
 from creative_os.writer_draft_store import WriterDraftStore
+from creative_os.agent_runtime import WriterAgentRuntime
 
 
 def _workspace_version_reader(_target: str) -> NoReturn:
@@ -62,6 +63,7 @@ def main() -> None:
     adapter = WorkspaceWebAdapter(WorkspaceQueryAdapter(repository), project_id)
     writer_store = WriterDraftStore(project_root)
     writer_adapter = WriterWebAdapter(project_root, project_id)
+    agent_runtime = WriterAgentRuntime(project_root)
     command_handler = WorkspaceRefreshCommandHandler(project_id)
     command_boundary = CommandBoundary(
         command_handler,
@@ -104,6 +106,7 @@ def main() -> None:
         chapter_command_adapter=WorkspaceCommandAdapter(chapter_boundary),
         writer_command_adapter=WorkspaceCommandAdapter(writer_boundary),
         writer_adapter=writer_adapter,
+        agent_runtime=agent_runtime,
         host=args.host,
         port=args.port,
     )
