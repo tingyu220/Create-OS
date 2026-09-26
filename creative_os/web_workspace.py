@@ -106,6 +106,14 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json(200, self.writer_adapter.read_context_summary())
             return
+        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)", route)
+        if match and self.agent_runtime is not None:
+            job = self.agent_runtime.get(match.group(1))
+            if job is None:
+                self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
+            else:
+                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version}, ensure_ascii=False).encode("utf-8"))
+            return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
@@ -147,14 +155,6 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             return
         if route == "/api/agent/intents":
             self._handle_agent_intent()
-            return
-        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)", route)
-        if match and self.agent_runtime is not None:
-            job = self.agent_runtime.get(match.group(1))
-            if job is None:
-                self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
-            else:
-                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version}, ensure_ascii=False).encode("utf-8"))
             return
         if route == "/api/workspace":
             self.send_response(405)
