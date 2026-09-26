@@ -8,7 +8,7 @@
   const initialChapter = new URLSearchParams(window.location.search).get("chapter");
   if (initialChapter && Number.isInteger(Number(initialChapter))) $("chapter-number").value = initialChapter;
 
-  async function loadProjectId() {
+  async function refreshProjectContext() {
     const response = await fetch("/api/workspace");
     if (!response.ok) return;
     const data = await response.json(); projectId = data.project_id;
@@ -50,7 +50,17 @@
     if (data.job_id) {
       $("agent-state-text").textContent = "任务已排队";
       $("agent-thread").textContent += `\n\nAgent：${data.message}\n任务编号：${data.job_id}`;
-      const poll = async () => { const result = await fetch(`/api/agent/jobs/${data.job_id}`); if (!result.ok) return; const job = await result.json(); $("agent-state-text").textContent = job.status; $("agent-thread").textContent = `你：${instruction}\n\nAgent：${job.message}`; if (!["completed", "failed"].includes(job.status)) window.setTimeout(poll, 1500); };
+      const labels = { queued: "等待执行", reading_context: "正在读取上下文", thinking: "正在生成正文", saving: "正在保存工作稿", completed: "已完成", failed: "运行失败" };
+      const poll = async () => {
+        const result = await fetch(`/api/agent/jobs/${data.job_id}`);
+        if (!result.ok) { $("agent-state-text").textContent = "状态读取失败，正在重试"; window.setTimeout(poll, 2500); return; }
+        const job = await result.json();
+        $("agent-state-text").textContent = labels[job.status] || job.status;
+        $("agent-thread").textContent = `你：${instruction}\n\nAgent：${job.message}`;
+        await refreshProjectContext();
+        if (job.status === "completed") { $("chapter-number").value = job.chapter_number; await openChapter(); await loadVersions(); }
+        else if (job.status !== "failed") window.setTimeout(poll, 1500);
+      };
       window.setTimeout(poll, 800);
     } else { $("agent-state-text").textContent = "任务未能受理"; $("agent-thread").textContent += `\n\nAgent：${data.error?.message || "请求未完成"}`; }
   }
@@ -88,6 +98,7 @@
   $("agent-continue").addEventListener("click", () => submitAgentIntent(`读取项目已有数据和前文，继续写第 ${chapter()} 章。`));
   $("agent-send").addEventListener("click", () => submitAgentIntent($("agent-instruction").value));
   editor.addEventListener("input", () => { updateWordCount(); window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
-  loadProjectId();
+  refreshProjectContext();
+  window.setInterval(refreshProjectContext, 5000);
   $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();
