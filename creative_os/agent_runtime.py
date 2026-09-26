@@ -67,7 +67,9 @@ class WriterAgentRuntime:
             result = client.complete(messages, temperature=0.78, max_tokens=12000)
             content = getattr(result, "content", result)
             self._set(job_id, status="saving", message="正文已生成，正在写入 Working Draft。")
-            version = self.store.save(target, str(content), actor=actor, expected_version=None)
+            current = self.store.current(target)
+            expected_version = None if current is None else current[0].version
+            version = self.store.save(target, str(content), actor=actor, expected_version=expected_version)
             self._set(job_id, status="completed", message=f"第{target}章已生成到 Working Draft。", draft_version=version.version)
         except Exception as error:
             self._set(job_id, status="failed", message=f"Agent 运行失败：{error}")
