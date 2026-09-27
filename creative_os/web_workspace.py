@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 import re
 
 from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
@@ -44,14 +44,19 @@ class WriterWebAdapter:
         self.project_id = project_id
         self.store = WriterDraftStore(project_root)
 
-    def read_chapter(self, chapter_number: int) -> bytes:
+    def read_chapter(self, chapter_number: int, *, source: str = "auto") -> bytes:
         draft = self.store.current(chapter_number)
-        if draft is not None:
+        path = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
+        if draft is not None and source == "draft":
             version, content = draft
             source = WriterSourceDTO(WriterSourceRole.WORKING_DRAFT, "当前工作稿", True, version.source_key, content_hash=version.content_hash)
             chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, source, version, Freshness.FRESH, (version.source_key,))
             return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
-        path = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
+        if draft is not None and source == "auto" and not path.exists():
+            version, content = draft
+            draft_source = WriterSourceDTO(WriterSourceRole.WORKING_DRAFT, "当前工作稿", True, version.source_key, content_hash=version.content_hash)
+            chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, draft_source, version, Freshness.FRESH, (version.source_key,))
+            return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
         if not path.exists():
             return json.dumps(encode_writer_chapter(WriterChapterEnvelope(None, Freshness.UNAVAILABLE, ("章节内容暂不可用",))), ensure_ascii=False).encode("utf-8")
         content = path.read_text(encoding="utf-8")
@@ -71,7 +76,8 @@ class WriterWebAdapter:
         final_root = self.project_root / "production" / "final_chapters"
         final_count = len(tuple(final_root.glob("chapter_*.md"))) if final_root.exists() else 0
         draft_count = len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0
-        payload = {"project_id": self.project_id, "formal_chapter_count": final_count, "working_draft_count": draft_count}
+        draft_chapters = sorted(int(path.stem.split("_")[-1]) for path in self.store.root.glob("chapter_*.jsonl")) if self.store.root.exists() else []
+        payload = {"project_id": self.project_id, "formal_chapter_count": final_count, "working_draft_count": draft_count, "working_draft_chapters": draft_chapters}
         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
@@ -88,13 +94,15 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     web_root: Path = WEB_ROOT
 
     def do_GET(self) -> None:  # noqa: N802
-        route = urlsplit(self.path).path
+        request_url = urlsplit(self.path)
+        route = request_url.path
         if route == "/api/workspace":
             self._send_json(200, self.workspace_adapter.read_json())
             return
         match = re.fullmatch(r"/api/writer/chapters/(\d+)", route)
         if match and self.writer_adapter is not None:
-            self._send_json(200, self.writer_adapter.read_chapter(int(match.group(1))))
+            source = parse_qs(request_url.query).get("source", ["auto"])[0]
+            self._send_json(200, self.writer_adapter.read_chapter(int(match.group(1)), source=source))
             return
         match = re.fullmatch(r"/api/writer/chapters/(\d+)/versions", route)
         if match and self.writer_adapter is not None:
@@ -112,7 +120,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             if job is None:
                 self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
             else:
-                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version}, ensure_ascii=False).encode("utf-8"))
+                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version, "updated_at": job.updated_at}, ensure_ascii=False).encode("utf-8"))
             return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
@@ -150,7 +158,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if route == "/api/commands/start-chapter-run":
             self._handle_command(self.chapter_command_adapter)
             return
-        if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/open-writer-chapter"}:
+        if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/publish-writer-draft", "/api/commands/open-writer-chapter"}:
             self._handle_command(self.writer_command_adapter)
             return
         if route == "/api/agent/intents":

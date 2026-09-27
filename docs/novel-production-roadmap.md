@@ -1,12 +1,39 @@
 # Novel Production Roadmap
 
-## P0
+> 当前基线：V1.1 Production Ready。36 章整书生产验证已经完成。
+
+## 当前最重要方向
+
+建立章节合同与叙事回放能力，使系统在生成正文前能够回答：本章为什么存在、谁主动改变局面、付出什么代价、读者认知如何变化。
+
+### N1：章节合同回放
+
+- 实现最小 Narrative State 与 Chapter Contract。
+- 回放验证小说第 1 至 6 章，不改写正文。
+- 记录人物主动性、Reader State、伏笔动作、压力曲线和结尾变化。
+- 所有判断保留来源；无法确认的内容标记为不确定。
+
+### N2：叙事审核门禁
+
+- 检查章节功能重复、人物被动、无代价选择、伏笔空转和机械回顾。
+- 输出 Issue 与 Repair Task，不直接重写正文。
+
+### N3：Director 接入
+
+- Director 输出结构化章节决策。
+- 人工审批 Chapter Contract。
+- Planner、Writer 只消费已审批合同。
+- 重大变化通过 OutlineChange 和影响分析处理。
+
+## 已完成的生产工程化
+
+### P0
 
 - 新书项目创建器：使用书名创建 `projects/<书名>/`。
 - 批量重写断点续跑：失败后只跑未通过章节。
 - 耗时与 token 统计：每章记录 elapsed_seconds、attempts、usage。
 
-## P1
+### P1
 
 - 局部修复模式：针对开头模板、术语泄露、重复句做小范围修复。
 - 事实校验结构化升级：输出 supported/evidence，减少人工判断成本。

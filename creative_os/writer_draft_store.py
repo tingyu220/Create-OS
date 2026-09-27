@@ -67,6 +67,24 @@ class WriterDraftStore:
                 raise DraftNotFoundError(version_number)
             return self.save(chapter_number, selected["content"], actor=actor, expected_version=expected_version)
 
+    def promote(self, chapter_number: int, *, version_number: int, actor: str, expected_version: int | None) -> WriterVersionDTO:
+        """将指定工作稿版本显式发布为正式章节；Agent 不会调用此入口。"""
+        if chapter_number <= 0 or version_number <= 0:
+            raise ValueError("chapter_number_invalid")
+        with project_authority_lock(self.project_root):
+            records = [json.loads(line) for line in self._path(chapter_number).read_text(encoding="utf-8").splitlines()] if self._path(chapter_number).exists() else []
+            selected = next((item for item in records if item["version"] == version_number), None)
+            current = records[-1] if records else None
+            actual = None if current is None else current["version"]
+            if selected is None:
+                raise DraftNotFoundError(version_number)
+            if expected_version != actual:
+                raise DraftConflictError("version_conflict")
+            target = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(selected["content"], encoding="utf-8", newline="\n")
+            return self._decode(json.dumps(selected, ensure_ascii=False))
+
     @staticmethod
     def _encode(version: WriterVersionDTO) -> dict[str, object]:
         return {"version": version.version, "content_hash": version.content_hash, "created_at": version.created_at, "actor": version.actor, "parent_version": version.parent_version, "source_key": version.source_key}
@@ -78,4 +96,3 @@ class WriterDraftStore:
 
     def _path(self, chapter_number: int) -> Path:
         return self.root / f"chapter_{chapter_number:03d}.jsonl"
-

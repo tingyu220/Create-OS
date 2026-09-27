@@ -60,11 +60,11 @@ def decode_web_command(raw: object) -> CommandRequest:
             raise WebCommandValidationError("validation_failed", "章节运行命令不支持 expected_version。")
         if payload:
             raise WebCommandValidationError("validation_failed", "章节运行命令载荷必须为空对象。")
-    elif command_id in {"save_writer_draft", "restore_writer_version", "open_writer_chapter"}:
+    elif command_id in {"save_writer_draft", "restore_writer_version", "publish_writer_draft", "open_writer_chapter"}:
         target = _writer_target(target)
         if command_id == "save_writer_draft":
             _required_string(payload.get("content"), "payload.content")
-        elif command_id == "restore_writer_version":
+        elif command_id in {"restore_writer_version", "publish_writer_draft"}:
             version = payload.get("version")
             if type(version) is not int or version <= 0:
                 raise WebCommandValidationError("validation_failed", "payload.version 必须是正整数。")

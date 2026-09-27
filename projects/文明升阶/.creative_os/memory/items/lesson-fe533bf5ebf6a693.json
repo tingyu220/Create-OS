@@ -1,0 +1,35 @@
+{
+  "applicability": [
+    "topic_design",
+    "planning",
+    "writing",
+    "review",
+    "ten_chapter_audit"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "{\"character\": null, \"content\": \"选题和世界背景确定时必须同时建立全书基调契约，明确持续压力、核心情绪、感官母题和禁止出现的情绪失真。每章规划必须声明本章主氛围、人物承受的现实压力、至少一个可感知的灭绝或逃亡代价，以及结尾应留下的情绪余波。写完每十章必须进行一次基调一致性回查，检查紧迫感是否递进、人物反应是否真实、技术讨论是否被生存处境和关系代价承载；不合格章节进入修复，不继续盲目生产。\", \"feedback_id\": \"feedback-a16ec462efaf096e\", \"kind\": \"project_lesson\", \"schema_version\": 1}",
+  "created_at": "2026-09-24T14:49:31.068689+00:00",
+  "evidence": [
+    {
+      "note": "正文虽然在讨论记录、授权和版本差异，但没有呈现文明逃亡、种族濒临灭绝的紧迫感，整体仍有机器味。根因是选题背景阶段没有固化全书基调，章节规划没有声明要渲染的氛围，生产过程也缺少每十章一次的基调回查。",
+      "source_id": "feedback-a16ec462efaf096e",
+      "source_type": "feedback"
+    }
+  ],
+  "exceptions": [],
+  "id": "lesson-fe533bf5ebf6a693",
+  "kind": "experience",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "feedback",
+    "lesson",
+    "novel",
+    "project_lesson"
+  ],
+  "title": "项目 Lesson：基调与章节氛围必须前置设计并周期回查",
+  "updated_at": "2026-09-24T14:49:31.068689+00:00",
+  "version": 1
+}

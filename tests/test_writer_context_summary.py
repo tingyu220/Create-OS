@@ -12,5 +12,4 @@ def test_writer_context_separates_formal_chapters_drafts_and_projection(tmp_path
 
     payload = json.loads(WriterWebAdapter(tmp_path, "p").read_context_summary())
 
-    assert payload == {"project_id": "p", "formal_chapter_count": 1, "working_draft_count": 1}
-
+    assert payload == {"project_id": "p", "formal_chapter_count": 1, "working_draft_count": 1, "working_draft_chapters": [2]}

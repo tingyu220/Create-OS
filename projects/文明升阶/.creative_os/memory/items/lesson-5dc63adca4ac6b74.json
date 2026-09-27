@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "{\"character\": null, \"content\": \"小说推进不能只依靠事件和设定。每个关键场景都要呈现人物当下的具体欲望、顾虑、误解或身体/生活反应，并让对白带有身份、关系和性格差异；重要选择应体现代价与情绪余波。审阅时优先检查人物是否像真实的人，而不是只检查情节是否连贯。\", \"feedback_id\": \"feedback-aec9f3a68c1761ec\", \"kind\": \"project_lesson\", \"schema_version\": 1}",
+  "created_at": "2026-09-24T14:33:35.786671+00:00",
+  "evidence": [
+    {
+      "note": "通读后发现致命缺点：正文整体缺少人的味道。人物更像推动剧情的功能节点，缺少具体欲望、犹豫、误解、关系反应、生活化细节和带个人性格的语言；情节虽然可以推进，但读者难以感到真实的人在做选择和承受代价。",
+      "source_id": "feedback-aec9f3a68c1761ec",
+      "source_type": "feedback"
+    }
+  ],
+  "exceptions": [],
+  "id": "lesson-5dc63adca4ac6b74",
+  "kind": "experience",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "feedback",
+    "lesson",
+    "novel",
+    "project_lesson"
+  ],
+  "title": "项目 Lesson：人物必须有人的味道",
+  "updated_at": "2026-09-24T14:33:35.786671+00:00",
+  "version": 1
+}

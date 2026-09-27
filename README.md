@@ -1,4 +1,4 @@
-# Creative OS V1
+# Creative OS V1.1
 
 Creative OS V1 是一个知识与受控记忆驱动的长期创作系统底座。
 
@@ -25,16 +25,19 @@ Capability ◀──── Context ──── Retriever
                     User
 ```
 
-V1 不追求完整产品 UI，而是验证：
+V1.1 已完成一部 36 章验证小说的端到端生产验证，当前已经证明：
 
 - Knowledge 是事实和设定的唯一可信数据源；
 - Memory 保存经人工审批的决策、偏好和可复用经验；
 - Task 驱动系统推进；
 - Capability 只接收 Context，不直接读写 Knowledge；
 - Result 必须经过 Compiler 才能回写 Knowledge；
-- Novel 只是第一个 Domain Package。
+- Novel 是第一个完成生产验证的 Domain Package；
+- 长周期生产能够保存任务、上下文、审核、知识补丁和恢复状态。
 
-当前执行进度：已完成阶段四 `Novel Domain`，V1 已具备小说领域包闭环。
+当前执行进度：V1.1 Production Ready，36/36 章、108/108 Scene 已完成，测试基线为 85 passed。
+
+下一阶段的核心目标不是继续扩充生产脚本，而是落地“作者式动态叙事控制层”：先通过章节合同和第 1 至 6 章回放验证叙事决策，再逐步接入 Director、Planner、Writer 和动态改纲流程。
 
 ## 目录
 
@@ -45,6 +48,8 @@ CAPABILITY/    AI 能力边界文档
 DOMAINS/Novel/ 小说领域包文档
 creative_os/   V1 最小可运行核心
 tests/         V1 验收测试
+projects/      正式生产验证项目与运行产物
+docs/          状态评估、架构设计和开发计划
 ```
 
 核心边界：[Knowledge](DOMAIN/Knowledge.md) · [Memory](DOMAIN/Memory.md) · [Context](ENGINE/Context.md)

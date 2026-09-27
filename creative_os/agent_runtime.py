@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Lock
 from uuid import uuid4
+from datetime import datetime, timezone
 
 from creative_os.llm_writer import OpenAICompatibleClient, ModelMessage
 from creative_os.writer_draft_store import WriterDraftStore
@@ -19,6 +20,7 @@ class AgentJob:
     message: str
     chapter_number: int
     draft_version: int | None = None
+    updated_at: str = ""
 
 
 class WriterAgentRuntime:
@@ -31,7 +33,7 @@ class WriterAgentRuntime:
 
     def submit(self, instruction: str, chapter_number: int, actor: str = "作者") -> AgentJob:
         job_id = f"agent-{uuid4().hex}"
-        job = AgentJob(job_id, "queued", "任务已排队，等待 Agent 读取上下文。", chapter_number)
+        job = AgentJob(job_id, "queued", "任务已排队，等待 Agent 读取上下文。", chapter_number, None, datetime.now(timezone.utc).isoformat())
         with self._lock:
             self._jobs[job_id] = job
         self._pool.submit(self._run, job_id, instruction, chapter_number, actor)
@@ -44,7 +46,7 @@ class WriterAgentRuntime:
     def _set(self, job_id: str, **changes: object) -> None:
         with self._lock:
             current = self._jobs[job_id]
-            self._jobs[job_id] = AgentJob(current.job_id, str(changes.get("status", current.status)), str(changes.get("message", current.message)), current.chapter_number, changes.get("draft_version", current.draft_version))
+            self._jobs[job_id] = AgentJob(current.job_id, str(changes.get("status", current.status)), str(changes.get("message", current.message)), current.chapter_number, changes.get("draft_version", current.draft_version), datetime.now(timezone.utc).isoformat())
 
     def _run(self, job_id: str, instruction: str, chapter_number: int, actor: str) -> None:
         try:
@@ -57,12 +59,17 @@ class WriterAgentRuntime:
                 path = final_root / f"chapter_{number:03d}.md"
                 if path.exists():
                     previous.append(path.read_text(encoding="utf-8")[-6000:])
+            context_summary = {
+                "formal_chapters": len(tuple(final_root.glob("chapter_*.md"))),
+                "working_drafts": len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0,
+                "recent_chapters": list(range(max(1, target - 3), target)),
+            }
             self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。")
             client = OpenAICompatibleClient.from_env()
             previous_text = "\n\n".join(previous)
             messages = [
                 ModelMessage("system", "你是长篇小说 Writer Agent。只输出中文小说正文，不输出提纲、解释或系统术语。保持人物连续性和章节因果，不要机械分段。"),
-                ModelMessage("user", f"用户意图：{instruction}\n目标章节：第{target}章\n以下是最近章节正文片段：\n\n{previous_text}\n\n请基于这些上下文继续创作，输出完整章节正文，标题为《第{target}章》。"),
+                ModelMessage("user", f"用户意图：{instruction}\n项目上下文摘要：{context_summary}\n目标章节：第{target}章\n以下是最近章节正文片段：\n\n{previous_text}\n\n请基于这些上下文继续创作，输出完整章节正文，标题为《第{target}章》。"),
             ]
             result = client.complete(messages, temperature=0.78, max_tokens=12000)
             content = getattr(result, "content", result)

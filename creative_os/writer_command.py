@@ -14,7 +14,7 @@ class WriterDraftCommandHandler:
         self.store = store
 
     def validate(self, request) -> None:
-        if request.command_id not in {"save_writer_draft", "restore_writer_version", "open_writer_chapter"}:
+        if request.command_id not in {"save_writer_draft", "restore_writer_version", "publish_writer_draft", "open_writer_chapter"}:
             raise CommandRejectedError("command_not_allowed", "当前命令不属于 Writer 工作台。")
         target = request.target
         if not isinstance(target, Mapping) or target.get("project_id") != self.project_id:
@@ -26,6 +26,8 @@ class WriterDraftCommandHandler:
             raise CommandRejectedError("validation_failed", "工作稿正文不能为空。")
         if request.command_id == "restore_writer_version" and (type(payload.get("version")) is not int or payload["version"] <= 0):
             raise CommandRejectedError("validation_failed", "要恢复的版本无效。")
+        if request.command_id == "publish_writer_draft" and (type(payload.get("version")) is not int or payload["version"] <= 0):
+            raise CommandRejectedError("validation_failed", "要发布的工作稿版本无效。")
 
     def __call__(self, request):
         self.validate(request)
@@ -36,5 +38,7 @@ class WriterDraftCommandHandler:
         if request.command_id == "restore_writer_version":
             version = self.store.restore(chapter, request.payload["version"], actor=request.actor, expected_version=request.expected_version)
             return (f"writer-restore:{chapter}:{version.version}",)
+        if request.command_id == "publish_writer_draft":
+            version = self.store.promote(chapter, version_number=request.payload["version"], actor=request.actor, expected_version=request.expected_version)
+            return (f"writer-publish:{chapter}:{version.version}",)
         return ()
-

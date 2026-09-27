@@ -1,0 +1,33 @@
+{
+  "applicability": [
+    "writing",
+    "planning",
+    "review"
+  ],
+  "approved_by": null,
+  "confidence": 0.7,
+  "content": "{\"character\": null, \"content\": \"章节切分不应强制打断仍在持续的对话或场景。进入下一章前，应通过时间、空间、动作、情绪或叙事焦点的自然变化完成过渡；若内容本身连续，应重新评估分章位置。\", \"feedback_id\": \"feedback-29f52c2b746772a5\", \"kind\": \"project_lesson\", \"schema_version\": 1}",
+  "created_at": "2026-09-24T14:12:16.093089+00:00",
+  "evidence": [
+    {
+      "note": "章节之间的分段感过强：上一章还在进行中的对话或场景，下一章直接开始，缺少自然的时间、空间、动作或情绪过渡。当前正文内容本身未发现明确问题。",
+      "source_id": "feedback-29f52c2b746772a5",
+      "source_type": "feedback"
+    }
+  ],
+  "exceptions": [],
+  "id": "lesson-11a62c4adaa133ea",
+  "kind": "experience",
+  "scope": "project",
+  "scope_id": "文明升阶",
+  "status": "candidate",
+  "tags": [
+    "feedback",
+    "lesson",
+    "novel",
+    "project_lesson"
+  ],
+  "title": "项目 Lesson：章节边界需要自然过渡",
+  "updated_at": "2026-09-24T14:12:16.093089+00:00",
+  "version": 1
+}

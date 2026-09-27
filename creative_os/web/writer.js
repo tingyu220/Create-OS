@@ -19,6 +19,7 @@
       `项目：${projectId}`,
       `正式章节正文：${writerContext?.formal_chapter_count ?? "暂不可用"} 章`,
       `当前工作稿：${writerContext?.working_draft_count ?? "暂不可用"} 章`,
+      `工作稿章节：${writerContext?.working_draft_chapters?.join("、") || "暂无"}`,
       `运行状态投影：${snapshot?.chapters?.length ?? "暂不可用"} 条${data.overall === "partial" ? "（数据不完整）" : ""}`,
       `当前阶段：${snapshot?.overview?.current_stage && snapshot.overview.current_stage !== "unknown" ? snapshot.overview.current_stage : "暂未提供"}`,
       `运行记录：${operations?.execution_count ?? "暂不可用"} 条`,
@@ -26,9 +27,9 @@
     $("agent-context").replaceChildren(...items.map(value => { const node=document.createElement("div"); node.className="context-item"; node.textContent=value; return node; }));
   }
 
-  async function openChapter() {
+  async function openChapter(source = "auto") {
     $("source-status").textContent = "正在读取…";
-    const response = await fetch(`/api/writer/chapters/${chapter()}`);
+    const response = await fetch(`/api/writer/chapters/${chapter()}?source=${source}`);
     const data = await response.json();
     if (!data.chapter) { $("source-status").textContent = "章节内容暂不可用"; editor.value = ""; return; }
     projectId = data.chapter.project_id;
@@ -56,7 +57,7 @@
         if (!result.ok) { $("agent-state-text").textContent = "状态读取失败，正在重试"; window.setTimeout(poll, 2500); return; }
         const job = await result.json();
         $("agent-state-text").textContent = labels[job.status] || job.status;
-        $("agent-thread").textContent = `你：${instruction}\n\nAgent：${job.message}`;
+        $("agent-thread").textContent = `你：${instruction}\n\nAgent：${job.message}\n\n最近更新：${job.updated_at || "—"}`;
         await refreshProjectContext();
         if (job.status === "completed") { $("chapter-number").value = job.chapter_number; await openChapter(); await loadVersions(); }
         else if (job.status !== "failed") window.setTimeout(poll, 1500);
@@ -91,8 +92,22 @@
     else $("save-status").textContent = data.error?.message || "恢复失败";
   }
 
-  $("open-chapter").addEventListener("click", openChapter);
+  async function publishDraft() {
+    if (!currentVersion) { $("save-status").textContent = "当前没有可发布的工作稿版本"; return; }
+    if (!window.confirm(`确认将第 ${chapter()} 章当前工作稿发布为正式稿？`)) return;
+    const response = await fetch("/api/commands/publish-writer-draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      command_id: "publish_writer_draft", request_id: `publish-${Date.now()}`, actor: "作者", target: { project_id: projectId, chapter_number: chapter() }, payload: { version: currentVersion }, expected_version: currentVersion, idempotency_key: `publish-${chapter()}-${currentVersion}-${Date.now()}`
+    }) });
+    const data = await response.json();
+    if (data.status === "accepted") { $("save-status").textContent = "已发布为正式稿"; await refreshProjectContext(); await openChapter(); }
+    else $("save-status").textContent = data.error?.message || "发布失败";
+  }
+
+  $("open-chapter").addEventListener("click", () => openChapter());
+  $("view-formal").addEventListener("click", () => openChapter("formal"));
+  $("view-draft").addEventListener("click", () => openChapter("draft"));
   $("save-draft").addEventListener("click", saveDraft);
+  $("publish-draft").addEventListener("click", publishDraft);
   $("load-versions").addEventListener("click", loadVersions);
   $("agent-check").addEventListener("click", () => submitAgentIntent("这一章目前写得不对，你自己检查一下。"));
   $("agent-continue").addEventListener("click", () => submitAgentIntent(`读取项目已有数据和前文，继续写第 ${chapter()} 章。`));
