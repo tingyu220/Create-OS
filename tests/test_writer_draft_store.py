@@ -26,3 +26,12 @@ def test_draft_store_restore_creates_new_version(tmp_path):
     assert restored.version == 3
     assert store.current(79)[1] == "第一版正文"
 
+
+def test_draft_store_does_not_create_version_when_content_is_unchanged(tmp_path):
+    store = WriterDraftStore(tmp_path)
+
+    first = store.save(79, "同一版正文", actor="作者", expected_version=None)
+    duplicate = store.save(79, "同一版正文", actor="作者", expected_version=first.version)
+
+    assert duplicate.version == first.version
+    assert len(store.versions(79)) == 1

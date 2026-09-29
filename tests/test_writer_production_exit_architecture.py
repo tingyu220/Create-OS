@@ -115,6 +115,7 @@ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
         "creative_os.importing.materializer.materialize_project",
         "creative_os.novel_continuation_runner._continue_one_chapter_impl",
         "creative_os.novel_continuation_runner._promote_passing_draft_impl",
+        "creative_os.writer_draft_store.promote",
     }
     assert guard_violations == []
 

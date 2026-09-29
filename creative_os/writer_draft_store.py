@@ -50,8 +50,10 @@ class WriterDraftStore:
             actual = None if current is None else current.version
             if expected_version != actual:
                 raise DraftConflictError("version_conflict")
-            version_number = 1 if current is None else current.version + 1
             digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+            if current is not None and current.content_hash == digest:
+                return current
+            version_number = 1 if current is None else current.version + 1
             now = datetime.now(timezone.utc).isoformat()
             version = WriterVersionDTO(version_number, digest, now, actor, actual, f"draft:chapter-{chapter_number:03d}")
             self.root.mkdir(parents=True, exist_ok=True)

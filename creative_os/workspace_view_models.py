@@ -21,7 +21,7 @@ class WorkspaceDiagnosticVM:
 
 
 @dataclass(frozen=True, slots=True)
-class EvidenceRefVM:
+class SourceEvidenceVM:
     source_kind: str
     source_id: str
     locator: str
@@ -97,7 +97,7 @@ class WorkspaceDetailVM:
     status: str
     status_label: str
     attributes: Mapping[str, object]
-    evidence: tuple[EvidenceRefVM, ...]
+    evidence: tuple[SourceEvidenceVM, ...]
     freshness: Freshness
     diagnostics: tuple[WorkspaceDiagnosticVM, ...] = ()
 
@@ -299,8 +299,8 @@ def _current_stage(chapter: object) -> object | None:
     return stages[-1]
 
 
-def _evidence(ref: object) -> EvidenceRefVM:
-    return EvidenceRefVM(
+def _evidence(ref: object) -> SourceEvidenceVM:
+    return SourceEvidenceVM(
         source_kind=str(getattr(ref, "source_kind", "")),
         source_id=str(getattr(ref, "source_id", "")),
         locator=str(getattr(ref, "locator", "")),

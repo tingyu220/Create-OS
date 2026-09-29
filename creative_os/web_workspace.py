@@ -5,6 +5,7 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 import re
+import difflib
 
 from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
 from creative_os.workspace_dto import encode_workspace_envelope
@@ -72,6 +73,23 @@ class WriterWebAdapter:
         ]}
         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
+    def read_diff(self, chapter_number: int, from_version: int | None, to_version: int | None) -> bytes:
+        formal = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
+        before = formal.read_text(encoding="utf-8") if formal.exists() else ""
+        versions = self.store.versions(chapter_number)
+        records = [json.loads(line) for line in self.store._path(chapter_number).read_text(encoding="utf-8").splitlines()] if self.store._path(chapter_number).exists() else []
+        if from_version is not None:
+            selected = next((item for item in records if item["version"] == from_version), None)
+            before = "" if selected is None else selected["content"]
+        if to_version is not None:
+            selected = next((item for item in records if item["version"] == to_version), None)
+            after = "" if selected is None else selected["content"]
+        else:
+            current = self.store.current(chapter_number)
+            after = current[1] if current is not None else before
+        diff = "".join(difflib.unified_diff(before.splitlines(True), after.splitlines(True), fromfile="原稿", tofile="新工作稿"))
+        return json.dumps({"chapter_number": chapter_number, "diff": diff}, ensure_ascii=False).encode("utf-8")
+
     def read_context_summary(self) -> bytes:
         final_root = self.project_root / "production" / "final_chapters"
         final_count = len(tuple(final_root.glob("chapter_*.md"))) if final_root.exists() else 0
@@ -108,6 +126,11 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if match and self.writer_adapter is not None:
             self._send_json(200, self.writer_adapter.read_versions(int(match.group(1))))
             return
+        match = re.fullmatch(r"/api/writer/chapters/(\d+)/diff", route)
+        if match and self.writer_adapter is not None:
+            query = parse_qs(request_url.query)
+            self._send_json(200, self.writer_adapter.read_diff(int(match.group(1)), *(int(query[name][0]) if query.get(name) else None for name in ("from", "to"))))
+            return
         if route == "/api/writer/context":
             if self.writer_adapter is None:
                 self._send_text(503, "Writer unavailable")
@@ -120,7 +143,14 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             if job is None:
                 self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
             else:
-                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version, "updated_at": job.updated_at}, ensure_ascii=False).encode("utf-8"))
+                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version, "updated_at": job.updated_at, "mode": job.mode, "decision_id": job.decision_id, "target_words": job.target_words, "tolerance_words": job.tolerance_words, "min_words": job.min_words, "max_words": job.max_words, "actual_words": job.actual_words, "within_word_range": job.within_word_range}, ensure_ascii=False).encode("utf-8"))
+            return
+        match = re.fullmatch(r"/api/agent/decisions/([a-z0-9-]+)", route)
+        if match and self.agent_runtime is not None:
+            try:
+                self._send_json(200, json.dumps(self.agent_runtime.get_decision(match.group(1)), ensure_ascii=False).encode("utf-8"))
+            except FileNotFoundError:
+                self._send_json(404, json.dumps({"error": {"message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"))
             return
         static_files = {
             "/": ("index.html", "text/html; charset=utf-8"),
@@ -163,6 +193,9 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             return
         if route == "/api/agent/intents":
             self._handle_agent_intent()
+            return
+        if route == "/api/agent/decisions/act":
+            self._handle_agent_decision_act()
             return
         if route == "/api/workspace":
             self.send_response(405)
@@ -213,10 +246,23 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             if self.agent_runtime is None:
                 self._send_json(503, json.dumps({"error": {"code": "agent_runtime_unavailable", "message": "Agent Runtime 尚未启动。"}}, ensure_ascii=False).encode("utf-8"), close=True)
                 return
-            job = self.agent_runtime.submit(receipt.instruction, request.chapter_number, request.actor)
+            job = self.agent_runtime.submit(receipt.instruction, request.chapter_number, request.actor, target_words=int(raw.get("target_words", 4500)), tolerance_words=int(raw.get("tolerance_words", 300)))
             self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "job_id": job.job_id, "status": job.status, "message": job.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
         except (KeyError, TypeError, ValueError, json.JSONDecodeError):
             self._send_json(422, '{"error":{"code":"agent_intent_invalid","message":"Agent 检查请求无效。"}}'.encode("utf-8"), close=True)
+
+    def _handle_agent_decision_act(self) -> None:
+        try:
+            length = int(self.headers.get("Content-Length", "-1"))
+            raw = json.loads(self.rfile.read(length).decode("utf-8"))
+            if self.agent_runtime is None:
+                raise RuntimeError("agent_runtime_unavailable")
+            job = self.agent_runtime.submit_from_decision(str(raw["decision_id"]), str(raw.get("actor", "作者")))
+            self._send_json(202, json.dumps({"job_id": job.job_id, "status": job.status, "mode": job.mode}, ensure_ascii=False).encode("utf-8"), close=True)
+        except ValueError as error:
+            self._send_json(404, json.dumps({"error": {"code": str(error), "message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"), close=True)
+        except (KeyError, TypeError, json.JSONDecodeError):
+            self._send_json(422, '{"error":{"code":"decision_invalid","message":"创作决策请求无效。"}}'.encode("utf-8"), close=True)
 
     def log_message(self, _format: str, *_args: object) -> None:
         return
