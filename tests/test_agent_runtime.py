@@ -90,8 +90,10 @@ def test_agent_runtime_requires_existing_decision_before_act(tmp_path):
 
 
 def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, monkeypatch):
+    captured = {}
     class FakeClient:
         def complete(self, messages, *, temperature, max_tokens):
+            captured["prompt"] = messages[-1].content
             return "按方案修改后的正文"
 
     monkeypatch.setattr("creative_os.agent_runtime.OpenAICompatibleClient.from_env", lambda: FakeClient())
@@ -99,7 +101,7 @@ def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, mon
     decision_dir = tmp_path / ".creative_os" / "agent" / "decisions"
     decision_dir.mkdir(parents=True)
     (decision_dir / "decision-test.json").write_text('{"decision_id":"decision-test","target_chapter":79,"analysis":"重写中段","target_words":9,"tolerance_words":0}', encoding="utf-8")
-    job = runtime.submit_from_decision("decision-test")
+    job = runtime.submit_from_decision("decision-test", feedback="减少警句，增加人物动作")
     for _ in range(100):
         current = runtime.get(job.job_id)
         if current and current.status == "completed":
@@ -107,6 +109,7 @@ def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, mon
         time.sleep(0.02)
     assert current is not None and current.status == "completed"
     assert runtime.store.current(current.chapter_number)[1] == "按方案修改后的正文"
+    assert "减少警句，增加人物动作" in captured["prompt"]
 
 
 def test_agent_runtime_saves_out_of_range_draft_with_soft_warning(tmp_path, monkeypatch):

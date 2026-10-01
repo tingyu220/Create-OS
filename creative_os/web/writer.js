@@ -76,7 +76,7 @@
               const button = document.createElement("button"); button.id = "agent-act"; button.className = "primary"; button.textContent = "按此方案修改";
               button.addEventListener("click", async () => {
                 if (!window.confirm("确认让 Agent 按此方案生成新的工作稿？")) return;
-                const act = await fetch("/api/agent/decisions/act", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision_id: decision.decision_id, actor: "作者" }) });
+                const act = await fetch("/api/agent/decisions/act", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision_id: decision.decision_id, actor: "作者", feedback: $("decision-feedback").value }) });
                 const result = await act.json(); $("agent-thread").textContent += `\n\n${result.job_id ? "已确认执行，任务已排队。" : result.error?.message || "执行失败"}`; button.disabled = true;
                 if (result.job_id) {
                   const pollAct = async () => {

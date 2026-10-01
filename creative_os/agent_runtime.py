@@ -66,7 +66,7 @@ class WriterAgentRuntime:
             raise FileNotFoundError(decision_id)
         return json.loads(path.read_text(encoding="utf-8"))
 
-    def submit_from_decision(self, decision_id: str, actor: str = "作者") -> AgentJob:
+    def submit_from_decision(self, decision_id: str, actor: str = "作者", feedback: str = "") -> AgentJob:
         """作者确认后，才允许把只读决策转入执行任务。"""
         try:
             decision = self.get_decision(decision_id)
@@ -74,6 +74,8 @@ class WriterAgentRuntime:
             raise ValueError("decision_not_found") from error
         chapter = int(decision["target_chapter"])
         instruction = f"按创作决策 {decision_id} 执行修改：{decision.get('analysis', '')}"
+        if feedback.strip():
+            instruction += f"\n作者补充要求：{feedback.strip()}"
         return self.submit(
             instruction,
             chapter,

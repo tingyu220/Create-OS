@@ -31,6 +31,7 @@
         <div class="agent-quick-actions"><button id="agent-continue">继续写这一章</button><button id="agent-check">自主检查本章</button></div>
         <div class="word-target" aria-label="Agent 字数设置"><label>目标字数 <input id="agent-target-words" type="number" min="1" step="100" value="4500"></label><label>允许误差 <input id="agent-tolerance-words" type="number" min="0" step="50" value="300"></label><span id="agent-word-range" class="writer-status">范围：4200–4800 字</span></div>
         <div id="agent-thread" class="agent-thread">Agent 会自行判断需要读取哪些人物、时间线、伏笔、反馈和相邻章节，不要求你选择固定检查项。</div><pre id="agent-diff" class="agent-diff" hidden aria-label="修改差异"></pre>
+        <label class="section-label" for="decision-feedback">执行前补充要求（可选）</label><textarea id="decision-feedback" class="agent-input" placeholder="例如：减少总结句，增加人物动作，不改变结尾事件。"></textarea>
         <label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：读取前文和人物状态，继续写第 79 章。"></textarea>
         <button id="agent-send" class="primary">交给 Agent</button>
         <p class="agent-note">Agent 先生成工作稿或修改提案，不直接覆盖正式章节。技术来源和运行记录仍保留在 Inspector。</p>

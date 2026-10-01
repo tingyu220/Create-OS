@@ -257,7 +257,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             raw = json.loads(self.rfile.read(length).decode("utf-8"))
             if self.agent_runtime is None:
                 raise RuntimeError("agent_runtime_unavailable")
-            job = self.agent_runtime.submit_from_decision(str(raw["decision_id"]), str(raw.get("actor", "作者")))
+            job = self.agent_runtime.submit_from_decision(str(raw["decision_id"]), str(raw.get("actor", "作者")), str(raw.get("feedback", "")))
             self._send_json(202, json.dumps({"job_id": job.job_id, "status": job.status, "mode": job.mode}, ensure_ascii=False).encode("utf-8"), close=True)
         except ValueError as error:
             self._send_json(404, json.dumps({"error": {"code": str(error), "message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"), close=True)
