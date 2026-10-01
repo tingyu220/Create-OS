@@ -109,34 +109,12 @@ def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, mon
     assert runtime.store.current(current.chapter_number)[1] == "按方案修改后的正文"
 
 
-def test_agent_runtime_repairs_out_of_range_draft_before_saving(tmp_path, monkeypatch):
+def test_agent_runtime_saves_out_of_range_draft_with_soft_warning(tmp_path, monkeypatch):
     calls = []
 
     class FakeClient:
         def complete(self, messages, *, temperature, max_tokens):
             calls.append(messages[-1].content)
-            return "超" * 30 if len(calls) == 1 else "合" * 10
-
-    monkeypatch.setattr("creative_os.agent_runtime.OpenAICompatibleClient.from_env", lambda: FakeClient())
-    runtime = WriterAgentRuntime(tmp_path)
-    job = runtime.submit("完成本章", 1, target_words=10, tolerance_words=2)
-    for _ in range(100):
-        current = runtime.get(job.job_id)
-        if current and current.status in {"completed", "failed"}:
-            break
-        time.sleep(0.01)
-
-    assert current is not None and current.status == "completed"
-    assert current.actual_words == 10
-    assert current.within_word_range is True
-    assert len(calls) == 2
-    assert "压缩或扩写" in calls[1]
-    assert runtime.store.current(current.chapter_number)[1] == "合" * 10
-
-
-def test_agent_runtime_does_not_save_when_word_repair_stays_out_of_range(tmp_path, monkeypatch):
-    class FakeClient:
-        def complete(self, messages, *, temperature, max_tokens):
             return "超" * 30
 
     monkeypatch.setattr("creative_os.agent_runtime.OpenAICompatibleClient.from_env", lambda: FakeClient())
@@ -148,6 +126,11 @@ def test_agent_runtime_does_not_save_when_word_repair_stays_out_of_range(tmp_pat
             break
         time.sleep(0.01)
 
-    assert current is not None and current.status == "failed"
-    assert "word_range_not_met" in current.message
-    assert runtime.store.current(1) is None
+    assert current is not None and current.status == "completed"
+    assert current.actual_words == 30
+    assert current.within_word_range is False
+    assert len(calls) == 1
+    assert "超出" in current.message
+    assert runtime.store.current(current.chapter_number)[1] == "超" * 30
+
+

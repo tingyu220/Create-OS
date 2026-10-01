@@ -140,32 +140,12 @@ class WriterAgentRuntime:
                 return
             text = str(content)
             actual_words = len("".join(text.split()))
-            for repair_attempt in range(2):
-                if job.min_words <= actual_words <= job.max_words:
-                    break
-                self._set(job_id, status="thinking", message=f"正文共 {actual_words} 字，正在调整到 {job.min_words}–{job.max_words} 字。")
-                repair_request = RuntimeRequest(
-                    task_id=f"{job_id}-word-repair-{repair_attempt + 1}",
-                    context_id=context.decision.decision_id,
-                    capability="novel-writing-word-repair",
-                    domain="novel",
-                    model="writer-agent",
-                    messages=(
-                        ModelMessage("system", "你是长篇小说文字编辑。只输出调整后的完整章节正文，不输出说明。保持剧情、人物、因果和标题不变。"),
-                        ModelMessage("user", f"请将下面正文压缩或扩写到 {job.min_words}–{job.max_words} 字，目标约 {job.target_words} 字。当前为 {actual_words} 字。不要删掉关键事件，不要用重复内容凑字数。\n\n{text}"),
-                    ),
-                    input_refs=(("generated_draft", job_id),),
-                    temperature=0.45,
-                    max_tokens=12000,
-                )
-                text = RuntimeRunner().execute(repair_request, client).output
-                actual_words = len("".join(text.split()))
-            if not job.min_words <= actual_words <= job.max_words:
-                raise ValueError(f"word_range_not_met:{actual_words}:{job.min_words}-{job.max_words}")
-            self._set(job_id, status="saving", message="正文已通过字数检查，正在写入 Working Draft。")
+            within_word_range = job.min_words <= actual_words <= job.max_words
+            range_message = "字数在目标范围内" if within_word_range else f"字数超出目标范围（实际 {actual_words} 字，目标 {job.min_words}–{job.max_words} 字），已保留供作者判断"
+            self._set(job_id, status="saving", message=f"正文已生成，{range_message}，正在写入 Working Draft。")
             current = self.store.current(target)
             expected_version = None if current is None else current[0].version
             version = self.store.save(target, text, actor=actor, expected_version=expected_version)
-            self._set(job_id, status="completed", message=f"第{target}章已生成到 Working Draft，字数在目标范围内。", draft_version=version.version, actual_words=actual_words, within_word_range=True)
+            self._set(job_id, status="completed", message=f"第{target}章已生成到 Working Draft，{range_message}。", draft_version=version.version, actual_words=actual_words, within_word_range=within_word_range)
         except Exception as error:
             self._set(job_id, status="failed", message=f"Agent 运行失败：{error}")
