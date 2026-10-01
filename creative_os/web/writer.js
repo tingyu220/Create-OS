@@ -85,7 +85,7 @@
                     if (status.status === "completed") {
                       $("chapter-number").value = status.chapter_number; await openChapter("draft"); await loadVersions();
                       const diff = await (await fetch(`/api/writer/chapters/${status.chapter_number}/diff`)).json();
-                      $("agent-thread").textContent += `\n\n修改差异：\n${diff.diff || "没有检测到差异"}`;
+                      const diffPanel = $("agent-diff"); diffPanel.hidden = false; diffPanel.textContent = `修改差异\n${diff.diff || "没有检测到差异"}`;
                     } else if (status.status !== "failed") window.setTimeout(pollAct, 1500);
                   };
                   window.setTimeout(pollAct, 800);
@@ -96,7 +96,7 @@
           }
         }
         await refreshProjectContext();
-        if (job.status === "completed") { $("chapter-number").value = job.chapter_number; await openChapter(); await loadVersions(); }
+        if (job.status === "completed") { $("chapter-number").value = job.chapter_number; await openChapter(); await loadVersions(); await refreshProjectContext(); }
         else if (job.status !== "failed") window.setTimeout(poll, 1500);
       };
       window.setTimeout(poll, 800);
