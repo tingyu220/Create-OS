@@ -92,10 +92,14 @@ class WriterWebAdapter:
 
     def read_context_summary(self) -> bytes:
         final_root = self.project_root / "production" / "final_chapters"
-        final_count = len(tuple(final_root.glob("chapter_*.md"))) if final_root.exists() else 0
+        formal_chapters = sorted(
+            int(path.stem.split("_")[-1])
+            for path in final_root.glob("chapter_*.md")
+            if path.stem.split("_")[-1].isdigit()
+        ) if final_root.exists() else []
         draft_count = len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0
         draft_chapters = sorted(int(path.stem.split("_")[-1]) for path in self.store.root.glob("chapter_*.jsonl")) if self.store.root.exists() else []
-        payload = {"project_id": self.project_id, "formal_chapter_count": final_count, "working_draft_count": draft_count, "working_draft_chapters": draft_chapters}
+        payload = {"project_id": self.project_id, "formal_chapter_count": len(formal_chapters), "formal_chapters": formal_chapters, "working_draft_count": draft_count, "working_draft_chapters": draft_chapters}
         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
@@ -160,6 +164,7 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
             "/writer": ("writer.html", "text/html; charset=utf-8"),
             "/writer.js": ("writer.js", "text/javascript; charset=utf-8"),
+            "/writer.css": ("writer.css", "text/css; charset=utf-8"),
         }
         file_info = static_files.get(route)
         if file_info is None:
