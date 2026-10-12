@@ -4,9 +4,68 @@
   let currentVersion = null;
   let projectId = null;
   let saveTimer = null;
+  let versionHistory = [];
+  let currentSource = "auto";
   const chapter = () => Number($("chapter-number").value);
   const initialChapter = new URLSearchParams(window.location.search).get("chapter");
   if (initialChapter && Number.isInteger(Number(initialChapter))) $("chapter-number").value = initialChapter;
+
+  function renderChapterNavigation(context) {
+    const renderList = (targetId, chapters, source, emptyText) => {
+      const target = $(targetId);
+      target.replaceChildren();
+      if (!chapters.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = emptyText;
+        target.append(empty);
+        return;
+      }
+      chapters.forEach(chapterNumber => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.chapterNumber = String(chapterNumber);
+        button.dataset.source = source;
+        button.textContent = `第 ${chapterNumber} 章`;
+        button.setAttribute("aria-current", chapterNumber === chapter() && source === currentSource ? "true" : "false");
+        button.addEventListener("click", () => selectChapter(chapterNumber, source));
+        target.append(button);
+      });
+    };
+    const formalChapters = context?.formal_chapters || [];
+    const draftChapters = context?.working_draft_chapters || [];
+    $("formal-chapter-count").textContent = String(formalChapters.length);
+    $("draft-chapter-count").textContent = String(draftChapters.length);
+    renderList("formal-chapter-list", formalChapters, "formal", "暂无正式稿");
+    renderList("draft-chapter-list", draftChapters, "draft", "暂无工作稿");
+  }
+
+  async function selectChapter(chapterNumber, source) {
+    $("chapter-number").value = chapterNumber;
+    currentSource = source;
+    document.querySelectorAll("[data-chapter-number]").forEach(button => {
+      const selected = Number(button.dataset.chapterNumber) === chapterNumber && button.dataset.source === source;
+      button.setAttribute("aria-current", selected ? "true" : "false");
+    });
+    await openChapter(source);
+    await loadVersions();
+    activateChapterTab("editor");
+    activateWorkspacePanel("chapter");
+  }
+
+  function activateChapterTab(tabName) {
+    document.querySelectorAll("[data-chapter-tab]").forEach(button => {
+      button.setAttribute("aria-selected", button.dataset.chapterTab === tabName ? "true" : "false");
+    });
+    document.querySelectorAll("[data-chapter-panel]").forEach(panel => {
+      panel.hidden = panel.dataset.chapterPanel !== tabName;
+    });
+    if (tabName === "preview") $("preview").textContent = editor.value;
+  }
+
+  function activateWorkspacePanel(panelName) {
+    document.querySelector(".writer-grid").dataset.activePanel = panelName;
+  }
 
   async function refreshProjectContext() {
     const response = await fetch("/api/workspace");
@@ -14,6 +73,8 @@
     const data = await response.json(); projectId = data.project_id;
     const writerResponse = await fetch("/api/writer/context");
     const writerContext = writerResponse.ok ? await writerResponse.json() : null;
+    if (writerContext) renderChapterNavigation(writerContext);
+    $("project-name").textContent = projectId || "创作项目";
     const snapshot = data.snapshot; const operations = data.operations;
     const items = [
       `项目：${projectId}`,
@@ -31,12 +92,13 @@
     $("source-status").textContent = "正在读取…";
     const response = await fetch(`/api/writer/chapters/${chapter()}?source=${source}`);
     const data = await response.json();
-    if (!data.chapter) { $("source-status").textContent = "章节内容暂不可用"; editor.value = ""; return; }
+    if (!data.chapter) { $("source-status").textContent = "章节内容暂不可用，请检查章节来源"; return; }
     projectId = data.chapter.project_id;
     $("chapter-title").textContent = data.chapter.title;
     editor.value = data.chapter.content;
     updateWordCount();
     currentVersion = data.chapter.version ? data.chapter.version.version : null;
+    currentSource = data.chapter.source.editable ? "draft" : "formal";
     $("source-status").textContent = `${data.chapter.source.label} · ${data.chapter.source.editable ? "可编辑" : "首次编辑将创建工作稿"}`;
   }
 
@@ -86,6 +148,8 @@
                       $("chapter-number").value = status.chapter_number; await openChapter("draft"); await loadVersions();
                       const diff = await (await fetch(`/api/writer/chapters/${status.chapter_number}/diff`)).json();
                       const diffPanel = $("agent-diff"); diffPanel.hidden = false; diffPanel.textContent = `修改差异\n${diff.diff || "没有检测到差异"}`;
+                      $("agent-review-actions").hidden = false;
+                      activateChapterTab("diff");
                     } else if (status.status !== "failed") window.setTimeout(pollAct, 1500);
                   };
                   window.setTimeout(pollAct, 800);
@@ -96,7 +160,12 @@
           }
         }
         await refreshProjectContext();
-        if (job.status === "completed") { $("chapter-number").value = job.chapter_number; await openChapter(); await loadVersions(); await refreshProjectContext(); }
+        if (job.status === "completed") {
+          $("chapter-number").value = job.chapter_number;
+          await openChapter(job.draft_version == null ? "auto" : "draft");
+          await loadVersions();
+          await refreshProjectContext();
+        }
         else if (job.status !== "failed") window.setTimeout(poll, 1500);
       };
       window.setTimeout(poll, 800);
@@ -109,13 +178,15 @@
       command_id: "save_writer_draft", request_id: `writer-${Date.now()}`, actor: "作者", target: { project_id: projectId, chapter_number: chapter() }, payload: { content: editor.value }, expected_version: currentVersion, idempotency_key: `writer-${chapter()}-${Date.now()}`
     }) });
     const data = await response.json();
-    if (data.status === "accepted") { const before = currentVersion; const latest = await loadVersions(); currentVersion = latest ?? currentVersion; $("save-status").textContent = currentVersion === before ? "内容未变化，未创建新版本" : `已保存第 ${currentVersion} 个版本`; }
+    versionHistory = data.versions || versionHistory;
+    if (data.status === "accepted") { const before = currentVersion; const latest = await loadVersions(); currentVersion = latest ?? currentVersion; $("save-status").textContent = currentVersion === before ? "内容未变化，未创建新版本" : `已保存第 ${currentVersion} 个版本`; await refreshProjectContext(); }
     else { $("save-status").textContent = data.error?.message || "保存失败"; }
   }
 
   async function loadVersions() {
     const response = await fetch(`/api/writer/chapters/${chapter()}/versions`);
     const data = await response.json();
+    versionHistory = data.versions;
     $("versions").innerHTML = data.versions.length ? data.versions.map(v => `<button data-version="${v.version}">版本 ${v.version} · ${v.actor}</button>`).join(" ") : "暂无工作稿版本";
     $("versions").querySelectorAll("button").forEach(button => button.addEventListener("click", () => restoreVersion(Number(button.dataset.version))));
     return data.versions.length ? Math.max(...data.versions.map(v => v.version)) : null;
@@ -126,7 +197,7 @@
       command_id: "restore_writer_version", request_id: `restore-${Date.now()}`, actor: "作者", target: { project_id: projectId, chapter_number: chapter() }, payload: { version }, expected_version: currentVersion, idempotency_key: `restore-${chapter()}-${version}-${Date.now()}`
     }) });
     const data = await response.json();
-    if (data.status === "accepted") { const before = currentVersion; await openChapter(); const latest = await loadVersions(); currentVersion = latest ?? currentVersion; $("save-status").textContent = currentVersion === before ? "内容未变化，未创建新版本" : "已恢复并创建新版本"; }
+    if (data.status === "accepted") { const before = currentVersion; await openChapter("draft"); const latest = await loadVersions(); currentVersion = latest ?? currentVersion; $("save-status").textContent = currentVersion === before ? "内容未变化，未创建新版本" : "已恢复并创建新版本"; await refreshProjectContext(); }
     else $("save-status").textContent = data.error?.message || "恢复失败";
   }
 
@@ -141,9 +212,9 @@
     else $("save-status").textContent = data.error?.message || "发布失败";
   }
 
-  $("open-chapter").addEventListener("click", () => openChapter());
-  $("view-formal").addEventListener("click", () => openChapter("formal"));
-  $("view-draft").addEventListener("click", () => openChapter("draft"));
+  $("open-chapter").addEventListener("click", () => selectChapter(chapter(), "auto"));
+  $("view-formal").addEventListener("click", () => selectChapter(chapter(), "formal"));
+  $("view-draft").addEventListener("click", () => selectChapter(chapter(), "draft"));
   $("save-draft").addEventListener("click", saveDraft);
   $("publish-draft").addEventListener("click", publishDraft);
   $("load-versions").addEventListener("click", loadVersions);
@@ -152,9 +223,16 @@
   $("agent-send").addEventListener("click", () => submitAgentIntent($("agent-instruction").value));
   $("agent-target-words").addEventListener("input", wordTarget);
   $("agent-tolerance-words").addEventListener("input", wordTarget);
+  $("accept-agent-draft").addEventListener("click", () => { $("agent-review-actions").hidden = true; $("agent-state-text").textContent = `已保留工作稿版本 ${currentVersion}`; });
+  $("reject-agent-draft").addEventListener("click", async () => { const previousVersion = versionHistory.map(item => item.version).filter(version => version < currentVersion).sort((a, b) => b - a)[0]; if (!previousVersion) { $("agent-state-text").textContent = "没有可退回的上一版本"; return; } await restoreVersion(previousVersion); $("agent-review-actions").hidden = true; $("agent-state-text").textContent = `已退回版本 ${previousVersion}`; });
+  $("revise-agent-draft").addEventListener("click", () => { $("decision-feedback").focus(); const button = $("agent-act"); if (button) { button.disabled = false; button.textContent = "按补充要求再次修改"; } $("agent-state-text").textContent = "请补充要求后再次执行"; });
+  document.querySelectorAll("[data-chapter-tab]").forEach(button => button.addEventListener("click", () => activateChapterTab(button.dataset.chapterTab)));
+  document.querySelectorAll("[data-workspace-panel]").forEach(button => button.addEventListener("click", () => activateWorkspacePanel(button.dataset.workspacePanel)));
   wordTarget();
   editor.addEventListener("input", () => { updateWordCount(); window.clearTimeout(saveTimer); $("save-status").textContent = "有未保存修改"; saveTimer = window.setTimeout(saveDraft, 1200); });
-  refreshProjectContext();
+  (async () => {
+    await refreshProjectContext();
+    if (initialChapter) await selectChapter(Number(initialChapter), "auto");
+  })();
   window.setInterval(refreshProjectContext, 5000);
-  $("toggle-preview").addEventListener("click", () => { $("preview").hidden = !$("preview").hidden; $("preview").textContent = editor.value; editor.hidden = !editor.hidden; });
 })();

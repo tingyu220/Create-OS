@@ -8,8 +8,15 @@ def test_writer_context_separates_formal_chapters_drafts_and_projection(tmp_path
     final = tmp_path / "production" / "final_chapters"
     final.mkdir(parents=True)
     (final / "chapter_001.md").write_text("正文", encoding="utf-8")
+    (final / "chapter_003.md").write_text("第三章正文", encoding="utf-8")
     WriterDraftStore(tmp_path).save(2, "工作稿", actor="作者", expected_version=None)
 
     payload = json.loads(WriterWebAdapter(tmp_path, "p").read_context_summary())
 
-    assert payload == {"project_id": "p", "formal_chapter_count": 1, "working_draft_count": 1, "working_draft_chapters": [2]}
+    assert payload == {
+        "project_id": "p",
+        "formal_chapter_count": 2,
+        "formal_chapters": [1, 3],
+        "working_draft_count": 1,
+        "working_draft_chapters": [2],
+    }

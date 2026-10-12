@@ -2,40 +2,53 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Creative OS · 写作工作台</title>
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    :root{--writer-border:#d9e0dc;--writer-ink:#183029;--writer-muted:#63736d;--writer-accent:#276657}.writer-shell{max-width:1480px;margin:0 auto;padding:24px 28px}.writer-topbar{display:flex;align-items:center;justify-content:space-between}.writer-home{color:var(--writer-accent);text-decoration:none}.writer-toolbar{display:flex;gap:12px;align-items:center;margin:18px 0}.writer-toolbar input{width:90px}.writer-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}.writer-document,.agent-panel{background:#fff;border:1px solid var(--writer-border);border-radius:18px}.writer-document{padding:24px}.agent-panel{position:sticky;top:20px;padding:20px}.writer-editor{width:100%;min-height:62vh;border:0;border-top:1px solid var(--writer-border);padding:24px 4px;font:17px/1.95 system-ui,sans-serif;background:#fff;box-sizing:border-box;resize:vertical;outline:none}.writer-editor:focus{border-top-color:var(--writer-accent)}.writer-preview{white-space:pre-wrap;line-height:1.95;background:#fff;padding:28px 4px;min-height:62vh}.writer-status{color:var(--writer-muted);font-size:14px}.writer-actions,.agent-quick-actions{display:flex;gap:10px;flex-wrap:wrap}.writer-actions button,.agent-panel button,.writer-toolbar button{border:1px solid #9bb6aa;border-radius:10px;background:#f8fbf9;padding:8px 14px;cursor:pointer}.writer-actions button.primary,.agent-panel button.primary{background:#17352d;color:#fff}.agent-state{display:flex;align-items:center;gap:8px;margin:10px 0 16px}.agent-dot{width:8px;height:8px;border-radius:50%;background:#3d927c}.context-list{display:grid;gap:8px;margin:14px 0 20px}.context-item{padding:10px 12px;background:#f4f7f5;border-radius:10px;font-size:14px}.agent-thread{min-height:120px;max-height:38vh;overflow:auto;margin:14px 0;padding:14px;border:1px solid var(--writer-border);border-radius:12px;white-space:pre-wrap}.agent-diff{max-height:32vh;overflow:auto;margin:10px 0;padding:12px;background:#f7faf8;border:1px solid var(--writer-border);border-radius:10px;white-space:pre-wrap;font:13px/1.6 ui-monospace,monospace}.agent-input{width:100%;min-height:100px;box-sizing:border-box;border:1px solid var(--writer-border);border-radius:12px;padding:12px;font:15px/1.6 system-ui,sans-serif;margin:10px 0}.word-target{display:grid;gap:8px;margin:14px 0;padding:12px;background:#f4f7f5;border-radius:12px}.word-target label{display:flex;justify-content:space-between;align-items:center;font-size:14px}.word-target input{width:92px;border:1px solid var(--writer-border);border-radius:8px;padding:6px}.agent-note{font-size:13px;color:var(--writer-muted);line-height:1.55}.section-label{font-size:12px;letter-spacing:.08em;color:var(--writer-muted);font-weight:700}.versions-panel{max-height:132px;overflow:auto;margin-top:12px;padding:4px}.versions-panel button{margin:4px}.word-count{margin-left:auto}@media(max-width:920px){.writer-grid{grid-template-columns:1fr}.agent-panel{position:static}.writer-shell{padding:18px 14px}.agent-thread,.agent-diff{max-height:280px}}
-  </style>
+  <link rel="stylesheet" href="/writer.css">
 </head>
 <body>
   <main class="writer-shell">
-    <div class="writer-topbar"><div><p class="eyebrow">CREATIVE OS / AGENTIC WRITER</p><h1>写作工作台</h1></div><a class="writer-home" href="/">返回项目总览</a></div>
-    <div class="writer-toolbar">
-      <label>章节 <input id="chapter-number" type="number" min="1" value="1"></label>
-      <button id="open-chapter">打开章节</button>
-      <span id="source-status" class="writer-status">尚未打开章节</span>
-    </div>
-    <div class="writer-grid">
-      <section class="writer-document">
-        <h2 id="chapter-title">请选择章节</h2>
-        <div class="writer-actions"><button id="save-draft" class="primary">保存工作稿</button><button id="publish-draft">发布为正式稿</button><button id="view-formal">查看正式稿</button><button id="view-draft">查看当前工作稿</button><button id="toggle-preview">预览</button><button id="load-versions">版本历史</button><span id="save-status" class="writer-status"></span><span id="word-count" class="writer-status word-count">0 字</span></div>
-        <div id="versions" class="writer-status versions-panel"></div>
-        <textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea><article id="preview" class="writer-preview" hidden></article>
-      </section>
-      <aside class="agent-panel" aria-label="Agent 创作区">
-        <div class="section-label">WRITER AGENT</div><h2>让 Agent 参与创作</h2>
-        <div class="agent-state"><span class="agent-dot"></span><span id="agent-state-text">等待你的创作意图</span></div>
-        <div class="section-label">已读取的项目上下文</div><div id="agent-context" class="context-list"><div class="context-item">正在读取项目状态…</div></div>
-        <div class="agent-quick-actions"><button id="agent-continue">继续写这一章</button><button id="agent-check">自主检查本章</button></div>
-        <div class="word-target" aria-label="Agent 字数设置"><label>目标字数 <input id="agent-target-words" type="number" min="1" step="100" value="4500"></label><label>允许误差 <input id="agent-tolerance-words" type="number" min="0" step="50" value="300"></label><span id="agent-word-range" class="writer-status">范围：4200–4800 字</span></div>
-        <div id="agent-thread" class="agent-thread">Agent 会自行判断需要读取哪些人物、时间线、伏笔、反馈和相邻章节，不要求你选择固定检查项。</div><pre id="agent-diff" class="agent-diff" hidden aria-label="修改差异"></pre>
-        <label class="section-label" for="decision-feedback">执行前补充要求（可选）</label><textarea id="decision-feedback" class="agent-input" placeholder="例如：减少总结句，增加人物动作，不改变结尾事件。"></textarea>
-        <label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：读取前文和人物状态，继续写第 79 章。"></textarea>
-        <button id="agent-send" class="primary">交给 Agent</button>
-        <p class="agent-note">Agent 先生成工作稿或修改提案，不直接覆盖正式章节。技术来源和运行记录仍保留在 Inspector。</p>
+    <nav class="mobile-panel-switcher" aria-label="工作区切换">
+      <button type="button" data-workspace-panel="navigation">目录</button>
+      <button type="button" data-workspace-panel="agent">Agent</button>
+      <button type="button" data-workspace-panel="chapter">正文</button>
+    </nav>
+    <div class="writer-grid" data-active-panel="chapter">
+      <aside id="project-sidebar" class="workspace-panel project-sidebar" aria-label="项目与章节导航">
+        <header class="panel-header"><p class="eyebrow">CREATIVE OS</p><h1 id="project-name">创作项目</h1><a class="writer-home" href="/">返回项目总览</a></header>
+        <div class="chapter-jump"><label for="chapter-number">打开章节</label><div><input id="chapter-number" type="number" min="1" value="1"><button id="open-chapter">打开</button></div></div>
+        <section class="navigation-section"><div class="navigation-heading"><h2>正式稿</h2><span id="formal-chapter-count">0</span></div><div id="formal-chapter-list" class="chapter-list"><p class="empty-state">正在读取章节…</p></div></section>
+        <section class="navigation-section"><div class="navigation-heading"><h2>工作稿</h2><span id="draft-chapter-count">0</span></div><div id="draft-chapter-list" class="chapter-list"><p class="empty-state">正在读取工作稿…</p></div></section>
+        <section class="navigation-section reserved-navigation" aria-label="后续内容入口"><h2>创作资料</h2><button disabled>设定</button><button disabled>人物</button><button disabled>时间线</button><button disabled>线索</button></section>
       </aside>
+
+      <section id="agent-workspace" class="workspace-panel agent-workspace" aria-label="Agent 创作会话">
+        <header class="panel-header"><p class="eyebrow">WRITER AGENT</p><h2>与 Agent 一起创作</h2><div class="agent-state"><span class="agent-dot"></span><span id="agent-state-text">等待你的创作意图</span></div></header>
+        <div class="agent-scroll-region">
+          <details class="context-disclosure"><summary>已读取的项目上下文</summary><div id="agent-context" class="context-list"><div class="context-item">正在读取项目状态…</div></div></details>
+          <div class="agent-quick-actions"><button id="agent-continue">继续写这一章</button><button id="agent-check">自主检查本章</button></div>
+          <div class="word-target" aria-label="Agent 字数设置"><label>目标字数 <input id="agent-target-words" type="number" min="1" step="100" value="4500"></label><label>允许误差 <input id="agent-tolerance-words" type="number" min="0" step="50" value="300"></label><span id="agent-word-range" class="writer-status">范围：4200–4800 字</span></div>
+          <div id="agent-thread" class="agent-thread">Agent 会自行判断需要读取哪些人物、时间线、伏笔、反馈和相邻章节，不要求你选择固定检查项。</div>
+          <div id="agent-review-actions" class="review-actions" hidden><button id="accept-agent-draft" class="primary">保留此工作稿</button><button id="reject-agent-draft">退回上一版本</button><button id="revise-agent-draft">补充要求再修改</button></div>
+          <label class="section-label" for="decision-feedback">执行前补充要求（可选）</label><textarea id="decision-feedback" class="agent-input" placeholder="例如：减少总结句，增加人物动作，不改变结尾事件。"></textarea>
+        </div>
+        <footer class="agent-composer"><label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：读取前文和人物状态，继续写这一章。"></textarea><button id="agent-send" class="primary">交给 Agent</button><p class="agent-note">Agent 先生成工作稿或修改提案，不直接覆盖正式章节。</p></footer>
+      </section>
+
+      <section id="chapter-workspace" class="workspace-panel chapter-workspace" aria-label="章节工作区">
+        <header class="chapter-header"><div><p class="eyebrow">CHAPTER WORKSPACE</p><h2 id="chapter-title">请选择章节</h2></div><span id="word-count" class="writer-status word-count">0 字</span></header>
+        <div class="chapter-status-row"><span id="source-status" class="writer-status">尚未打开章节</span><span id="save-status" class="writer-status"></span></div>
+        <div class="writer-actions"><button id="save-draft" class="primary">保存工作稿</button><button id="publish-draft">发布为正式稿</button><button id="view-formal">查看正式稿</button><button id="view-draft">查看当前工作稿</button></div>
+        <nav class="chapter-tabs" aria-label="章节视图"><button type="button" data-chapter-tab="editor" aria-selected="true">正文</button><button type="button" data-chapter-tab="preview" aria-selected="false">预览</button><button type="button" data-chapter-tab="diff" aria-selected="false">差异</button><button type="button" data-chapter-tab="versions" aria-selected="false">版本</button><button type="button" data-chapter-tab="details" aria-selected="false">详情</button></nav>
+        <div class="chapter-tab-panels">
+          <section data-chapter-panel="editor"><textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea></section>
+          <section data-chapter-panel="preview" hidden><article id="preview" class="writer-preview"></article></section>
+          <section data-chapter-panel="diff" hidden><pre id="agent-diff" class="agent-diff" aria-label="修改差异">暂无修改差异</pre></section>
+          <section data-chapter-panel="versions" hidden><button id="load-versions">刷新版本</button><div id="versions" class="writer-status versions-panel">暂无工作稿版本</div></section>
+          <section data-chapter-panel="details" hidden><div class="details-placeholder"><h3>章节详情</h3><p>人物、线索、时间线和运行摘要将在这里按需显示。</p><a href="/inspector">打开诊断 Inspector</a></div></section>
+        </div>
+      </section>
     </div>
   </main>
   <script src="/writer.js"></script>
