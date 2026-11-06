@@ -418,9 +418,6 @@ class WriterAgentRuntime:
             self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。", experience_context=context.experience_context)
             client = self.client_factory() if job.mode == "act" else None
             previous_text = "\n\n".join(previous)
-            if job.preflight_plan_id:
-                previous_text += "\n\n【本章前置架构分析（写作前生成，必须遵守；未知项不得擅自补全）】\n"
-                previous_text += json.dumps(preflight, ensure_ascii=False)
             if context.current_formal:
                 previous_text += f"\n\n【当前目标章节第{target}章正式稿】\n{context.current_formal}"
                 capture.add("当前正式稿", f"production/final_chapters/chapter_{target:03d}.md",
@@ -441,6 +438,9 @@ class WriterAgentRuntime:
                             version=proposal["input"].get("version"), proposal_id=proposal["proposal_id"],
                             message_start=len(previous_text) - len(proposal["input"]["content"]),
                             input_source=job.proposal_source or proposal["base"]["source"])
+            if job.preflight_plan_id:
+                previous_text += "\n\n【本章前置架构分析（写作前生成，必须遵守；未知项不得擅自补全）】\n"
+                previous_text += json.dumps(preflight, ensure_ascii=False)
             input_content = proposal["input"]["content"] if proposal is not None else (context.current_draft or context.current_formal)
             if job.story_context:
                 frozen = job.story_context
