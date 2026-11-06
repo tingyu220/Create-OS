@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
+from creative_os.project_write_gate import project_write_lease
+
 if os.name == "nt":
     import msvcrt
 else:
@@ -19,6 +21,13 @@ _DEPTH = threading.local()
 
 @contextmanager
 def project_authority_lock(project_root: str | Path) -> Iterator[None]:
+    with project_write_lease(project_root):
+        with _source_authority_lock(project_root):
+            yield
+
+
+@contextmanager
+def _source_authority_lock(project_root: str | Path) -> Iterator[None]:
     root = Path(project_root).absolute()
     path = root / ".creative_os" / "memory" / "contracts" / ".project-authority.lock"
     key = str(path)

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Creative OS · 从 Idea 开始</title>
+  <link rel="stylesheet" href="/writer.css"><link rel="stylesheet" href="/story.css">
+  <script src="/project-scope.js"></script>
+</head>
+<body>
+  <main class="story-shell">
+    <nav class="story-mobile-switcher" aria-label="构思工作区切换"><button type="button" data-story-pane="navigation">作品</button><button type="button" data-story-pane="discussion">对话</button><button type="button" data-story-pane="candidate">设定</button></nav>
+    <div class="story-frame" data-active-pane="discussion">
+    <aside class="workspace-panel story-sidebar" aria-label="作品与故事导航"><header class="panel-header workspace-nav"><a id="workspace-back" data-workspace-leave href="/">← 我的作品</a><span id="workspace-book-name" class="sr-only">未命名新书</span><label for="project-switch">当前作品</label><select id="project-switch" aria-label="切换作品"><option value="">未命名新书</option></select><p id="workspace-notice" class="writer-status" role="status" hidden></p></header><section class="navigation-section story-navigation"><button type="button" data-story-pane="discussion">创作讨论</button><button type="button" data-story-pane="candidate">设定候选</button><button type="button" id="show-confirmed">已确认设定</button></section><section class="navigation-section workspace-links"><a id="workspace-writer-link" data-workspace-leave href="/writer?chapter=1">章节创作 →</a><a id="workspace-story-link" data-workspace-leave href="/story" hidden>故事构思</a><a id="workspace-overview-link" data-workspace-leave href="/overview">作品摘要</a><a data-workspace-leave href="/story">＋ 新建小说</a></section></aside>
+    <div class="story-main">
+    <header class="story-header"><div><p class="eyebrow">新书构思</p><h1 id="story-title">从一个 Idea 开始</h1></div><a id="chapter-link" data-workspace-leave hidden>打开第一章</a></header>
+    <p id="story-status" role="status" aria-live="polite">写下想法，与 Agent 一起把故事讨论清楚。</p>
+    <form id="create-book" class="story-create">
+      <label for="book-title">暂定书名</label><input id="book-title" maxlength="100" required autocomplete="off" placeholder="之后可以继续完善作品想法">
+      <label for="book-idea">你的 Idea</label><textarea id="book-idea" required rows="7" maxlength="12000" placeholder="可以是一句话、一个人物、一个冲突，或还没有想清楚的世界。"></textarea>
+      <button class="primary" id="create-submit">创建新书，进入讨论</button>
+    </form>
+    <div id="story-workspace" class="story-layout" hidden>
+      <section class="story-discussion" aria-labelledby="discussion-title">
+        <h2 id="discussion-title">一起讨论故事</h2>
+        <div id="story-thread" class="story-thread" aria-label="故事讨论记录"></div>
+        <form id="story-composer"><label for="story-input">补充想法、选择方向，或提出新的问题</label><textarea id="story-input" rows="4" maxlength="12000" required></textarea><div class="story-actions"><button id="story-send" class="primary">发送想法</button><button type="button" id="combat-expert-entry">请战斗专家分析</button><button type="button" id="story-retry" hidden>重试失败任务</button><button type="button" id="story-refresh">刷新状态</button></div></form>
+      </section>
+      <section class="story-candidate" aria-labelledby="candidate-title">
+        <div class="story-section-heading"><h2 id="candidate-title">故事候选</h2><span id="candidate-version">尚未形成候选</span></div>
+        <p class="writer-status">候选可以自由修改。保存并明确确认后，才会成为后续写作的正式设定。</p>
+        <div id="candidate-blocks"></div>
+        <button type="button" id="add-block" disabled>增加内容块</button>
+        <label for="story-questions">未定问题（每行一项）</label><textarea id="story-questions" rows="3" disabled></textarea>
+        <div class="story-actions"><button id="save-candidate" disabled>保存为新候选版本</button><button id="discard-candidate" hidden>放弃本地编辑，读取当前候选</button><button id="confirm-candidate" class="primary" disabled>确认此候选版本</button></div>
+        <details><summary>当前候选版本标识</summary><code id="candidate-hash"></code></details>
+        <section class="confirmed-story"><h2 id="confirmed-title">正式设定 · 尚未确认</h2><pre id="confirmed-text">继续讨论并确认一个候选版本后，即可开始第一章。</pre><p class="writer-status">再次讨论会生成新候选，当前正式设定继续有效。</p><button id="start-first-chapter" class="primary" disabled>按正式设定创作第一章候选</button></section>
+      </section>
+    </div>
+    </div></div>
+  </main>
+  <script src="/workspace-navigation.js"></script>
+  <script src="/story.js"></script>
+</body>
+</html>

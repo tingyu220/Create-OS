@@ -1,93 +1,34 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Creative OS · Workspace</title>
-  <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-  <a class="skip-link" href="#workspace-main">跳到主要内容</a>
-  <div id="workspace-shell" class="workspace-shell">
-    <aside id="workspace-sidebar" class="workspace-sidebar">
-      <div class="brand"><span class="brand-mark">CO</span><span>Creative OS</span></div>
-      <div class="workspace-project">
-        <div class="project-label">当前项目</div>
-        <div id="project-name" class="project-name">加载中…</div>
-      </div>
-      <nav id="workspace-navigation" aria-label="工作区导航"></nav>
-      <div class="sidebar-foot">READ-ONLY SURFACE<br><span>Command boundary reserved</span></div>
-    </aside>
-    <main id="workspace-main" class="workspace-main" tabindex="-1">
-      <div class="workspace-content">
-      <header id="workspace-topbar" class="workspace-topbar">
-        <div><div class="eyebrow">CREATIVE OS / WORKSPACE</div><h1>创作工作台</h1></div>
-        <div class="topbar-actions"><div id="overall-status" class="status-badge">读取中</div><button id="refresh-workspace" data-command="refresh-workspace" type="button" aria-label="刷新工作区投影">刷新投影</button></div>
-      </header>
-      <section id="workspace-state" class="workspace-state state-loading" aria-live="polite">
-        <div><span class="status-label">正在读取工作区</span><span id="workspace-state-detail" class="state-detail">正在通过只读查询入口获取最新投影。</span></div>
-        <button id="workspace-state-action" type="button" hidden>重新读取</button>
-      </section>
-      <div id="notice" class="notice" hidden><span id="notice-summary"></span><a href="/inspector.html" target="_blank" rel="noreferrer">查看诊断</a></div>
-      <div id="command-status" class="command-status" aria-live="polite">命令就绪</div>
-      <div id="command-diagnostics" class="command-diagnostics" aria-live="polite" hidden></div>
-      <section id="overview" data-navigation-target="#overview" class="view-section">
-        <div class="section-heading"><div><div class="eyebrow">01 / ORIENTATION</div><h2>Overview</h2></div><div><div id="overview-section-status" class="tag">—</div><div id="refresh-meta" class="meta">—</div></div></div>
-        <div class="overview-grid">
-          <article class="hero-card"><div class="card-kicker">CURRENT STAGE</div><div id="current-stage" class="hero-value">—</div><div id="run-status" class="muted">—</div></article>
-          <article class="metric-card"><div class="card-kicker">CHAPTERS</div><div id="chapter-count" class="metric-value">—</div><div class="muted">总章节投影</div></article>
-          <article class="metric-card accent"><div class="card-kicker">BLOCKED</div><div id="blocked-count" class="metric-value">—</div><div class="muted">需要关注</div></article>
-        </div>
-        <div class="overview-priority-grid">
-          <article class="panel next-action-card"><div class="panel-title">下一步建议</div><div id="next-action" class="priority-value">正在分析项目状态…</div><div id="current-task" class="muted">当前任务：未提供</div></article>
-          <article class="panel"><div class="panel-title">最近活动</div><div id="recent-activity" class="stack">暂无活动记录</div></article>
-          <article class="panel"><div class="panel-title">重点关注</div><div id="attention-items" class="stack">暂无重点关注</div></article>
-        </div>
-        <div class="two-column"><article class="panel"><div class="panel-title">阻塞摘要</div><div id="blockers" class="stack">—</div></article><article class="panel"><div class="panel-title">证据</div><details class="evidence-details"><summary>查看来源引用</summary><div id="overview-sources" class="source-list">—</div></details></article></div>
-      </section>
-      <section id="chapters" data-navigation-target="#chapters" class="view-section">
-        <div class="section-heading"><div><div class="eyebrow">02 / PRODUCTION MAP</div><h2>Chapter Matrix</h2></div><div><div id="chapters-section-status" class="tag">—</div><div class="section-note">每行均带来源引用</div></div></div>
-        <div class="chapter-workspace">
-          <article class="panel chapter-list-panel">
-            <div class="matrix-toolbar"><label for="chapter-filter">筛选章节</label><input id="chapter-filter" type="search" placeholder="按标题或章节编号搜索" autocomplete="off"><label class="sr-only" for="chapter-status-filter">按状态筛选</label><select id="chapter-status-filter"><option value="">全部状态</option><option value="passed">已通过</option><option value="running">运行中</option><option value="blocked">已阻塞</option><option value="failed">失败</option></select><span id="chapter-filter-count" class="section-note" aria-live="polite"></span><span id="chapter-command-status" class="section-note" aria-live="polite"></span></div>
-            <div id="chapter-list" class="chapter-list" role="list" aria-label="章节列表"></div>
-          </article>
-          <aside id="chapter-detail-drawer" class="chapter-detail-drawer" aria-labelledby="chapter-detail-title" hidden>
-            <div class="drawer-header"><div><div class="eyebrow">CHAPTER DETAIL</div><h3 id="chapter-detail-title">未选择章节</h3></div><button id="chapter-detail-close" class="drawer-close" type="button" aria-label="关闭章节详情">关闭</button></div>
-            <div id="chapter-detail-status" class="tag">—</div><div id="chapter-detail-meta" class="detail-meta">—</div><div id="chapter-detail-evidence" class="detail-evidence"><details class="evidence-details"><summary>查看证据</summary><div id="chapter-detail-evidence-list" class="source-list">未提供来源引用</div></details></div>
-            <div class="drawer-actions"><a id="chapter-detail-write" class="chapter-run" href="/writer" hidden>打开写作</a><button id="chapter-detail-run" class="chapter-run" type="button" hidden>启动运行</button></div>
-          </aside>
-        </div>
-      </section>
-      <section id="quality" data-navigation-target="#quality" class="view-section">
-        <div class="section-heading"><div><div class="eyebrow">03 / INTEGRITY SIGNALS</div><h2>Quality</h2></div><div><div id="quality-section-status" class="tag">—</div><div id="quality-summary" class="section-note">—</div></div></div>
-        <div class="two-column"><article class="panel"><div class="panel-title">Issues</div><div id="quality-issues" class="stack">—</div></article><article class="panel"><div class="panel-title">Gate results</div><div id="gate-results" class="stack">—</div></article></div>
-        <form id="review-accept-form" class="review-form" hidden>
-          <div class="panel-title">接受审阅问题</div>
-          <p id="review-accept-issue" class="muted">—</p>
-          <label>接受理由<textarea id="review-reason" required minlength="1" rows="2"></textarea></label>
-          <label>审阅结果 ID<input id="review-result-id" required></label>
-          <label>审阅结果 hash<input id="review-result-hash" required pattern="[0-9a-f]{64}"></label>
-          <label>预期版本<input id="review-version" required type="number" min="1" value="1"></label>
-          <div class="review-actions"><button type="submit">提交接受</button><button id="review-cancel" type="button">取消</button></div>
-          <div id="review-command-status" class="command-status" aria-live="polite"></div>
-        </form>
-      </section>
-      <section id="runtime" data-navigation-target="#runtime" class="view-section">
-        <div class="section-heading"><div><div class="eyebrow">04 / OBSERVABILITY</div><h2>Runtime / Trace</h2></div><div><div id="runtime-section-status" class="tag">—</div><div id="runtime-summary" class="section-note">—</div></div></div>
-        <div class="runtime-metrics"><article class="metric-card"><div class="card-kicker">EXECUTIONS</div><div id="execution-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">ATTEMPTS</div><div id="attempt-count" class="metric-value">—</div></article><article class="metric-card"><div class="card-kicker">TOKEN USAGE</div><div id="usage" class="metric-value small">未提供</div></article></div>
-        <article class="panel runtime-inspector-card"><div class="panel-title">运行诊断</div><p class="muted">普通工作区只显示运行摘要。完整 trace、事件来源和原始诊断保留在独立 Inspector。</p><a class="inspector-link" href="/inspector.html" target="_blank" rel="noreferrer">打开 Projection Inspector</a><div id="trace-list" class="trace-list" aria-hidden="true" hidden></div></article>
-        <div class="two-column runtime-detail-grid">
-          <article class="panel"><div class="panel-title">Tasks</div><div id="runtime-tasks" class="stack">—</div></article>
-          <article class="panel"><div class="panel-title">Errors</div><div id="runtime-errors" class="stack">—</div></article>
-          <article class="panel"><div class="panel-title">Recovery</div><div id="runtime-recovery" class="stack">—</div></article>
-          <article class="panel"><div class="panel-title">Retries</div><div id="runtime-retries" class="stack">—</div></article>
-        </div>
-      </section>
-      <footer class="footer">Projection is disposable, traceable, and read-only. No domain facts are created here.</footer>
-      </div>
-    </main>
-  </div>
-  <script src="/app.js"></script>
-</body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Creative OS · 我的作品</title><link rel="stylesheet" href="/styles.css"></head>
+<body id="bookshelf-page">
+<a class="skip-link" href="#bookshelf-main">跳到作品列表</a>
+<div class="library-shell">
+  <aside class="library-sidebar"><a class="library-brand" href="/">Creative OS</a><p class="brand-note">让好故事持续发生</p><nav aria-label="作品导航"><a class="nav-item active" href="#all-books">▤　我的作品</a><a class="nav-item" href="#recent-section">◷　最近打开</a></nav><div class="library-sidebar-foot"><a href="/overview">默认作品摘要</a><a href="/inspector">运行诊断 ↗</a><small>所有稿件，留在自己的作品里。</small></div></aside>
+  <main id="bookshelf-main" class="library-main">
+    <header class="library-header"><div><p class="eyebrow">你的创作空间</p><h1>我的作品</h1></div><div class="library-tools"><label class="sr-only" for="book-search">搜索作品名称</label><input id="book-search" type="search" placeholder="搜索作品名称…" autocomplete="off"><a id="new-book" class="primary-link" href="/story">＋ 新建小说</a></div></header>
+    <p id="legacy-entry" class="notice" hidden></p>
+    <div class="issues-entry"><button id="view-issues" type="button" aria-haspopup="dialog" aria-controls="issues-panel">查看并处理作品问题</button></div>
+    <section id="recent-section"><div class="section-heading"><h2>最近打开</h2><button id="refresh-books" type="button">刷新</button></div><p id="recent-status" class="muted" role="status"></p><div id="recent-books" class="recent-grid"></div><p id="recent-empty" class="empty-state" hidden>还没有最近打开的作品，从下方选择一本开始。</p></section>
+    <section id="all-books"><div class="section-heading"><h2>全部作品</h2><span id="book-total" class="muted"></span></div><p id="catalog-status" class="muted" role="status">正在读取作品目录…</p><p id="catalog-warning" class="notice" hidden></p><div class="book-table"><div class="book-table-head"><span>书名</span><span>已有稿件</span><span>最近打开</span><span>打开</span></div><div id="book-list"></div></div><p id="books-empty" class="empty-state" hidden></p><div class="pagination"><button id="previous-page" type="button" disabled>上一页</button><span id="page-status" class="muted"></span><button id="next-page" type="button" disabled>下一页</button></div></section>
+    <footer class="library-footer">从一个念头，到属于你的故事。<a href="/story">开始一本新书 →</a></footer>
+  </main>
+</div>
+<dialog id="issues-panel" class="issues-panel" aria-labelledby="issues-title" aria-describedby="issues-summary">
+  <header class="section-heading"><h2 id="issues-title" tabindex="-1">作品问题检查</h2><button id="close-issues" type="button" aria-label="关闭作品问题检查">关闭</button></header>
+  <p class="muted">逐项查看原因和影响；目录整理需要先预览，再由你确认。</p>
+  <div class="issue-actions"><button id="recheck-issues" type="button">重新检查</button><button id="more-issues" type="button" disabled>检查更多作品</button></div>
+  <p id="issues-summary" role="status" aria-live="polite"></p><div id="issues-list"></div>
+  <p id="migration-note" class="notice" role="status" aria-live="polite"></p>
+  <section id="migration-preview" class="migration-detail" hidden aria-labelledby="migration-preview-title">
+    <h3 id="migration-preview-title" tabindex="-1">确认目录整理</h3><p id="migration-preview-impact"></p><pre id="migration-preview-details"></pre>
+    <label class="migration-consent"><input id="migration-confirm-check" type="checkbox">已了解影响并确认先备份再迁移</label>
+    <div class="issue-actions"><button id="cancel-migration-preview" type="button">取消</button><button id="confirm-migration" type="button" disabled>确认执行</button></div>
+  </section>
+  <section id="migration-operation" class="migration-detail" hidden aria-label="目录整理状态">
+    <h3 id="migration-status" role="status" aria-live="polite"></h3><pre id="migration-operation-details"></pre><p id="migration-reload" class="muted"></p>
+    <div class="issue-actions"><button id="refresh-migration-status" type="button">重新读取状态</button><button id="reconcile-migration" type="button" hidden>核对中断状态</button><button id="continue-migration" type="button" hidden>预览并确认继续</button><a id="migration-open" class="book-open" hidden>重新打开作品</a></div>
+  </section>
+</dialog>
+<script src="/bookshelf-issues.js"></script><script src="/app.js"></script>
+</body></html>

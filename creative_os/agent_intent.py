@@ -12,6 +12,7 @@ class AgentIntentRequest:
     chapter_number: int
     instruction: str
     actor: str
+    requested_expert: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,6 +24,8 @@ class AgentIntentReceipt:
 
 
 def accept_agent_intent(request: AgentIntentRequest) -> AgentIntentReceipt:
+    if request.requested_expert is not None and request.requested_expert != "combat":
+        raise ValueError("requested_expert_invalid")
     if not request.instruction.strip():
         raise ValueError("instruction_required")
     if request.chapter_number <= 0:

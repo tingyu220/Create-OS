@@ -32,7 +32,7 @@ def parse_chapters(value: str) -> list[int]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project-root", default="projects/validation_novel/production")
+    parser.add_argument("--project-root", default="projects/雾城回声/production")
     parser.add_argument("--target-chapter", type=int, default=5)
     parser.add_argument("--chapters", help=argparse.SUPPRESS)
     parser.add_argument("--resume", action="store_true", help="Skip chapters that already passed in the latest run record")

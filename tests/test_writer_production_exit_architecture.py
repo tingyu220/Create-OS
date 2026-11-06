@@ -11,9 +11,10 @@ from creative_os.domains.writer_admission import AdmittedContractProjection, Wri
 from creative_os.llm_writer import promote_llm_writer_pilot_to_final, run_llm_writer_pilot
 from creative_os.novel_continuation_runner import PreparedWriterRun, continue_one_chapter, promote_passing_draft
 from creative_os.domains.novel_continuation import ContinuationTask
+from writer_architecture_checks import module_name, qualified_definitions, signature, validate_transparent_delegate
 
 
-MANIFEST = Path("tests/assets/writer_production_exits_v1.json")
+MANIFEST = Path("tests/assets/writer_production_exits_v4.json")
 PUBLIC = {
     "creative_os.novel_continuation_runner.continue_one_chapter",
     "creative_os.novel_continuation_runner.promote_passing_draft",
@@ -27,21 +28,15 @@ def _definitions(path):
     return tree, {node.name: node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
 
 
-def _signature(node):
-    owner = "RuntimeRunner." if node.name == "execute" else ""
-    positional = [arg.arg for arg in node.args.args]
-    keyword = [arg.arg for arg in node.args.kwonlyargs]
-    return f"{owner}{node.name}({','.join(positional)}" + (",*," + ",".join(keyword) if keyword else "") + ")"
-
-
 def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    assert len(manifest) == 9
+    assert len(manifest) == 14
     assert {item["symbol"] for item in manifest if item["kind"].startswith("public_")} == PUBLIC
     for item in manifest:
-        _, functions = _definitions(Path(item["file"]))
-        node = functions[item["symbol"].rsplit(".", 1)[-1]]
-        assert _signature(node) == item["signature"]
+        tree, _ = _definitions(Path(item["file"]))
+        qualified_name = item["symbol"].removeprefix(module_name(item["file"]) + ".")
+        node = qualified_definitions(tree)[qualified_name]
+        assert signature(qualified_name, node) == item["signature"]
         body = ast.unparse(node)
         if item["kind"] == "model_client_sink":
             assert any(isinstance(call.func, ast.Attribute) and call.func.attr == "complete"
@@ -50,10 +45,24 @@ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
             assert "final_chapters" in body and ("write_text" in body or "_write_text" in body)
         if item["kind"] == "human_approved_import_sink":
             assert "approval.json" in body and "shutil.copy2" in body
+        if item["kind"] == "transparent_delegate":
+            assert item["business_entry"] == "creative_os.runtime.runner.RuntimeRunner.execute"
+            assert item["allowed_constructors"] == ["creative_os.agent_runtime.WriterAgentRuntime._run", "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"]
+        if item["kind"] == "controlled_model_step":
+            assert item["scopes"] == ["story", "chapter", "combat"]
+            assert item["max_steps"] == {"story": 6, "chapter": 6, "combat": 4}
+            assert not any(isinstance(node, (ast.For, ast.While, ast.AsyncFor)) for node in ast.walk(node))
+        if item["kind"] == "bounded_tool_loop":
+            assert item["model_entry"] == "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
+            assert item["max_steps"] == (4 if item["symbol"].endswith("run_combat_expert") else 6)
+    assert [item["symbol"] for item in manifest if item["kind"] == "model_client_sink"] == ["creative_os.runtime.runner.RuntimeRunner.execute"]
 
     model_sinks = []
+    production_sources = {}
     for path in Path("creative_os").rglob("*.py"):
         tree, _ = _definitions(path)
+        production_sources[path.as_posix()] = path.read_text(encoding="utf-8")
+        qualified_names = {id(node): name for name, node in qualified_definitions(tree).items()}
         parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
         for call in (node for node in ast.walk(tree) if isinstance(node, ast.Call)):
             if (isinstance(call.func, ast.Attribute) and call.func.attr == "complete"
@@ -61,8 +70,15 @@ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
                 owner = parents.get(call)
                 while owner is not None and not isinstance(owner, ast.FunctionDef):
                     owner = parents.get(owner)
-                model_sinks.append((path.as_posix(), owner.name))
-    assert model_sinks == [("creative_os/runtime/runner.py", "execute")]
+                model_sinks.append((path.as_posix(), qualified_names[id(owner)]))
+    declared = [(item["file"], item["symbol"].removeprefix(module_name(item["file"]) + "."))
+                for item in manifest if item["kind"] in {"model_client_sink", "transparent_delegate"}]
+    assert sorted(model_sinks) == sorted(declared)
+    validate_transparent_delegate(production_sources)
+    import writer_architecture_checks
+    checker = getattr(writer_architecture_checks, "validate_combat_loops", None)
+    assert checker is not None, "有限专家循环架构契约尚未实现"
+    checker(production_sources)
 
     promotion_defs = set()
     promotion_calls = set()
@@ -136,6 +152,22 @@ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
             while owner is not None and not isinstance(owner, ast.FunctionDef):
                 owner = parents.get(owner)
             assert owner.name == allowed_internal_callers[called]
+
+
+@pytest.mark.parametrize("path,change", [
+    ("creative_os/combat_agent.py", "while True:\n pass"),
+    ("creative_os/chapter_agent_tools.py", "client.complete(messages)"),
+    ("creative_os/combat_agent.py", "RuntimeRunner().execute(request, client)"),
+    ("creative_os/combat_agent.py", "from creative_os.writer_context_sources import CapturingModelAdapter as Proxy\nProxy(client, callback).complete(messages)"),
+])
+def test_expert_boundaries_reject_unbounded_loops_and_new_model_exits(path, change):
+    import writer_architecture_checks
+    checker = getattr(writer_architecture_checks, "validate_combat_loops", None)
+    assert checker is not None, "有限专家循环架构契约尚未实现"
+    sources = {file.as_posix(): file.read_text(encoding="utf-8") for file in Path("creative_os").rglob("*.py")}
+    sources[path] += "\ndef bypass():\n" + "\n".join(" " + line for line in change.splitlines())
+    with pytest.raises(AssertionError):
+        checker(sources)
 
 
 def test_public_exits_require_prepared_and_runner_has_no_active_loader_or_final_token():

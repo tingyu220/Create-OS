@@ -32,7 +32,13 @@ def test_root_workspace_and_projection_inspector_have_separate_routes():
         inspector_js_status, inspector_js_type, inspector_js = _get(server, "/inspector.js")
 
         assert root_status == 200
-        assert "Creative OS · Workspace" in root_html
+        assert "Creative OS · 我的作品" in root_html
+        assert 'id="book-list"' in root_html
+        assert 'id="recent-books"' in root_html
+        assert 'id="projection-json"' not in root_html
+        overview_status, _, overview_html = _get(server, "/overview")
+        assert overview_status == 200 and 'id="continue-writing"' in overview_html
+        assert 'src="/author-home.js"' in overview_html
         assert inspector_status == 200
         assert "Projection Inspector" in inspector_html
         assert 'src="/inspector.js"' in inspector_html

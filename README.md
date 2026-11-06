@@ -65,7 +65,7 @@ python -m pytest -q
 从现有正式正文和生产 Artifact 回放可追溯的章节合同，不生成或修改正文：
 
 ```powershell
-python scripts\replay_narrative.py --project-root projects\validation_novel --start 1 --end 6
+python scripts\replay_narrative.py --project-root projects\雾城回声 --start 1 --end 6
 ```
 
 报告写入 `production\reports\narrative_replay_001_006.json` 和同名 Markdown 文件。缺少结构化证据的戏剧问题、人物选择、Reader State 或压力变化会保留为 `unknown`，Reviewer 仅生成 Issue 和人工修复建议。
@@ -85,7 +85,7 @@ python scripts\create_novel_project.py --title 雾城回声 --author 田雨 --ge
 研发目录会保留完整过程产物；正式发布版使用单独导出目录，方便直接找正文：
 
 ```powershell
-python scripts\export_novel_release.py --project-root projects\validation_novel --output-root releases
+python scripts\export_novel_release.py --project-root projects\雾城回声 --output-root releases
 ```
 
 正式新书项目使用书名目录：

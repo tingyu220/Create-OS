@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def test_independent_writer_validation_builds_traceable_snapshot() -> None:
     """证明统一投影读取真实独立 Writer 产物，而非测试伪数据。"""
-    project = REPO_ROOT / "projects" / "novel_domain_validation"
+    project = REPO_ROOT / "projects" / "末班钟表店"
     source = FilesystemProjectSource(project)
 
     result = ProjectProjectionBuilder(source).build(

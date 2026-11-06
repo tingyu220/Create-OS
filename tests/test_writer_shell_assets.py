@@ -20,7 +20,7 @@ def test_writer_shell_exposes_review_actions_after_agent_diff():
     assert 'id="accept-agent-draft"' in html
     assert 'id="reject-agent-draft"' in html
     assert 'id="revise-agent-draft"' in html
-    assert "restoreVersion(previousVersion)" in script
+    assert 'agentConversation.review("reject")' in script
 
 
 def test_writer_shell_has_three_pane_workspace_and_chapter_tabs():
@@ -56,19 +56,21 @@ def test_writer_shell_connects_navigation_tabs_and_mobile_panels():
     assert 'setAttribute("aria-selected"' in script
     assert "panel.hidden" in script
     assert 'querySelectorAll("[data-workspace-panel]")' in script
-    assert 'selectChapter(Number(initialChapter), "auto")' in script
+    assert 'selectChapter(Number(initialChapter), initialSource)' in script
+    assert '["formal", "draft", "auto"].includes(requestedSource) ? requestedSource : "auto"' in script
     assert "source === currentSource" in script
 
 
 def test_writer_shell_keeps_agent_review_version_and_publish_flow():
     script = (Path(__file__).parents[1] / "creative_os" / "web" / "writer.js").read_text(encoding="utf-8")
 
-    assert 'activateChapterTab("diff")' in script
+    assert 'activateChapterTab("candidate")' in script
     accept_handler = script.split('$("accept-agent-draft").addEventListener', 1)[1].split(
         '$("reject-agent-draft").addEventListener', 1
     )[0]
     assert "saveDraft" not in accept_handler
-    assert "restoreVersion(previousVersion)" in script
+    assert 'agentConversation.review("accept")' in accept_handler
+    assert 'agentConversation.review("reject")' in script
     assert "versionHistory = data.versions;" in script
     assert 'command_id: "publish_writer_draft"' in script
     assert '$("save-status").textContent' in script

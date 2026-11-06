@@ -6,51 +6,79 @@
   <title>Creative OS · 写作工作台</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/writer.css">
+  <script src="/project-scope.js"></script>
 </head>
 <body>
   <main class="writer-shell">
     <nav class="mobile-panel-switcher" aria-label="工作区切换">
       <button type="button" data-workspace-panel="navigation">目录</button>
-      <button type="button" data-workspace-panel="agent">Agent</button>
+      <button type="button" data-workspace-panel="agent">对话</button>
       <button type="button" data-workspace-panel="chapter">正文</button>
     </nav>
     <div class="writer-grid" data-active-panel="chapter">
       <aside id="project-sidebar" class="workspace-panel project-sidebar" aria-label="项目与章节导航">
-        <header class="panel-header"><p class="eyebrow">CREATIVE OS</p><h1 id="project-name">创作项目</h1><a class="writer-home" href="/">返回项目总览</a></header>
+        <header class="panel-header workspace-nav"><a id="workspace-back" data-workspace-leave href="/">← 我的作品</a><h1 id="project-name" class="sr-only">创作项目</h1><span id="workspace-book-name" class="sr-only">正在读取作品</span><label for="project-switch">当前作品</label><select id="project-switch" aria-label="切换作品"><option value="">正在读取…</option></select><p id="workspace-notice" class="writer-status" role="status" hidden></p></header>
         <div class="chapter-jump"><label for="chapter-number">打开章节</label><div><input id="chapter-number" type="number" min="1" value="1"><button id="open-chapter">打开</button></div></div>
-        <section class="navigation-section"><div class="navigation-heading"><h2>正式稿</h2><span id="formal-chapter-count">0</span></div><div id="formal-chapter-list" class="chapter-list"><p class="empty-state">正在读取章节…</p></div></section>
-        <section class="navigation-section"><div class="navigation-heading"><h2>工作稿</h2><span id="draft-chapter-count">0</span></div><div id="draft-chapter-list" class="chapter-list"><p class="empty-state">正在读取工作稿…</p></div></section>
-        <section class="navigation-section reserved-navigation" aria-label="后续内容入口"><h2>创作资料</h2><button disabled>设定</button><button disabled>人物</button><button disabled>时间线</button><button disabled>线索</button></section>
+        <section class="navigation-section"><label class="sr-only" for="chapter-search">搜索章节标题或编号</label><input id="chapter-search" type="search" placeholder="搜索章节标题或编号…"><div class="directory-filters" aria-label="章节筛选"><button type="button" data-directory-filter="all" aria-pressed="true">全部</button><button type="button" data-directory-filter="draft" aria-pressed="false">工作稿</button><button type="button" data-directory-filter="candidate" aria-pressed="false">待确认</button></div><div id="chapter-directory" class="chapter-directory"><p class="empty-state">正在读取章节…</p></div></section>
+        <section class="navigation-section workspace-links"><a id="workspace-story-link" class="writer-home" data-workspace-leave href="/story">故事设定与讨论 →</a><a id="workspace-writer-link" data-workspace-leave href="/writer?chapter=1" hidden>正文创作</a><a id="workspace-overview-link" data-workspace-leave href="/overview">作品摘要</a><a data-workspace-leave href="/story">＋ 新建小说</a></section>
+        <div hidden aria-hidden="true"><span id="formal-chapter-count"></span><div id="formal-chapter-list"></div><span id="draft-chapter-count"></span><div id="draft-chapter-list"></div></div>
       </aside>
 
       <section id="agent-workspace" class="workspace-panel agent-workspace" aria-label="Agent 创作会话">
-        <header class="panel-header"><p class="eyebrow">WRITER AGENT</p><h2>与 Agent 一起创作</h2><div class="agent-state"><span class="agent-dot"></span><span id="agent-state-text">等待你的创作意图</span></div></header>
+        <header class="panel-header"><p class="eyebrow">WRITER AGENT</p><h2>与 Agent 一起创作</h2><div class="agent-state"><span class="agent-dot" aria-hidden="true"></span><span id="agent-state-text" role="status">等待你的创作意图</span><button id="agent-refresh-status" type="button">查看状态</button></div><p id="agent-progress-time" class="writer-status agent-progress-time"></p><p id="agent-progress-note" class="writer-status" role="status"></p></header>
         <div class="agent-scroll-region">
-          <details class="context-disclosure"><summary>已读取的项目上下文</summary><div id="agent-context" class="context-list"><div class="context-item">正在读取项目状态…</div></div></details>
+          <details class="context-disclosure"><summary>项目概览（不代表当次入模）</summary><div id="agent-context" class="context-list"><div class="context-item">正在读取项目状态…</div></div></details>
           <div class="agent-quick-actions"><button id="agent-continue">继续写这一章</button><button id="agent-check">自主检查本章</button></div>
-          <div class="word-target" aria-label="Agent 字数设置"><label>目标字数 <input id="agent-target-words" type="number" min="1" step="100" value="4500"></label><label>允许误差 <input id="agent-tolerance-words" type="number" min="0" step="50" value="300"></label><span id="agent-word-range" class="writer-status">范围：4200–4800 字</span></div>
-          <div id="agent-thread" class="agent-thread">Agent 会自行判断需要读取哪些人物、时间线、伏笔、反馈和相邻章节，不要求你选择固定检查项。</div>
-          <div id="agent-review-actions" class="review-actions" hidden><button id="accept-agent-draft" class="primary">保留此工作稿</button><button id="reject-agent-draft">退回上一版本</button><button id="revise-agent-draft">补充要求再修改</button></div>
-          <label class="section-label" for="decision-feedback">执行前补充要求（可选）</label><textarea id="decision-feedback" class="agent-input" placeholder="例如：减少总结句，增加人物动作，不改变结尾事件。"></textarea>
+          <section class="combat-panel" aria-labelledby="combat-title"><h3 id="combat-title">战斗场景编排专家</h3><p class="agent-note">读取本章上下文，编排战斗场景、行动链、代价与后续伏笔，并生成可整合到本章的故事候选。</p><button id="combat-expert-entry" type="button">编排本章战斗场景</button><div id="combat-results" aria-live="polite"></div></section>
+          <div class="word-target" aria-label="Agent 字数设置"><label>最终整章目标字数 <input id="agent-target-words" type="number" min="1" step="100" value="4500"></label><label>允许误差 <input id="agent-tolerance-words" type="number" min="0" step="50" value="300"></label><span id="agent-word-range" class="writer-status">范围：4200–4800 字</span></div>
+          <div id="agent-thread" class="agent-thread" aria-label="章节对话历史"></div>
+          <div id="agent-task-status" class="writer-status" aria-live="polite"></div>
+          <div id="agent-source-list" class="agent-source-list" aria-label="所选任务的当次来源" aria-live="polite"></div>
+          <div id="agent-session-actions" class="review-actions"></div>
+          <div id="agent-proposal-list" class="review-actions" aria-label="历史候选提案"></div>
+          <p id="agent-proposal-summary" class="writer-status" aria-live="polite"></p>
+          <div id="agent-review-actions" class="review-actions" hidden><button id="accept-agent-draft" class="primary">接受为工作稿</button><button id="reject-agent-draft">拒绝候选</button><button id="cancel-agent-proposal">取消提案</button><button id="revise-agent-draft">按要求继续修改</button><label for="proposal-source">修改依据</label><select id="proposal-source"><option value="candidate">当前候选</option><option value="base">冻结原稿</option></select></div>
+          <label class="section-label" for="decision-feedback">审阅原因或补充要求（拒绝、取消、继续修改时必填）</label><textarea id="decision-feedback" class="agent-input" placeholder="例如：人物转变缺少铺垫；保留候选开头，重写结尾。"></textarea>
+          <details class="context-disclosure lesson-review"><summary>作者经验 · 候选与状态</summary>
+            <p class="agent-note">从具体反馈总结经验；仅在你批准后供适用范围内的后续写作参考。</p>
+            <label class="section-label" for="lesson-feedback">原作者反馈</label><select id="lesson-feedback"></select>
+            <label class="section-label" for="lesson-title">经验标题</label><input id="lesson-title" maxlength="120" placeholder="例如：动机通过动作表达">
+            <label class="section-label" for="lesson-content">可复用经验（无可提炼内容可留空）</label><textarea id="lesson-content" class="agent-input" maxlength="2000" placeholder="写明具体方法及适用条件，避免把一次拒绝当成通用禁令。"></textarea>
+            <label class="section-label" for="lesson-range">适用范围</label><select id="lesson-range"><option value="chapter">仅本章</option><option value="project">整个项目</option></select><button id="lesson-create">保存经验候选</button>
+            <label class="section-label" for="lesson-note">经验审阅说明</label><textarea id="lesson-note" class="agent-input" placeholder="确认适用条件，或填写拒绝、归档原因。"></textarea>
+            <p id="lesson-status" class="writer-status" aria-live="polite"></p><div id="lesson-list" aria-label="经验候选与状态"></div>
+          </details>
         </div>
-        <footer class="agent-composer"><label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：读取前文和人物状态，继续写这一章。"></textarea><button id="agent-send" class="primary">交给 Agent</button><p class="agent-note">Agent 先生成工作稿或修改提案，不直接覆盖正式章节。</p></footer>
+        <footer class="agent-composer"><label class="section-label" for="agent-instruction">告诉 Agent 你现在想做什么</label><textarea id="agent-instruction" class="agent-input" placeholder="例如：为什么建议修改结尾？请结合正文说明原因。"></textarea><button id="agent-send" class="primary">交给 Agent</button><p id="agent-action-reason" class="agent-note" role="status"></p><p class="agent-note">对话默认只分析；写作命令生成独立候选，接受后才写入工作稿。</p></footer>
       </section>
 
       <section id="chapter-workspace" class="workspace-panel chapter-workspace" aria-label="章节工作区">
         <header class="chapter-header"><div><p class="eyebrow">CHAPTER WORKSPACE</p><h2 id="chapter-title">请选择章节</h2></div><span id="word-count" class="writer-status word-count">0 字</span></header>
         <div class="chapter-status-row"><span id="source-status" class="writer-status">尚未打开章节</span><span id="save-status" class="writer-status"></span></div>
         <div class="writer-actions"><button id="save-draft" class="primary">保存工作稿</button><button id="publish-draft">发布为正式稿</button><button id="view-formal">查看正式稿</button><button id="view-draft">查看当前工作稿</button></div>
-        <nav class="chapter-tabs" aria-label="章节视图"><button type="button" data-chapter-tab="editor" aria-selected="true">正文</button><button type="button" data-chapter-tab="preview" aria-selected="false">预览</button><button type="button" data-chapter-tab="diff" aria-selected="false">差异</button><button type="button" data-chapter-tab="versions" aria-selected="false">版本</button><button type="button" data-chapter-tab="details" aria-selected="false">详情</button></nav>
+        <section id="publication-panel" class="publication-panel" aria-labelledby="publication-title"><h3 id="publication-title">自动发布</h3><p id="publication-meta" class="writer-status"></p><p id="publication-status" class="writer-status" role="status" aria-live="polite"></p><p id="publication-step" class="writer-status"></p><p id="publication-error" class="writer-status" role="alert"></p><pre id="publication-evidence" class="writer-preview" style="overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap"></pre><label for="publication-pause-scope">暂停范围</label><select id="publication-pause-scope"><option value="global">全局</option><option value="book">当前作品</option><option value="chapter" selected>当前章节</option><option value="step">当前步骤</option></select><label for="publication-pause-step">步骤</label><select id="publication-pause-step"><option value="prepare_chapter">准备章节</option><option value="fill_chapter">填充章节</option><option value="publishing">发布中</option></select><div class="writer-actions"><button id="publication-run" type="button">运行发布</button><button id="publication-pause-safe" type="button">安全暂停</button><button id="publication-pause-immediate" type="button">立即暂停</button><button id="publication-continue" type="button">继续</button><button id="publication-reconcile" type="button">状态未知，核对</button></div></section>
+        <aside id="publication-browser-workbench" class="publication-browser-workbench" data-fixed-side="right" aria-label="持久化平台浏览器工作台"><header><strong>平台浏览器</strong><span id="publication-browser-session-status" role="status">待接入</span></header><p class="writer-status">番茄页面在Edge独立标签页显示，这里显示会话状态和核对结果，不嵌入第三方页面。</p><div class="writer-actions"><a href="https://fanqienovel.com/main/writer/" target="_blank" rel="noreferrer">打开番茄正式页面</a><button id="publication-browser-connect" type="button">登记浏览器会话</button><button id="publication-browser-reconnect" type="button" hidden>重新核对并接入</button></div><pre id="publication-browser-session-state" class="writer-preview">先打开番茄正式页面并登录，再点击“登记浏览器会话”。</pre></aside>
+        <nav class="chapter-tabs" aria-label="章节视图"><button type="button" data-chapter-tab="editor" aria-selected="true">正文</button><button type="button" data-chapter-tab="preview" aria-selected="false">预览</button><button type="button" data-chapter-tab="candidate" aria-selected="false">候选</button><button type="button" data-chapter-tab="diff" aria-selected="false">冻结差异</button><button type="button" data-chapter-tab="versions" aria-selected="false">版本</button><button type="button" data-chapter-tab="details" aria-selected="false">详情</button></nav>
         <div class="chapter-tab-panels">
           <section data-chapter-panel="editor"><textarea id="editor" class="writer-editor" placeholder="打开章节后开始写作"></textarea></section>
           <section data-chapter-panel="preview" hidden><article id="preview" class="writer-preview"></article></section>
+          <section data-chapter-panel="candidate" hidden><pre id="agent-candidate" class="writer-preview" aria-label="独立候选正文">请选择候选提案阅读</pre></section>
           <section data-chapter-panel="diff" hidden><pre id="agent-diff" class="agent-diff" aria-label="修改差异">暂无修改差异</pre></section>
           <section data-chapter-panel="versions" hidden><button id="load-versions">刷新版本</button><div id="versions" class="writer-status versions-panel">暂无工作稿版本</div></section>
-          <section data-chapter-panel="details" hidden><div class="details-placeholder"><h3>章节详情</h3><p>人物、线索、时间线和运行摘要将在这里按需显示。</p><a href="/inspector">打开诊断 Inspector</a></div></section>
+          <section data-chapter-panel="details" hidden><p id="source-detail-status" class="writer-status" aria-live="polite">从 Agent 消息或任务选择当次来源。</p><article id="source-detail" class="source-detail" aria-label="当次来源详情"></article></section>
         </div>
       </section>
     </div>
   </main>
+  <script src="/workspace-navigation.js"></script>
+  <script src="/writer-lessons.js"></script>
+  <script src="/writer-sources.js"></script>
+  <script src="/combat-panel.js"></script>
+  <script src="/writer-agent-progress.js"></script>
+  <script src="/writer-agent.js"></script>
+  <script src="/publication-panel.js"></script>
   <script src="/writer.js"></script>
 </body>
 </html>
+
+

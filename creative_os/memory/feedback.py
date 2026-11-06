@@ -18,6 +18,7 @@ class FeedbackOutcome(StrEnum):
     REJECTED = "rejected"
     REVISED = "revised"
     REGENERATED = "regenerated"
+    CANCELLED = "cancelled"
 
 
 class FeedbackValidationError(ValueError):
@@ -36,6 +37,13 @@ class FeedbackRecord:
     character_names: tuple[str, ...] = ()
     revision_ref: str | None = None
     created_at: str = ""
+    proposal_id: str | None = None
+    session_id: str | None = None
+    message_id: str | None = None
+    decision_id: str | None = None
+    base_ref: str | None = None
+    base_hash: str | None = None
+    result_hash: str | None = None
 
     def __post_init__(self) -> None:
         if not self.id.strip() or not self.project_id.strip() or not self.task_id.strip() or not self.result_ref.strip():
@@ -94,22 +102,35 @@ class FeedbackRecord:
             character_names=tuple(str(value) for value in payload.get("character_names", [])),
             revision_ref=str(payload["revision_ref"]) if payload.get("revision_ref") is not None else None,
             created_at=str(payload.get("created_at", "")),
+            **{key: payload.get(key) for key in ("proposal_id", "session_id", "message_id", "decision_id", "base_ref", "base_hash", "result_hash")},
         )
 
 
 class FeedbackStore:
-    def __init__(self, project_root: str | Path) -> None:
+    def __init__(self, project_root: str | Path, *, initialize: bool = True) -> None:
         root = Path(project_root)
         self.path = root / ".creative_os" / "runtime" / "feedback.jsonl"
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.touch(exist_ok=True)
+        if initialize:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            self.path.touch(exist_ok=True)
 
     def append(self, feedback: FeedbackRecord) -> None:
         with self.path.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(feedback.to_dict(), ensure_ascii=False, sort_keys=True) + "\n")
 
+    def append_once(self, feedback: FeedbackRecord) -> None:
+        """稳定审阅编号去重；调用方持有项目权威锁。"""
+        existing = next((record for record in self.list() if record.id == feedback.id), None)
+        if existing is not None:
+            if existing != feedback:
+                raise FeedbackValidationError("feedback_id_conflict")
+            return
+        self.append(feedback)
+
     def list(self) -> list[FeedbackRecord]:
         records: list[FeedbackRecord] = []
+        if not self.path.exists():
+            return records
         for line in self.path.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 records.append(FeedbackRecord.from_dict(json.loads(line)))

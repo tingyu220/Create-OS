@@ -37,7 +37,18 @@ class WriterDraftStore:
         record = json.loads(self._path(chapter_number).read_text(encoding="utf-8").splitlines()[-1])
         return versions[-1], record["content"]
 
-    def save(self, chapter_number: int, content: str, *, actor: str, expected_version: int | None = None) -> WriterVersionDTO:
+    def saved_operation(self, chapter_number: int, operation_id: str) -> tuple[WriterVersionDTO, str] | None:
+        """核对已落稿操作；恢复审阅时不能把后来人工修改再覆盖一次。"""
+        path = self._path(chapter_number)
+        if path.exists():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    record = json.loads(line)
+                    if record.get("operation_id") == operation_id:
+                        return self._decode(line), record["content"]
+        return None
+
+    def save(self, chapter_number: int, content: str, *, actor: str, expected_version: int | None = None, operation_id: str | None = None) -> WriterVersionDTO:
         if chapter_number <= 0:
             raise ValueError("chapter_number_invalid")
         if not actor.strip():
@@ -45,6 +56,12 @@ class WriterDraftStore:
         if not content.strip():
             raise ValueError("content_empty")
         with project_authority_lock(self.project_root):
+            if operation_id:
+                previous = self.saved_operation(chapter_number, operation_id)
+                if previous is not None:
+                    if previous[1] != content:
+                        raise DraftConflictError("operation_content_conflict")
+                    return previous[0]
             versions = self.versions(chapter_number)
             current = versions[-1] if versions else None
             actual = None if current is None else current.version
@@ -58,7 +75,7 @@ class WriterDraftStore:
             version = WriterVersionDTO(version_number, digest, now, actor, actual, f"draft:chapter-{chapter_number:03d}")
             self.root.mkdir(parents=True, exist_ok=True)
             with self._path(chapter_number).open("a", encoding="utf-8", newline="\n") as handle:
-                handle.write(json.dumps({**self._encode(version), "content": content}, ensure_ascii=False, sort_keys=True) + "\n")
+                handle.write(json.dumps({**self._encode(version), "content": content, **({"operation_id": operation_id} if operation_id else {})}, ensure_ascii=False, sort_keys=True) + "\n")
             return version
 
     def restore(self, chapter_number: int, version_number: int, *, actor: str, expected_version: int | None = None) -> WriterVersionDTO:

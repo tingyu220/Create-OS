@@ -53,14 +53,15 @@ _EVIDENCE_FIELDS = frozenset({"source_type", "source_id", "note"})
 
 
 class JsonMemoryStore:
-    def __init__(self, root: str | Path) -> None:
+    def __init__(self, root: str | Path, *, initialize: bool = True) -> None:
         self.root = Path(root)
         self.items_dir = self.root / "items"
         self.revisions_dir = self.root / "revisions"
         self.audit_path = self.root / "audit.jsonl"
-        self.items_dir.mkdir(parents=True, exist_ok=True)
-        self.revisions_dir.mkdir(parents=True, exist_ok=True)
-        self.audit_path.touch(exist_ok=True)
+        if initialize:
+            self.items_dir.mkdir(parents=True, exist_ok=True)
+            self.revisions_dir.mkdir(parents=True, exist_ok=True)
+            self.audit_path.touch(exist_ok=True)
 
     def add_candidate(self, item: MemoryItem) -> None:
         if item.status != MemoryStatus.CANDIDATE:

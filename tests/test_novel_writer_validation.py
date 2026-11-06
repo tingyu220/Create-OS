@@ -8,7 +8,7 @@ from creative_os.llm_writer import OpenAICompatibleClient
 from creative_os.domains.novel_validation_fixture import load_independent_validation_case
 
 
-PROJECT = Path(__file__).resolve().parents[1] / "projects" / "novel_domain_validation"
+PROJECT = Path(__file__).resolve().parents[1] / "projects" / "末班钟表店"
 FIXTURE = PROJECT / "validation" / "independent_short_story.json"
 
 

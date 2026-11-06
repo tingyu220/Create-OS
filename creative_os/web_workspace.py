@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 import re
 import difflib
+from dataclasses import asdict
 
 from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
 from creative_os.workspace_dto import encode_workspace_envelope
@@ -15,10 +16,19 @@ from creative_os.writer_workspace_dto import WriterChapterEnvelope, WriterChapte
 from creative_os.workspace_dto import Freshness
 from creative_os.agent_intent import AgentIntentRequest, accept_agent_intent
 from creative_os.agent_runtime import WriterAgentRuntime
+from creative_os.author_home_query import AuthorHomeQuery
+from creative_os.project_registry import select_project
+from creative_os.story_web import handle_story_get, handle_story_post
+from creative_os.bookshelf_web import handle_bookshelf_get, handle_bookshelf_post
+from creative_os.bookshelf_issues_web import handle_issues_get, handle_issues_post, guard_data_request
+from creative_os.publication_web import handle_publication_get, handle_publication_post
+from creative_os.publication_browser_workbench import BrowserWorkbenchError, ReconnectionMismatch
+from creative_os.workspace_command import CommandRejectedError, CommandResult, CommandStatus, CommandError
 
 
 WEB_ROOT = Path(__file__).with_name("web")
 MAX_COMMAND_BODY_BYTES = 16 * 1024
+MAX_STORY_COMMAND_BODY_BYTES = 200 * 1024
 
 
 class WorkspaceWebAdapter:
@@ -91,15 +101,12 @@ class WriterWebAdapter:
         return json.dumps({"chapter_number": chapter_number, "diff": diff}, ensure_ascii=False).encode("utf-8")
 
     def read_context_summary(self) -> bytes:
-        final_root = self.project_root / "production" / "final_chapters"
-        formal_chapters = sorted(
-            int(path.stem.split("_")[-1])
-            for path in final_root.glob("chapter_*.md")
-            if path.stem.split("_")[-1].isdigit()
-        ) if final_root.exists() else []
-        draft_count = len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0
-        draft_chapters = sorted(int(path.stem.split("_")[-1]) for path in self.store.root.glob("chapter_*.jsonl")) if self.store.root.exists() else []
-        payload = {"project_id": self.project_id, "formal_chapter_count": len(formal_chapters), "formal_chapters": formal_chapters, "working_draft_count": draft_count, "working_draft_chapters": draft_chapters}
+        summary = AuthorHomeQuery(self.project_root, self.project_id).read()
+        chapters = sorted(summary["chapters"], key=lambda item: item["chapter_number"])
+        payload = {"project_id": self.project_id, "title": summary["title"], "chapters": chapters,
+                   "formal_chapter_count": summary["counts"]["formal"], "formal_chapters": [item["chapter_number"] for item in chapters if item["has_formal"]],
+                   "working_draft_count": summary["counts"]["draft"], "working_draft_chapters": [item["chapter_number"] for item in chapters if item["has_draft"]],
+                   "candidate_count": summary["counts"]["candidate"], "notices": summary["notices"]}
         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
 
 
@@ -114,10 +121,44 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
     writer_adapter: WriterWebAdapter | None = None
     agent_runtime: WriterAgentRuntime | None = None
     web_root: Path = WEB_ROOT
+    project_registry = None
+    routed_project_id = None
+    migration_service = None
+    migration_unavailable = False
+    default_project_id = None
+    default_project_root = None
+    publication_orchestrator = None
+    browser_workbench = None
 
     def do_GET(self) -> None:  # noqa: N802
+        if handle_issues_get(self) or guard_data_request(self):
+            return
+        if handle_bookshelf_get(self):
+            return
+        if select_project(self) or handle_story_get(self):
+            return
         request_url = urlsplit(self.path)
         route = request_url.path
+        if route == "/api/publication":
+            if self.publication_orchestrator is None:
+                self._send_json(503, b'{"error":{"code":"publication_unavailable"}}')
+            else:
+                handle_publication_get(self, self.publication_orchestrator)
+            return
+        if route == "/api/publication/browser":
+            if self.browser_workbench is None:
+                self._send_json(503, b'{"error":{"code":"browser_workbench_unavailable"}}')
+            else:
+                self._send_json(200, json.dumps(self.browser_workbench.view(), ensure_ascii=False).encode("utf-8"))
+            return
+        if route == "/api/author-home":
+            if self.writer_adapter is None:
+                self._send_text(503, "作者稿件摘要暂不可用")
+            else:
+                from creative_os.author_home_query import AuthorHomeQuery
+                query = AuthorHomeQuery(self.writer_adapter.project_root, self.writer_adapter.project_id)
+                self._send_json(200, query.read_json())
+            return
         if route == "/api/workspace":
             self._send_json(200, self.workspace_adapter.read_json())
             return
@@ -141,29 +182,91 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             else:
                 self._send_json(200, self.writer_adapter.read_context_summary())
             return
+        match = re.fullmatch(r"/api/agent/conversations/([1-9]\d*)", route)
+        if match and self.agent_runtime is not None:
+            project_id = parse_qs(request_url.query).get("project_id", [None])[0]
+            if project_id != self.agent_runtime.project_id:
+                self._send_json(422, b'{"error":{"code":"project_scope_mismatch"}}')
+                return
+            session = self.agent_runtime.conversation(int(match.group(1)))
+            self._send_json(200, json.dumps(session, ensure_ascii=False).encode("utf-8"))
+            return
+        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)/context-sources", route)
+        if match and self.agent_runtime is not None:
+            try:
+                query = parse_qs(request_url.query, keep_blank_values=True)
+                required = {"project_id", "chapter_number", "session_id"}
+                if not required <= query.keys() or query.keys() - required - {"source_id"} or any(len(values) != 1 for values in query.values()):
+                    raise ValueError("context_query_invalid")
+                result = self.agent_runtime.context_sources.read(
+                    project_id=query["project_id"][0], chapter_number=int(query["chapter_number"][0]),
+                    session_id=query["session_id"][0], job_id=match.group(1),
+                    source_id=query.get("source_id", [None])[0])
+                self._send_json(200, json.dumps(result, ensure_ascii=False).encode("utf-8"))
+            except (ValueError, FileNotFoundError) as error:
+                self._agent_error(error)
+            return
         match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)", route)
         if match and self.agent_runtime is not None:
             job = self.agent_runtime.get(match.group(1))
+            if self.routed_project_id and not self._matches_job_query(job, request_url.query):
+                self._agent_error(ValueError("session_scope_mismatch"))
+                return
             if job is None:
                 self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
             else:
-                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version, "updated_at": job.updated_at, "mode": job.mode, "decision_id": job.decision_id, "target_words": job.target_words, "tolerance_words": job.tolerance_words, "min_words": job.min_words, "max_words": job.max_words, "actual_words": job.actual_words, "within_word_range": job.within_word_range}, ensure_ascii=False).encode("utf-8"))
+                public_job = self.agent_runtime.job_view(job)
+                public_job.pop("context_snapshot", None)
+                self._send_json(200, json.dumps(public_job, ensure_ascii=False).encode("utf-8"))
+            return
+        match = re.fullmatch(r"/api/agent/proposals/([a-z0-9-]+)", route)
+        if match and self.agent_runtime is not None:
+            try:
+                query = parse_qs(request_url.query)
+                proposal = self.agent_runtime.proposals.view(match.group(1))
+                if (query.get("project_id", [None])[0] != proposal["project_id"]
+                        or query.get("chapter_number", [None])[0] != str(proposal["chapter_number"])
+                        or query.get("session_id", [None])[0] != proposal["session_id"]):
+                    raise ValueError("proposal_scope_mismatch")
+                self._send_json(200, json.dumps(proposal, ensure_ascii=False).encode("utf-8"))
+            except (ValueError, FileNotFoundError) as error:
+                self._agent_error(error)
             return
         match = re.fullmatch(r"/api/agent/decisions/([a-z0-9-]+)", route)
         if match and self.agent_runtime is not None:
             try:
-                self._send_json(200, json.dumps(self.agent_runtime.get_decision(match.group(1)), ensure_ascii=False).encode("utf-8"))
-            except FileNotFoundError:
+                decision = self.agent_runtime.get_decision(match.group(1))
+                if self.routed_project_id:
+                    query = parse_qs(request_url.query)
+                    if query != {"project_id": [decision.get("project_id")], "chapter_number": [str(decision["target_chapter"])], "session_id": [decision.get("session_id")]}:
+                        raise ValueError("session_scope_mismatch")
+                self._send_json(200, json.dumps(decision, ensure_ascii=False).encode("utf-8"))
+            except (FileNotFoundError, ValueError):
                 self._send_json(404, json.dumps({"error": {"message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"))
             return
         static_files = {
+            "/overview": ("author-home.html", "text/html; charset=utf-8"),
+            "/author-home.js": ("author-home.js", "text/javascript; charset=utf-8"),
+            "/author-home.css": ("author-home.css", "text/css; charset=utf-8"),
+            "/story": ("story.html", "text/html; charset=utf-8"),
+            "/story.js": ("story.js", "text/javascript; charset=utf-8"),
+            "/story.css": ("story.css", "text/css; charset=utf-8"),
+            "/project-scope.js": ("project-scope.js", "text/javascript; charset=utf-8"),
+            "/workspace-navigation.js": ("workspace-navigation.js", "text/javascript; charset=utf-8"),
             "/": ("index.html", "text/html; charset=utf-8"),
             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+            "/bookshelf-issues.js": ("bookshelf-issues.js", "text/javascript; charset=utf-8"),
             "/styles.css": ("styles.css", "text/css; charset=utf-8"),
             "/inspector": ("inspector.html", "text/html; charset=utf-8"),
             "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
             "/writer": ("writer.html", "text/html; charset=utf-8"),
             "/writer.js": ("writer.js", "text/javascript; charset=utf-8"),
+            "/writer-agent.js": ("writer-agent.js", "text/javascript; charset=utf-8"),
+            "/publication-panel.js": ("publication-panel.js", "text/javascript; charset=utf-8"),
+            "/combat-panel.js": ("combat-panel.js", "text/javascript; charset=utf-8"),
+            "/writer-agent-progress.js": ("writer-agent-progress.js", "text/javascript; charset=utf-8"),
+            "/writer-lessons.js": ("writer-lessons.js", "text/javascript; charset=utf-8"),
+            "/writer-sources.js": ("writer-sources.js", "text/javascript; charset=utf-8"),
             "/writer.css": ("writer.css", "text/css; charset=utf-8"),
         }
         file_info = static_files.get(route)
@@ -180,10 +283,32 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
-        self.wfile.write(content)
+        try:
+            self.wfile.write(content)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            # 页面跳转会取消旧查询；迟到响应不再向已断开的连接写入。
+            return
 
     def do_POST(self) -> None:  # noqa: N802
+        if handle_issues_post(self) or guard_data_request(self, writable=True):
+            return
+        if handle_bookshelf_post(self):
+            return
+        if select_project(self) or handle_story_post(self):
+            return
         route = urlsplit(self.path).path
+        if route == "/api/publication":
+            if self.publication_orchestrator is None:
+                self._send_json(503, b'{"error":{"code":"publication_unavailable"}}')
+            else:
+                handle_publication_post(self, self.publication_orchestrator)
+            return
+        if route == "/api/publication/browser":
+            self._handle_browser_workbench()
+            return
+        if route in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate", "/api/commands/adopt-combat-candidate"}:
+            self._handle_command(self.agent_runtime.story_commands if self.agent_runtime else None)
+            return
         if route == "/api/commands/refresh-workspace":
             self._handle_command(self.command_adapter)
             return
@@ -196,11 +321,21 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/publish-writer-draft", "/api/commands/open-writer-chapter"}:
             self._handle_command(self.writer_command_adapter)
             return
+        if route in {"/api/commands/review-writer-proposal", "/api/commands/reconcile-writer-proposal"}:
+            self._handle_command(self.agent_runtime.proposal_commands if self.agent_runtime else None)
+            return
+        if route == "/api/commands/manage-writer-lesson":
+            self._handle_command(self.agent_runtime.lesson_commands if self.agent_runtime else None)
+            return
         if route == "/api/agent/intents":
             self._handle_agent_intent()
             return
         if route == "/api/agent/decisions/act":
             self._handle_agent_decision_act()
+            return
+        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)/retry", route)
+        if match:
+            self._handle_agent_retry(match.group(1))
             return
         if route == "/api/workspace":
             self.send_response(405)
@@ -225,7 +360,8 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         if length < 0:
             self._send_json(400, '{"error":{"code":"invalid_content_length","message":"请求体长度无效。"}}'.encode("utf-8"), close=True)
             return
-        if length > MAX_COMMAND_BODY_BYTES:
+        limit = MAX_STORY_COMMAND_BODY_BYTES if urlsplit(self.path).path in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate"} else MAX_COMMAND_BODY_BYTES
+        if length > limit:
             self._send_json(413, '{"error":{"code":"payload_too_large","message":"命令请求体超过大小限制。"}}'.encode("utf-8"), close=True)
             return
         try:
@@ -238,41 +374,130 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             body = json.dumps({"error": {"code": error.code, "message": error.message}}, ensure_ascii=False).encode("utf-8")
             self._send_json(400, body, close=True)
             return
+        if self.routed_project_id:
+            try:
+                command_adapter.validate_request(request)
+            except CommandRejectedError as error:
+                result = CommandResult(CommandStatus.REJECTED, request.command_id, request.request_id,
+                                       CommandError(error.code, error.message, error.retryable))
+                self._send_json(_command_http_status(result), json.dumps(encode_command_result(result), ensure_ascii=False).encode("utf-8"), close=True)
+                return
+            except (ValueError, TypeError, KeyError, AttributeError):
+                result = CommandResult(CommandStatus.REJECTED, request.command_id, request.request_id,
+                                       CommandError("validation_failed", "命令参数无效。", False))
+                self._send_json(422, json.dumps(encode_command_result(result), ensure_ascii=False).encode("utf-8"), close=True)
+                return
+            self._activate_project()
+            command_adapter = self._route_command_adapter()
         result = command_adapter.execute(request)
         status = _command_http_status(result)
         self._send_json(status, json.dumps(encode_command_result(result), ensure_ascii=False, sort_keys=True).encode("utf-8"), close=True)
 
+    def _activate_project(self):
+        """仅在完整预检后装配可写对象；装配本身不恢复任何中断任务。"""
+        if self.routed_project_id:
+            entry = self.project_registry.get(self.routed_project_id, writable=True)
+            for key, value in entry.items():
+                setattr(self, key, value)
+        return self.agent_runtime
+
+    def _route_command_adapter(self):
+        route = urlsplit(self.path).path
+        if route in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate", "/api/commands/adopt-combat-candidate"}:
+            return self.agent_runtime.story_commands
+        if route in {"/api/commands/review-writer-proposal", "/api/commands/reconcile-writer-proposal"}:
+            return self.agent_runtime.proposal_commands
+        if route == "/api/commands/manage-writer-lesson":
+            return self.agent_runtime.lesson_commands
+        if route == "/api/commands/refresh-workspace":
+            return self.command_adapter
+        if route == "/api/commands/accept-review-issue":
+            return self.review_command_adapter or self.command_adapter
+        if route == "/api/commands/start-chapter-run":
+            return self.chapter_command_adapter
+        return self.writer_command_adapter
+
+    def _read_agent_request(self) -> dict:
+        if self.agent_runtime is None:
+            raise ValueError("agent_runtime_unavailable")
+        length = int(self.headers.get("Content-Length", "-1"))
+        if self.headers.get_content_type() != "application/json" or not 0 < length <= MAX_COMMAND_BODY_BYTES:
+            raise ValueError("agent_request_invalid")
+        raw = json.loads(self.rfile.read(length).decode("utf-8"))
+        if not isinstance(raw, dict) or raw.get("project_id") != self.agent_runtime.project_id:
+            raise ValueError("project_scope_mismatch")
+        if type(raw.get("chapter_number")) is not int or raw["chapter_number"] <= 0:
+            raise ValueError("chapter_number_invalid")
+        if self.routed_project_id and raw.get("session_id") != self.agent_runtime.conversations.read(raw["chapter_number"])["session_id"]:
+            raise ValueError("session_scope_mismatch")
+        return raw
+
+    def _matches_job_query(self, job, query_text):
+        query = parse_qs(query_text, keep_blank_values=True)
+        if job is None:
+            return False
+        if job.scope == "story":
+            return query == {"project_id": [job.project_id], "scope": ["story"], "session_id": [job.session_id]}
+        return query == {"project_id": [job.project_id], "chapter_number": [str(job.chapter_number)], "session_id": [job.session_id]}
+
+    def _agent_error(self, error: Exception) -> None:
+        code = str(error) if isinstance(error, ValueError) else "agent_request_invalid"
+        status = 503 if code == "agent_runtime_unavailable" else 422
+        self._send_json(status, json.dumps({"error": {"code": code, "message": f"Agent 请求未受理：{code}"}}, ensure_ascii=False).encode("utf-8"), close=True)
+
     def _handle_agent_intent(self) -> None:
         try:
-            length = int(self.headers.get("Content-Length", "-1"))
-            raw = json.loads(self.rfile.read(length).decode("utf-8"))
-            request = AgentIntentRequest(raw["project_id"], int(raw["chapter_number"]), raw["instruction"], raw.get("actor", "作者"))
+            raw = self._read_agent_request()
+            request = AgentIntentRequest(raw["project_id"], raw["chapter_number"], raw["instruction"], raw.get("actor", "作者"), raw.get("requested_expert"))
             receipt = accept_agent_intent(request)
             if self.agent_runtime is None:
                 self._send_json(503, json.dumps({"error": {"code": "agent_runtime_unavailable", "message": "Agent Runtime 尚未启动。"}}, ensure_ascii=False).encode("utf-8"), close=True)
                 return
-            job = self.agent_runtime.submit(receipt.instruction, request.chapter_number, request.actor, target_words=int(raw.get("target_words", 4500)), tolerance_words=int(raw.get("tolerance_words", 300)))
-            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "job_id": job.job_id, "status": job.status, "message": job.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
-            self._send_json(422, '{"error":{"code":"agent_intent_invalid","message":"Agent 检查请求无效。"}}'.encode("utf-8"), close=True)
+            require_confirmed_combat = raw.get("require_confirmed_combat", False)
+            if type(require_confirmed_combat) is not bool:
+                raise ValueError("combat_plan_scope_invalid")
+            options = {"target_words": raw.get("target_words", 4500), "tolerance_words": raw.get("tolerance_words", 300), "session_id": raw.get("session_id"), "mode": raw.get("mode", "analyze"), "requested_expert": request.requested_expert, "require_confirmed_combat": require_confirmed_combat}
+            self.agent_runtime.validate_submit(receipt.instruction, request.chapter_number, request.actor, **options)
+            job = self._activate_project().submit(receipt.instruction, request.chapter_number, request.actor, **options)
+            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, **{key: value for key, value in asdict(job).items() if key != "context_snapshot"}}, ensure_ascii=False).encode("utf-8"), close=True)
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            self._agent_error(error)
 
     def _handle_agent_decision_act(self) -> None:
         try:
-            length = int(self.headers.get("Content-Length", "-1"))
-            raw = json.loads(self.rfile.read(length).decode("utf-8"))
-            if self.agent_runtime is None:
-                raise RuntimeError("agent_runtime_unavailable")
-            job = self.agent_runtime.submit_from_decision(str(raw["decision_id"]), str(raw.get("actor", "作者")), str(raw.get("feedback", "")))
-            self._send_json(202, json.dumps({"job_id": job.job_id, "status": job.status, "mode": job.mode}, ensure_ascii=False).encode("utf-8"), close=True)
-        except ValueError as error:
-            self._send_json(404, json.dumps({"error": {"code": str(error), "message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"), close=True)
-        except (KeyError, TypeError, json.JSONDecodeError):
-            self._send_json(422, '{"error":{"code":"decision_invalid","message":"创作决策请求无效。"}}'.encode("utf-8"), close=True)
+            raw = self._read_agent_request()
+            decision = self.agent_runtime.get_decision(str(raw["decision_id"]))
+            if decision["target_chapter"] != raw["chapter_number"] or decision.get("session_id") != raw.get("session_id"):
+                raise ValueError("session_scope_mismatch")
+            actor, feedback = raw.get("actor", "作者"), raw.get("feedback", "")
+            if not isinstance(feedback, str):
+                raise ValueError("feedback_invalid")
+            require_confirmed_combat = raw.get("require_confirmed_combat", False)
+            if type(require_confirmed_combat) is not bool:
+                raise ValueError("combat_plan_scope_invalid")
+            self.agent_runtime.validate_submit(decision.get("analysis") or decision.get("intent") or "执行已确认决策", raw["chapter_number"], actor,
+                                               target_words=int(decision.get("target_words", 4500)), tolerance_words=int(decision.get("tolerance_words", 300)), session_id=raw.get("session_id"), mode="act", require_confirmed_combat=require_confirmed_combat)
+            job = self._activate_project().submit_from_decision(str(raw["decision_id"]), actor, feedback, require_confirmed_combat=require_confirmed_combat)
+            self._send_json(202, json.dumps({key: value for key, value in asdict(job).items() if key != "context_snapshot"}, ensure_ascii=False).encode("utf-8"), close=True)
+        except (KeyError, TypeError, ValueError, FileNotFoundError) as error:
+            self._agent_error(error)
+
+    def _handle_agent_retry(self, job_id: str) -> None:
+        try:
+            raw = self._read_agent_request()
+            self.agent_runtime.validate_retry(job_id, chapter_number=raw["chapter_number"], session_id=raw["session_id"])
+            job = self._activate_project().retry(job_id, chapter_number=raw["chapter_number"], session_id=raw["session_id"])
+            self._send_json(202, json.dumps({key: value for key, value in asdict(job).items() if key != "context_snapshot"}, ensure_ascii=False).encode("utf-8"), close=True)
+        except (KeyError, TypeError, ValueError) as error:
+            self._agent_error(error)
 
     def log_message(self, _format: str, *_args: object) -> None:
         return
 
     def _send_json(self, status: int, content: bytes, *, close: bool = False) -> None:
+        # 读到一半目录完成移动时，不能把旧根的空结果作为正常数据发送。
+        if getattr(self, "command", None) == "GET" and status < 400 and guard_data_request(self):
+            return
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
@@ -280,7 +505,10 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Connection", "close")
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
-        self.wfile.write(content)
+        try:
+            self.wfile.write(content)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return
 
     def _send_text(self, status: int, content: str) -> None:
         encoded = content.encode("utf-8")
@@ -289,6 +517,33 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         self.wfile.write(encoded)
+
+    def _handle_browser_workbench(self) -> None:
+        if self.browser_workbench is None:
+            self._send_json(503, b'{"error":{"code":"browser_workbench_unavailable"}}')
+            return
+        try:
+            if self.headers.get_content_type() != "application/json":
+                raise ValueError("unsupported_media_type")
+            length = int(self.headers.get("Content-Length", "-1"))
+            if not 0 < length <= MAX_COMMAND_BODY_BYTES:
+                raise ValueError("browser_request_invalid")
+            body = json.loads(self.rfile.read(length).decode("utf-8"))
+            if not isinstance(body, dict):
+                raise ValueError("browser_request_invalid")
+            action = body.get("action")
+            if action in {"connect", "reconnect"}:
+                payload = {key: body.get(key) for key in ("platform", "session_id", "page_id", "page_url", "work_id", "work_title", "chapter_number", "platform_work_title", "platform_chapter_number", "content_sha256", "login_state")}
+                result = self.browser_workbench.handoff(reconnect=action == "reconnect", **payload)
+            elif action == "interrupt":
+                result = self.browser_workbench.mark_interrupted(str(body.get("reason") or "browser_session_interrupted"))
+            elif action == "pause":
+                result = self.browser_workbench.pause(str(body.get("mode") or "safe"), str(body.get("reason") or "user_pause"))
+            else:
+                raise ValueError("browser_action_invalid")
+            self._send_json(200, json.dumps(result, ensure_ascii=False).encode("utf-8"))
+        except (ValueError, BrowserWorkbenchError, ReconnectionMismatch, json.JSONDecodeError) as error:
+            self._send_json(409, json.dumps({"error": {"code": str(error)}}, ensure_ascii=False).encode("utf-8"))
 
 
 def create_server(
@@ -300,6 +555,9 @@ def create_server(
     writer_command_adapter: object | None = None,
     writer_adapter: WriterWebAdapter | None = None,
     agent_runtime: WriterAgentRuntime | None = None,
+    publication_orchestrator: object | None = None,
+    browser_workbench: object | None = None,
+    project_registry=None,
     host: str = "127.0.0.1",
     port: int = 8765,
     web_root: str | Path = WEB_ROOT,
@@ -314,6 +572,15 @@ def create_server(
     bound_writer_command_adapter = writer_command_adapter
     bound_writer_adapter = writer_adapter
     bound_agent_runtime = agent_runtime
+    bound_publication_orchestrator = publication_orchestrator
+    bound_browser_workbench = browser_workbench
+    if project_registry is not None and agent_runtime is not None:
+        project_registry.register(agent_runtime.project_id, {
+            "workspace_adapter": adapter, "command_adapter": command_adapter,
+            "review_command_adapter": review_command_adapter, "chapter_command_adapter": chapter_command_adapter,
+            "writer_command_adapter": writer_command_adapter, "writer_adapter": writer_adapter, "agent_runtime": agent_runtime,
+            "publication_orchestrator": publication_orchestrator,
+        })
 
     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
         workspace_adapter = adapter
@@ -323,9 +590,23 @@ def create_server(
         writer_command_adapter = bound_writer_command_adapter
         writer_adapter = bound_writer_adapter
         agent_runtime = bound_agent_runtime
+        publication_orchestrator = bound_publication_orchestrator
+        browser_workbench = bound_browser_workbench
         web_root = asset_root
 
     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)
+    BoundWorkspaceRequestHandler.project_registry = project_registry
+    BoundWorkspaceRequestHandler.default_project_id = getattr(writer_adapter, "project_id", None) or getattr(agent_runtime, "project_id", None)
+    BoundWorkspaceRequestHandler.default_project_root = getattr(writer_adapter, "project_root", None) or getattr(agent_runtime, "root", None)
+    if project_registry is not None:
+        from creative_os.project_migration import ProjectMigrationService
+        try:
+            BoundWorkspaceRequestHandler.migration_service = ProjectMigrationService(
+                project_registry.root, project_registry.root.parent / ".backup/project-directory-migrations", project_registry,
+                default_project_id=BoundWorkspaceRequestHandler.default_project_id,
+                default_root=BoundWorkspaceRequestHandler.default_project_root)
+        except (OSError, ValueError, RuntimeError):
+            BoundWorkspaceRequestHandler.migration_unavailable = True
     server.daemon_threads = True
     return server
 

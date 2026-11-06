@@ -21,7 +21,7 @@
 
 ### 正式回放
 
-项目：`projects/validation_novel`
+项目：`projects/雾城回声`
 
 ```text
 chapter range: 1-6
@@ -34,8 +34,8 @@ canonical chapter hashes unchanged: true
 
 报告：
 
-- `projects/validation_novel/production/reports/narrative_replay_001_006.json`
-- `projects/validation_novel/production/reports/narrative_replay_001_006.md`
+- `projects/雾城回声/production/reports/narrative_replay_001_006.json`
+- `projects/雾城回声/production/reports/narrative_replay_001_006.md`
 
 旧生产 Artifact 能明确证明各章 Scene Goal 和最终 Outcome，因此章节功能与结尾变化可追溯。它们没有显式保存戏剧问题、人物选择、Reader State 和压力曲线，所以相关字段保持 `unknown`；这属于可靠性保护，不是自动补全失败。
 
@@ -223,6 +223,6 @@ Novel 也已完成 Schema、Rule、Template、Workflow 四个阶段，符合“�
 
 - `python -m pytest -q`：85 passed。
 - `python -m compileall -q creative_os`：通过。
-- 生产证据：36/36 章、108/108 Scene，完整产物见 `projects/validation_novel/production/`。
+- 生产证据：36/36 章、108/108 Scene，完整产物见 `projects/雾城回声/production/`。
 - 本报告未进行远程仓库提交或推送，也未改变已有用户修改。
 

@@ -12,3 +12,13 @@ build/
 *.bak
 *.lock
 *.log
+
+# .NET 构建产物
+desktop/CreativeOS.Workbench/bin/
+desktop/CreativeOS.Workbench/obj/
+# 本地运行产物.backup/
+artifacts/
+workspace-8877.err
+writer-acceptance.png
+writer-agent-review.png
+

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative OS · 创作首页</title>
+  <link rel="stylesheet" href="/author-home.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace-main">跳到主要内容</a>
+  <div id="workspace-shell" class="workspace-shell">
+    <aside id="workspace-sidebar" class="workspace-sidebar">
+      <a class="brand" href="#overview"><span class="brand-mark">创</span><span>Creative OS</span></a>
+      <div class="workspace-project"><div class="project-label">正在创作</div><div id="project-name" class="project-name">读取书名…</div></div>
+      <nav id="workspace-navigation" aria-label="工作区导航"></nav>
+      <a class="writer-home" href="/story">＋ 从灵感开始新书</a>
+      <div class="sidebar-foot">一章一章，把故事写下去。</div>
+    </aside>
+    <main id="workspace-main" class="workspace-main" tabindex="-1">
+      <div class="workspace-content">
+        <header id="workspace-topbar" class="workspace-topbar"><div><div class="eyebrow">你的创作空间</div><h1 id="page-title">创作首页</h1></div><div class="home-topbar-actions"><a id="attention-shortcut" href="#attention-panel" hidden>待处理</a><button id="refresh-workspace" type="button">刷新</button></div></header>
+        <section id="workspace-state" class="workspace-state state-loading" aria-live="polite"><div><span class="status-label">正在读取稿件</span><span id="workspace-state-detail" class="state-detail">正在确认正式稿、工作稿与待确认候选。</span></div><button id="workspace-state-action" type="button" hidden>重新读取</button></section>
+        <section id="overview" data-navigation-target="#overview" class="view-section">
+          <article class="continue-panel"><div class="eyebrow">留一点时间，继续你的故事</div><h2 id="continue-title">从这一章继续</h2><p id="continue-detail">读取稿件后，为你找到可以继续的章节。</p><div class="primary-actions"><a id="continue-writing" class="primary-button" href="/writer" aria-disabled="true">继续创作</a><a id="story-link" class="text-link" href="/story">故事设定与讨论 ↗</a></div></article>
+          <div class="manuscript-counts" aria-label="稿件数量">
+            <div><span id="formal-count" class="count-value">—</span><span>章正式稿</span><small>已发布的章节</small></div>
+            <div><span id="draft-count" class="count-value">—</span><span>章工作稿</span><small>保留着你的修改</small></div>
+            <div><span id="candidate-count" class="count-value">—</span><span>份待确认候选</span><small>由你决定是否采用</small></div>
+          </div>
+          <div class="home-columns">
+            <section class="manuscript-panel" aria-labelledby="recent-title"><div class="section-heading"><h2 id="recent-title">最近稿件</h2><a href="#chapters" class="text-link">全部章节 →</a></div><div id="recent-manuscripts" class="manuscript-list">正在读取…</div></section>
+            <section class="open-panel" aria-labelledby="open-title"><h2 id="open-title">打开一个章节</h2><p class="muted">输入章节编号，进入写作工作台。</p><form id="open-chapter-form"><label for="chapter-number">章节编号</label><div class="chapter-open-controls"><input id="chapter-number" type="number" min="1" step="1" required placeholder="例如 1"><button type="submit">打开章节</button></div></form><p id="chapter-open-status" class="muted" role="status"></p><a class="new-book-link" href="/story">有了新的灵感？开始一本新书 ↗</a></section>
+          </div>
+        </section>
+        <section id="chapters" data-navigation-target="#chapters" class="view-section" hidden><div class="section-heading"><div><h2>我的章节</h2><p class="muted">正式稿、工作稿和候选分别标记；同一章可以同时拥有多种稿件。</p></div></div><div class="chapter-filters"><label for="chapter-filter">查找章节</label><input id="chapter-filter" type="search" placeholder="输入章节编号" autocomplete="off"><span id="chapter-filter-count" class="muted" aria-live="polite"></span></div><div id="chapter-list" class="manuscript-list">正在读取…</div></section>
+        <section id="attention-panel" class="attention-panel" aria-labelledby="attention-title" hidden><div class="section-heading"><h2 id="attention-title">需要你处理</h2><a id="diagnostic-link" href="/inspector" class="text-link">运行诊断 ↗</a></div><div id="attention-items" class="attention-list"></div></section>
+        <footer class="footer"><span>稿件各有归处，创作由你掌握。</span><a id="footer-diagnostics" href="/inspector">运行诊断与来源</a></footer>
+      </div>
+    </main>
+  </div>
+  <script src="/project-scope.js"></script>
+  <script src="/author-home.js"></script>
+</body>
+</html>
+

@@ -50,8 +50,8 @@
 
 ## Reports
 
-- Stress Report: `projects/validation_novel/production/reports/llm_writer_stress_report.md`
-- V2 Backlog: `projects/validation_novel/production/reports/v2_backlog.md`
+- Stress Report: `projects/雾城回声/production/reports/llm_writer_stress_report.md`
+- V2 Backlog: `projects/雾城回声/production/reports/v2_backlog.md`
 # Novel Domain V1 当前状态
 
 小说正文进度不再代表领域能力完成度。《文明升阶》仅作为真实回归样本。
@@ -76,15 +76,15 @@
 
 ## 真实 Writer 独立验收（Task 6）
 
-- Fake 验收：已通过。证据为 `projects/novel_domain_validation/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
+- Fake 验收：已通过。证据为 `projects/末班钟表店/production/reports/fake_writer_validation.json`，阶段为 `compile_candidate_ready`，审查通过。
 - 通用源码专名审计：已通过。`creative_os/` 未检出既有作品或独立验证样本的专名硬编码。
-- Live 验收：最终受控 Live 会话已以真实 `exit_code=0` 结束；CLI 对审查或编译门禁失败会返回非零。证据为 `projects/novel_domain_validation/production/reports/real_writer_validation.json`：`compile_candidate_ready`、审查通过、Canon 候选 1 条、State 候选 3 条。
+- Live 验收：最终受控 Live 会话已以真实 `exit_code=0` 结束；CLI 对审查或编译门禁失败会返回非零。证据为 `projects/末班钟表店/production/reports/real_writer_validation.json`：`compile_candidate_ready`、审查通过、Canon 候选 1 条、State 候选 3 条。
 - 可视化数据投影层：仅开放“统一只读可视化数据投影层”的设计准入；完整 Web UI 仍不得直接开发。
 
 下一阶段：
 
 - PR #2 的 head `4fe0816` 已通过 merge commit `02c623c` 进入 `origin/main`。
-- 真实 Writer 独立短篇验证已通过；证据仍以 `projects/novel_domain_validation/production/reports/real_writer_validation.json` 为准。
+- 真实 Writer 独立短篇验证已通过；证据仍以 `projects/末班钟表店/production/reports/real_writer_validation.json` 为准。
 - Projection Layer Phase 1 与 Phase 2 均已实现并提交：Phase 1 为 `820c0bc`，Phase 2 为 `bdc9dd3`。Phase 2 已覆盖 Characters、Story Threads、Timeline，并保持来源引用、权限边界与只读约束。
 - Characters、Story Threads、Timeline，以及 authority、provenance 和只读边界已稳定；只读控制台扩展已提交 `7de9cfb`。
 - 完整 Web UI 仍未开发；后续工作不得将只读投影或控制台扩展扩大为 Web 工作台开发。

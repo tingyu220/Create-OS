@@ -130,6 +130,9 @@ class WorkspaceCommandAdapter:
     def execute(self, request: CommandRequest) -> CommandResult:
         return self._boundary.execute(request)
 
+    def validate_request(self, request: CommandRequest) -> None:
+        self._boundary.validate_request(request)
+
 
 def _sections(request: CommandRequest) -> set[ProjectionSection]:
     payload = request.payload

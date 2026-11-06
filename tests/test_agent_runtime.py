@@ -3,6 +3,16 @@ import time
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def fake_model(monkeypatch):
+    # 所有单元测试禁用真实模型调用，单项测试可覆盖此替身。
+    class FakeClient:
+        def complete(self, messages, **kwargs):
+            return "隔离测试正文"
+
+    monkeypatch.setattr("creative_os.agent_runtime.OpenAICompatibleClient.from_env", lambda: FakeClient())
+
+
 def test_agent_runtime_submits_a_queued_job(tmp_path):
     job = WriterAgentRuntime(tmp_path).submit("继续写这一章", 79)
     assert job.status == "queued"
@@ -89,7 +99,7 @@ def test_agent_runtime_requires_existing_decision_before_act(tmp_path):
         raise AssertionError("expected decision_not_found")
 
 
-def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, monkeypatch):
+def test_agent_runtime_act_from_decision_creates_independent_candidate(tmp_path, monkeypatch):
     captured = {}
     class FakeClient:
         def complete(self, messages, *, temperature, max_tokens):
@@ -108,11 +118,12 @@ def test_agent_runtime_act_from_decision_creates_new_working_draft(tmp_path, mon
             break
         time.sleep(0.02)
     assert current is not None and current.status == "completed"
-    assert runtime.store.current(current.chapter_number)[1] == "按方案修改后的正文"
+    assert runtime.store.current(current.chapter_number) is None
+    assert runtime.proposals.read(current.proposal_id)["result"]["content"] == "按方案修改后的正文"
     assert "减少警句，增加人物动作" in captured["prompt"]
 
 
-def test_agent_runtime_saves_out_of_range_draft_with_soft_warning(tmp_path, monkeypatch):
+def test_agent_runtime_saves_out_of_range_candidate_with_soft_warning(tmp_path, monkeypatch):
     calls = []
 
     class FakeClient:
@@ -122,7 +133,7 @@ def test_agent_runtime_saves_out_of_range_draft_with_soft_warning(tmp_path, monk
 
     monkeypatch.setattr("creative_os.agent_runtime.OpenAICompatibleClient.from_env", lambda: FakeClient())
     runtime = WriterAgentRuntime(tmp_path)
-    job = runtime.submit("完成本章", 1, target_words=10, tolerance_words=2)
+    job = runtime.submit("完成本章", 1, target_words=10, tolerance_words=2, mode="act")
     for _ in range(100):
         current = runtime.get(job.job_id)
         if current and current.status in {"completed", "failed"}:
@@ -134,6 +145,7 @@ def test_agent_runtime_saves_out_of_range_draft_with_soft_warning(tmp_path, monk
     assert current.within_word_range is False
     assert len(calls) == 1
     assert "超出" in current.message
-    assert runtime.store.current(current.chapter_number)[1] == "超" * 30
+    assert runtime.store.current(current.chapter_number) is None
+    assert runtime.proposals.read(current.proposal_id)["result"]["content"] == "超" * 30
 
 

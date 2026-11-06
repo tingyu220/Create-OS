@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 import json
 
 import pytest
@@ -95,18 +97,19 @@ def test_file_command_store_survives_restart_without_reexecuting_handler(tmp_pat
     first = FileCommandResultStore(tmp_path); first.reserve("k", "fp-k"); first.complete("k", "fp-k", _record("k").result)
     second = FileCommandResultStore(tmp_path)
     assert second.read("k") == _record("k")
-    assert not first.path.with_suffix(".lock").exists()
+    assert second.reserve("k", "fp-k").status == ReserveStatus.COMPLETED
 
 def test_two_file_command_store_instances_merge_without_lost_update(tmp_path):
     first, second = FileCommandResultStore(tmp_path), FileCommandResultStore(tmp_path)
     first.reserve("a", "fp-a"); first.complete("a", "fp-a", _record("a").result); second.reserve("b", "fp-b"); second.complete("b", "fp-b", _record("b").result)
     reopened = FileCommandResultStore(tmp_path)
-    assert reopened.read("a") and reopened.read("b") and not reopened.lock_path.exists()
+    assert reopened.read("a") and reopened.read("b")
+    assert reopened.reserve("c", "fp-c").status == ReserveStatus.ACQUIRED
 
 def test_file_command_store_same_key_different_fingerprint_conflicts(tmp_path):
     store = FileCommandResultStore(tmp_path); store.reserve("k", "fp-k")
     assert store.reserve("k", "other").status == ReserveStatus.CONFLICT
-    assert not store.lock_path.exists()
+    assert store.reserve("another", "fp-another").status == ReserveStatus.ACQUIRED
 
 def test_file_command_store_rejects_corrupt_schema(tmp_path):
     path = tmp_path / ".creative_os" / "commands" / "results.json"; path.parent.mkdir(parents=True)
@@ -131,12 +134,25 @@ def test_command_complete_failure_leaves_reservation_and_prevents_reexecution(tm
 def test_command_store_busy_is_failed_retryable_without_handler_execution(tmp_path):
     calls = []
     store = FileCommandResultStore(tmp_path)
-    store.lock_path.parent.mkdir(parents=True, exist_ok=True); store.lock_path.write_text("busy", encoding="utf-8")
     request = CommandRequest("busy", "busy-request", "actor", "target", {}, idempotency_key="busy-key")
-    result = CommandBoundary(lambda _request: calls.append(1) or (), version_reader=lambda _: 0, store=store).execute(request)
-    assert result.status == CommandStatus.FAILED and result.error.code == "command_store_busy" and result.error.retryable
-    assert calls == []
-    store.lock_path.unlink()
+    ready, release = Event(), Event()
+    def hold():
+        handle = store._acquire_lock()
+        try:
+            ready.set()
+            assert release.wait(5)
+        finally:
+            store._release_lock(handle)
+    with ThreadPoolExecutor(1) as pool:
+        future = pool.submit(hold)
+        try:
+            assert ready.wait(5)
+            result = CommandBoundary(lambda _request: calls.append(1) or (), version_reader=lambda _: 0, store=store).execute(request)
+            assert result.status == CommandStatus.FAILED and result.error.code == "command_store_busy" and result.error.retryable
+            assert calls == []
+        finally:
+            release.set()
+        future.result(5)
     result = CommandBoundary(lambda _request: calls.append(1) or (), version_reader=lambda _: 0, store=store).execute(request)
     assert result.status == CommandStatus.ACCEPTED and calls == [1]
 

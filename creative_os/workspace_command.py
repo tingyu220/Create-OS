@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Callable, Mapping, Protocol
 from uuid import uuid4
 
+from creative_os.project_write_gate import project_write_method, acquire_record_lease
+
 SCHEMA_VERSION = 1
 
 class CommandStatus(StrEnum):
@@ -107,7 +109,8 @@ class CommandResultStore(Protocol):
 
 class FileCommandResultStore:
     def __init__(self, root: str | Path, *, lock_attempts: int = 100) -> None:
-        self.path = Path(root) / ".creative_os" / "commands" / "results.json"
+        self.root = Path(root)
+        self.path = self.root / ".creative_os" / "commands" / "results.json"
         self.lock_path = self.path.with_suffix(".lock")
         self.lock_attempts = lock_attempts
         if lock_attempts < 1:
@@ -117,6 +120,7 @@ class FileCommandResultStore:
     def read(self, key: str) -> CommandResultRecord | None:
         return self._read_records().get(key)
 
+    @project_write_method("root")
     def reserve(self, key: str, fingerprint: str) -> ReserveOutcome:
         handle = self._acquire_lock()
         try:
@@ -134,6 +138,7 @@ class FileCommandResultStore:
         finally:
             self._release_lock(handle)
 
+    @project_write_method("root")
     def complete(self, key: str, fingerprint: str, result: CommandResult) -> None:
         handle = self._acquire_lock()
         try:
@@ -151,6 +156,7 @@ class FileCommandResultStore:
         finally:
             self._release_lock(handle)
 
+    @project_write_method("root")
     def release(self, key: str, fingerprint: str) -> None:
         handle = self._acquire_lock()
         try:
@@ -175,28 +181,23 @@ class FileCommandResultStore:
 
     def _write_records(self, records: dict[str, CommandResultRecord]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        temp = self.path.with_suffix(".tmp")
-        with temp.open("w", encoding="utf-8", newline="\n") as stream:
+        temp = self.path.with_suffix(f".{uuid4().hex}.tmp")
+        with temp.open("x", encoding="utf-8", newline="\n") as stream:
             json.dump(_encode_store(records), stream, ensure_ascii=False, sort_keys=True)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temp, self.path)
 
-    def _acquire_lock(self) -> int:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        for _ in range(self.lock_attempts):
-            try:
-                return os.open(self.lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            except FileExistsError:
-                continue
-        raise CommandStoreError("command_store_busy")
-
-    def _release_lock(self, handle: int) -> None:
-        os.close(handle)
+    def _acquire_lock(self):
         try:
-            os.remove(self.lock_path)
-        except FileNotFoundError:
-            pass
+            return acquire_record_lease(self.lock_path, self.lock_attempts)
+        except ValueError as error:
+            if str(error) == "record_store_busy":
+                raise CommandStoreError("command_store_busy") from error
+            raise
+
+    def _release_lock(self, handle) -> None:
+        handle.__exit__(None, None, None)
 
 class CommandHandler(Protocol):
     def __call__(self, request: CommandRequest) -> tuple[str, ...]: ...
@@ -220,6 +221,15 @@ class CommandBoundary:
         self._refresh_scheduler = refresh_scheduler
         self._request_validator = request_validator
         self._results: dict[str, tuple[str, CommandResult]] = {}
+
+    def validate_request(self, request: CommandRequest) -> None:
+        """HTTP 写接管前的无副作用预检；执行边界仍保留原有复核。"""
+        if not all(isinstance(value, str) and value.strip() for value in (request.command_id, request.request_id, request.actor)) or not _valid_target(request.target):
+            raise CommandRejectedError("validation_failed", "命令身份字段不能为空。")
+        if not isinstance(request.payload, Mapping) or (request.expected_version is not None and (type(request.expected_version) is not int or request.expected_version < 0)):
+            raise CommandRejectedError("validation_failed", "命令载荷或版本格式无效。")
+        if self._request_validator is not None:
+            self._request_validator(request)
 
     def execute(self, request: CommandRequest) -> CommandResult:
         if not all(isinstance(value, str) and value.strip() for value in (request.command_id, request.request_id, request.actor)) or not _valid_target(request.target):

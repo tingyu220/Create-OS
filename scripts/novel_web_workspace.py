@@ -28,6 +28,8 @@ from creative_os.workspace_chapter_command import WorkspaceChapterRunCommandHand
 from creative_os.writer_command import WriterDraftCommandHandler
 from creative_os.writer_draft_store import WriterDraftStore
 from creative_os.agent_runtime import WriterAgentRuntime
+from creative_os.project_registry import ProjectRegistry
+from creative_os.publication_browser_workbench import PersistentBrowserWorkbenchController
 
 
 def _workspace_version_reader(_target: str) -> NoReturn:
@@ -63,7 +65,7 @@ def main() -> None:
     adapter = WorkspaceWebAdapter(WorkspaceQueryAdapter(repository), project_id)
     writer_store = WriterDraftStore(project_root)
     writer_adapter = WriterWebAdapter(project_root, project_id)
-    agent_runtime = WriterAgentRuntime(project_root)
+    agent_runtime = WriterAgentRuntime(project_root, project_id=project_id)
     command_handler = WorkspaceRefreshCommandHandler(project_id)
     command_boundary = CommandBoundary(
         command_handler,
@@ -99,6 +101,8 @@ def main() -> None:
         store=FileCommandResultStore(project_root),
         request_validator=writer_handler.validate,
     )
+    registry = ProjectRegistry(project_root.resolve().parent)
+    browser_workbench = PersistentBrowserWorkbenchController(project_root / ".creative_os" / "publication-browser-session.json", platform="tomato")
     server = create_server(
         adapter,
         command_adapter=WorkspaceCommandAdapter(command_boundary),
@@ -107,6 +111,8 @@ def main() -> None:
         writer_command_adapter=WorkspaceCommandAdapter(writer_boundary),
         writer_adapter=writer_adapter,
         agent_runtime=agent_runtime,
+        project_registry=registry,
+        browser_workbench=browser_workbench,
         host=args.host,
         port=args.port,
     )
@@ -119,6 +125,7 @@ def main() -> None:
         pass
     finally:
         server.server_close()
+        registry.close()
 
 
 if __name__ == "__main__":

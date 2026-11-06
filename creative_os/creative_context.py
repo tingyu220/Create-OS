@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -32,16 +32,20 @@ class CreativeContext:
     source_refs: tuple[str, ...]
     decision: CreativeDecision
     observations: tuple[str, ...] = ()
+    experience_prompt: str = ""
+    experience_context: dict = field(default_factory=dict)
+    current_draft_version: int | None = None
 
 
 class CreativeContextBuilder:
     """只读读取 Writer 需要的最小上下文，不写入领域事实。"""
 
-    def __init__(self, project_root: str | Path, recent_limit: int = 3) -> None:
+    def __init__(self, project_root: str | Path, recent_limit: int = 3, *, project_id: str | None = None) -> None:
         self.root = Path(project_root)
         self.recent_limit = recent_limit
+        self.project_id = project_id or self.root.resolve().name
 
-    def build(self, intent: str, target_chapter: int) -> CreativeContext:
+    def build(self, intent: str, target_chapter: int, *, task_id: str = "writer-context") -> CreativeContext:
         if not intent.strip() or target_chapter <= 0:
             raise ValueError("creative_context_request_invalid")
         final_root = self.root / "production" / "final_chapters"
@@ -53,16 +57,23 @@ class CreativeContextBuilder:
             refs += (".creative_os/projection/bundle.json",)
         draft_path = self.root / ".creative_os" / "writer" / "drafts" / f"chapter_{target_chapter:03d}.jsonl"
         draft = ""
+        draft_version = None
         if draft_path.exists():
             record = json.loads(draft_path.read_text(encoding="utf-8").splitlines()[-1])
             draft = str(record.get("content", ""))
+            draft_version = record.get("version")
             refs += (f".creative_os/writer/drafts/chapter_{target_chapter:03d}.jsonl",)
         formal_path = final_root / f"chapter_{target_chapter:03d}.md"
         formal = formal_path.read_text(encoding="utf-8") if formal_path.exists() else ""
         if formal:
             refs += (f"production/final_chapters/chapter_{target_chapter:03d}.md",)
+        from creative_os.writer_experience_context import compile_writer_experience
+        experience_prompt, experience_context = compile_writer_experience(self.root, self.project_id, target_chapter, task_id)
+        refs += tuple(item["source_ref"] for item in experience_context["selected"])
         decision = CreativeDecision(
             decision_id=f"decision-{uuid4().hex}", intent=intent.strip(), target_chapter=target_chapter,
             context_refs=refs, created_at=datetime.now(timezone.utc).isoformat(),
         )
-        return CreativeContext(intent.strip(), target_chapter, draft, formal, recent, refs, decision)
+        return CreativeContext(intent.strip(), target_chapter, draft, formal, recent, refs, decision,
+                               experience_prompt=experience_prompt, experience_context=experience_context,
+                               current_draft_version=draft_version)

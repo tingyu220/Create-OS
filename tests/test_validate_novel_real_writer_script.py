@@ -8,7 +8,7 @@ import scripts.validate_novel_real_writer as writer_script
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FIXTURE = ROOT / "projects" / "novel_domain_validation" / "validation" / "independent_short_story.json"
+FIXTURE = ROOT / "projects" / "末班钟表店" / "validation" / "independent_short_story.json"
 SCRIPT = ROOT / "scripts" / "validate_novel_real_writer.py"
 
 

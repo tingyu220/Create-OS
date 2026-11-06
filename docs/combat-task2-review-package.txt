@@ -1,0 +1,2368 @@
+FILE: creative_os/combat_agent.py
+"""冻结证据上的只读专家循环；不持有 Runtime、文件路径或写入能力。"""
+
+from copy import deepcopy
+from dataclasses import asdict
+import json
+from uuid import uuid4
+
+from creative_os.combat_model import CombatRequest, CombatResult
+from creative_os.llm_writer import ModelMessage
+
+
+MAX_STEPS = 4
+MAX_READS = 8
+MAX_SOURCE_CHARS = 12000
+MAX_TOTAL_CHARS = 48000
+MAX_INPUT_CHARS = 100000
+PROTOCOL = """你是战斗编排专家。只研究本次冻结来源，提出自由文本的叙事建议，不把未来计划、未确认候选或邻章当作目标章事实。
+按需选择读取顺序，可判断非战斗冲突更合适，或材料不足。目标正文缺失必须说明未知，不能推断章内缺陷。
+只能输出一个 JSON 工具动作：
+{"action":"read_source","source_id":"目录内引用"}
+{"action":"finish","verdict":"combat/setup/noncombat/insufficient四选一","reply":"自然语言建议","alternatives":[],"foreshadowing":[],"evidence_refs":[],"unknowns":[]}
+evidence_refs 只能引用实际读到正文的 source_id。所有数组元素是字符串；身份由服务器注入。
+无权确认、发布、改稿、访问任意路径或再次委派；最多4步，尽早完成。"""
+
+
+def source_catalog(request):
+    """目录仅暴露冻结元数据，正文必须经 read_source 读取。"""
+    return [{key: deepcopy(value) for key, value in source.items() if key != "text"} for source in request.sources]
+
+
+def _decode(raw):
+    try:
+        action = json.loads(raw)
+    except (TypeError, ValueError) as error:
+        raise ValueError("combat_model_json_invalid") from error
+    fields = {"read_source": {"action", "source_id"}, "finish": {"action", "verdict", "reply", "alternatives", "foreshadowing", "evidence_refs", "unknowns"}}
+    if (not isinstance(action, dict) or not isinstance(action.get("action"), str)
+            or action["action"] not in fields or set(action) != fields[action["action"]]):
+        raise ValueError("combat_tool_not_allowed")
+    return action
+
+
+def run_combat_expert(request, *, execute_step, read_source) -> CombatResult:
+    if not isinstance(request, CombatRequest):
+        raise ValueError("combat_request_invalid")
+    # 回调得到的材料也与原请求隔离，不能就地更改嵌套冻结字段。
+    request = deepcopy(request)
+    header = {"instruction": request.instruction, "scope": asdict(request.scope), "sources": source_catalog(request)}
+    messages = [ModelMessage("system", PROTOCOL), ModelMessage("user", json.dumps(header, ensure_ascii=False))]
+    read_ids, reads, total = [], 0, 0
+
+    def result(verdict, reply, alternatives=(), foreshadowing=(), evidence_refs=(), unknowns=()):
+        return CombatResult(f"combat-result-{uuid4().hex}", request.project_id, request.job_id, verdict, reply,
+                            tuple(alternatives), tuple(foreshadowing), tuple(evidence_refs), tuple(unknowns), request.scope)
+
+    def exhausted(reason):
+        return result("insufficient", "本轮专家预算已用完；未能完成的判断仍未知，请缩小范围。",
+                      evidence_refs=read_ids, unknowns=(reason,))
+
+    for step in range(1, MAX_STEPS + 1):
+        if sum(len(item.content) for item in messages) > MAX_INPUT_CHARS:
+            return exhausted("单步输入预算耗尽")
+        raw = execute_step(tuple(messages), step=step, sources=tuple(read_ids))
+        action = _decode(raw)
+        if action["action"] == "finish":
+            for key in ("alternatives", "foreshadowing", "evidence_refs", "unknowns"):
+                if not isinstance(action[key], list) or any(not isinstance(item, str) for item in action[key]):
+                    raise ValueError("combat_result_invalid")
+            if not isinstance(action["reply"], str) or not action["reply"].strip():
+                raise ValueError("combat_reply_invalid")
+            if not set(action["evidence_refs"]) <= set(read_ids):
+                raise ValueError("combat_evidence_not_read")
+            return result(**{key: value for key, value in action.items() if key != "action"})
+        source_id = action["source_id"]
+        if not isinstance(source_id, str) or not any(item["source_id"] == source_id for item in request.sources):
+            raise ValueError("combat_source_not_found")
+        if reads >= MAX_READS:
+            return exhausted("来源读取次数预算耗尽")
+        source = read_source(deepcopy(request), source_id)
+        reads += 1
+        # 读取回调也不能扩大冻结权限或偷换正文。
+        frozen = next(item for item in request.sources if item["source_id"] == source_id)
+        if source != frozen:
+            raise ValueError("combat_source_snapshot_mismatch")
+        text = source.get("text", "")
+        if len(text) > MAX_SOURCE_CHARS or total + len(text) > MAX_TOTAL_CHARS:
+            return exhausted("来源字符预算耗尽")
+        total += len(text)
+        if source.get("usage") == "included" and source_id not in read_ids:
+            read_ids.append(source_id)
+        messages.extend([ModelMessage("assistant", raw), ModelMessage("user", "只读工具结果：" + json.dumps(source, ensure_ascii=False))])
+    return exhausted("专家步骤预算耗尽")
+
+FILE: creative_os/chapter_agent_tools.py
+"""主 Agent 的有限讨论工具及只读专家桥接；不创建客户端或队列。"""
+
+from copy import deepcopy
+from dataclasses import asdict
+import json
+
+from creative_os.combat_agent import run_combat_expert
+from creative_os.combat_context import build_combat_context, read_combat_source
+from creative_os.combat_model import CombatRequest, CombatScope
+from creative_os.llm_writer import ModelMessage
+from creative_os.project_directory import validated_project
+from creative_os.writer_context_sources import ContextCapture
+
+
+MAX_STEPS = 6
+MAX_INPUT_CHARS = 100000
+PROTOCOL = """你可自主决定是否需要战斗编排专家，普通分析可直接结束，不要求每章委派。
+每次至多输出一个工具 JSON：{"action":"consult_combat"} 或 {"action":"finish","reply":"给作者的自然语言分析"}。
+每轮最多委派一次，不能递归。专家结果仅是建议，无权确认、发布或修改正文。保留普通自然语言分析输出的兼容性。"""
+
+
+def freeze_combat_request(root, project_id, job, *, original=None):
+    if original is not None:
+        return deepcopy(original.combat_context)
+    # 旧无 metadata 的临时/传统入口保持普通分析兼容，不能获得专家读权限。
+    if not (root / "project.json").exists():
+        if job.requested_expert:
+            raise ValueError("combat_project_identity_required")
+        return None
+    selected, _ = validated_project(root.parent, project_id)
+    if selected != root.resolve():
+        raise ValueError("combat_project_scope_mismatch")
+    scope = CombatScope(() if job.chapter_number is None else (job.chapter_number,), "本轮故事研究" if job.chapter_number is None else "目标章节冲突研究")
+    try:
+        frozen = build_combat_context(selected, project_id, scope, task_id=job.job_id,
+                                      session_id=job.session_id, instruction=job.instruction)
+    except ValueError as error:
+        if not str(error).startswith("required_combat_context_budget_exceeded"):
+            raise
+        # 普通分析仍可进行；显式或自主委派消费同一冻结失败，不能临时换新材料。
+        return {"error": str(error)}
+    return json.loads(json.dumps(asdict(frozen), ensure_ascii=False))
+
+
+def consult_combat(runtime, job, *, main_step):
+    current = runtime.get(job.job_id)
+    if current.combat_results:
+        raise ValueError("combat_delegation_limit")
+    raw = deepcopy(job.combat_context)
+    if raw is None:
+        raise ValueError("combat_context_unavailable")
+    if "error" in raw:
+        raise ValueError(raw["error"])
+    raw["scope"] = CombatScope(tuple(raw["scope"]["chapter_numbers"]), raw["scope"]["purpose"])
+    raw["sources"] = tuple(raw["sources"])
+    request = CombatRequest(**raw)
+
+    def execute(messages, *, step, sources):
+        capture = ContextCapture()
+        # 正文在完整消息中原样捕获；引用登记准确区分已读与仅目录。
+        for source in request.sources:
+            capture.add("战斗冻结来源", source["source_ref"], reason="read" if source["source_id"] in sources else "catalog_only",
+                        evidence_ref=source["source_id"], hash=source.get("hash"), version=source.get("version"),
+                        usage="recorded" if source["source_id"] in sources else "not_in_model")
+        return runtime._execute_story_step(job, messages, capture, f"combat:{main_step}:{step}")
+
+    result = run_combat_expert(request, execute_step=execute, read_source=read_combat_source)
+    # 重试只复用原输入身份；结果属于这次任务，不能冒充原失败任务结果。
+    value = {**asdict(result), "job_id": job.job_id}
+    runtime._set(job.job_id, combat_results=(*current.combat_results, value))
+    return value
+
+
+def run_chapter_turn(runtime, job, messages, capture):
+    frozen = job.main_input
+    if frozen:
+        messages = [ModelMessage(item["role"], item["content"]) for item in frozen]
+        # 重试的段偏移也来自首次装配，不能与最新上下文混用。
+        capture.entries = deepcopy((job.analysis_state or {}).get("capture_entries", []))
+    else:
+        messages = list(messages)
+        messages[0] = ModelMessage("system", messages[0].content + "\n" + PROTOCOL)
+        runtime._set(job.job_id, main_input=tuple(asdict(item) for item in messages))
+    trace = []
+    if job.requested_expert == "combat":
+        value = consult_combat(runtime, job, main_step=0)
+        trace.append({"step": 0, "input": {"action": "consult_combat"}, "result": value, "selection": "explicit"})
+        messages.append(ModelMessage("user", "专家工具结果：" + json.dumps(value, ensure_ascii=False)))
+        capture = ContextCapture()
+        runtime._set(job.job_id, tool_trace=tuple(trace))
+    for step in range(1, MAX_STEPS + 1):
+        if sum(len(item.content) for item in messages) > MAX_INPUT_CHARS:
+            return "本轮输入预算已用完，剩余问题未知，请缩小范围。"
+        raw = runtime._execute_story_step(job, messages, capture, step)
+        try:
+            action = json.loads(raw)
+        except (TypeError, ValueError):
+            # 兼容已有直接分析文本；貌似工具 JSON 的错误不能降级成成功。
+            if str(raw).lstrip().startswith(("{", "[")):
+                raise ValueError("chapter_model_json_invalid")
+            action = {"action": "finish", "reply": raw}
+        if not isinstance(action, dict):
+            raise ValueError("chapter_tool_not_allowed")
+        if action.get("action") == "finish" and set(action) == {"action", "reply"}:
+            if not isinstance(action["reply"], str) or not action["reply"].strip():
+                raise ValueError("chapter_reply_invalid")
+            trace.append({"step": step, "input": action, "result": "finished"})
+            runtime._set(job.job_id, tool_trace=tuple(trace))
+            return action["reply"]
+        if action != {"action": "consult_combat"}:
+            raise ValueError("chapter_tool_not_allowed")
+        value = consult_combat(runtime, job, main_step=step)
+        trace.append({"step": step, "input": action, "result": value})
+        runtime._set(job.job_id, tool_trace=tuple(trace))
+        messages.extend([ModelMessage("assistant", raw), ModelMessage("user", "专家工具结果：" + json.dumps(value, ensure_ascii=False))])
+        capture = ContextCapture()
+    return "本轮工具步骤预算已用完；未完成的判断仍未知，请缩小范围或继续讨论。"
+
+
+def freeze_analysis_state(job, context, formal_word_count, capture):
+    decision = {"decision_id": job.decision_id or context.decision.decision_id, "intent": job.instruction,
+                "target_chapter": job.chapter_number, "context_refs": list(context.source_refs),
+                "created_at": context.decision.created_at, "target_words": job.target_words,
+                "tolerance_words": job.tolerance_words, "min_words": job.min_words, "max_words": job.max_words,
+                "formal_word_count": formal_word_count, "project_id": job.project_id,
+                "session_id": job.session_id, "task_id": job.job_id}
+    return {"decision": decision, "capture_entries": deepcopy(capture.entries)}
+
+
+def replay_chapter_analysis(runtime, job):
+    """已送达模型的分析重试直接回放旧装配，不再触碰最新正文、草稿或经验。"""
+    content = run_chapter_turn(runtime, job, (), ContextCapture())
+    decision = {**deepcopy(job.analysis_state["decision"]), "task_id": job.job_id, "analysis": str(content)}
+    runtime._write_decision(decision["decision_id"], decision)
+    runtime._set(job.job_id, status="completed", message="分析已完成，正文未修改。",
+                 decision_id=decision["decision_id"], reply=content)
+
+FILE: creative_os/agent_runtime.py
+diff --git a/creative_os/agent_runtime.py b/creative_os/agent_runtime.py
+index 78a334c..ab9d0d2 100644
+--- a/creative_os/agent_runtime.py
++++ b/creative_os/agent_runtime.py
+@@ -1,153 +1,490 @@
+-"""Writer Agent 异步运行时：读取有限项目上下文并生成 Working Draft。"""
++"""Writer Agent 异步运行时：读取项目上下文并生成独立候选提案。"""
+ 
+ from __future__ import annotations
+ 
+-from concurrent.futures import ThreadPoolExecutor
+-from dataclasses import dataclass
++from concurrent.futures import ThreadPoolExecutor, Future
++from dataclasses import asdict, dataclass, replace
+ from pathlib import Path
+ from threading import Lock
+ from uuid import uuid4
+ from datetime import datetime, timezone
++from copy import deepcopy
+ import json
+ 
+ from creative_os.llm_writer import OpenAICompatibleClient, ModelMessage
+ from creative_os.writer_draft_store import WriterDraftStore
+ from creative_os.creative_context import CreativeContextBuilder
+ from creative_os.runtime.runner import RuntimeRunner
+ from creative_os.runtime.model import RuntimeRequest
++from creative_os.agent_conversation_store import AgentConversationStore
++from creative_os.domains.project_authority import project_authority_lock
++from creative_os.agent_proposal_store import AgentProposalStore
++from creative_os.agent_proposal_command import AgentProposalCommandHandler, AgentProposalCommandBoundary
++from creative_os.workspace_command import FileCommandResultStore
++from creative_os.writer_lesson import WriterLessonService
++from creative_os.writer_lesson_command import WriterLessonCommandHandler, WriterLessonCommandBoundary
++from creative_os.writer_context_sources import ContextCapture, CapturingModelAdapter, WriterContextSourceQuery
++from creative_os.writer_word_budget import WriterWordBudget, count_writer_words
++from creative_os.story_architecture_store import StoryArchitectureStore
++from creative_os.story_architecture_command import story_commands
++from creative_os.story_context import freeze_confirmed_story
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+ class AgentJob:
+     job_id: str
+     status: str
+     message: str
+-    chapter_number: int
++    chapter_number: int | None
+     draft_version: int | None = None
+     updated_at: str = ""
+     mode: str = "act"
+     decision_id: str | None = None
+     target_words: int = 4500
+     tolerance_words: int = 300
+     min_words: int = 4200
+     max_words: int = 4800
+     actual_words: int | None = None
+     within_word_range: bool | None = None
++    project_id: str = ""
++    session_id: str = ""
++    instruction: str = ""
++    actor: str = "作者"
++    error: str | None = None
++    retryable: bool = False
++    retry_of: str | None = None
++    retry_job_id: str | None = None
++    proposal_id: str | None = None
++    parent_proposal_id: str | None = None
++    proposal_source: str | None = None
++    experience_context: dict | None = None
++    context_snapshot: dict | None = None
++    word_assessment: dict | None = None
++    # 受理时记录开始时间；旧任务留空，不从更新时间猜测开始时间。
++    started_at: str = ""
++    status_updated_at: str = ""
++    scope: str = "chapter"
++    story_context: dict | None = None
++    tool_trace: tuple = ()
++    step_snapshots: tuple = ()
++    requested_expert: str | None = None
++    combat_context: dict | None = None
++    combat_results: tuple = ()
++    main_input: tuple = ()
++    analysis_state: dict | None = None
+ 
+ 
+ class WriterAgentRuntime:
+-    def __init__(self, project_root: str | Path) -> None:
++    def __init__(self, project_root: str | Path, project_id: str | None = None, *, client_factory=None, read_only=False, recover=True) -> None:
+         self.root = Path(project_root)
++        self.project_id = project_id or self.root.resolve().name
++        self.client_factory = client_factory or (lambda: OpenAICompatibleClient.from_env())
++        self.read_only = read_only
++        self.story = StoryArchitectureStore(self.root, self.project_id)
++        self.story_commands = story_commands(self.story)
+         self.store = WriterDraftStore(project_root)
++        self.conversations = AgentConversationStore(self.root, self.project_id)
++        self.proposals = AgentProposalStore(self.root, self.project_id)
+         self._jobs: dict[str, AgentJob] = {}
++        self._futures: dict[str, Future] = {}
+         self._lock = Lock()
+         self._pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="writer-agent")
++        self._interrupted_jobs = set()
++        for raw in self.conversations.load_jobs():
++            job = AgentJob(**raw)
++            self._jobs[job.job_id] = job
++            if job.status not in {"completed", "failed"} and (read_only or not recover):
++                self._interrupted_jobs.add(job.job_id)
++            if not read_only and recover and job.status not in {"completed", "failed"}:
++                reason = "服务在保存阶段中断，保存结果待核对，请检查工作稿版本。" if job.status == "saving" else "服务重启导致任务中断，可手动重试。"
++                self._set(job.job_id, status="failed", message=reason,
++                          error=reason, retryable=job.status != "saving")
++                if job.proposal_id:
++                    self.proposals.fail_unfinished(job.proposal_id, reason)
++        proposal_handler = AgentProposalCommandHandler(self)
++        if not read_only and recover:
++            proposal_handler.recover()
++        self.proposal_commands = AgentProposalCommandBoundary(proposal_handler, version_reader=lambda _: None,
++                                                store=FileCommandResultStore(self.root), request_validator=proposal_handler.validate)
++        self.lessons = WriterLessonService(self)
++        self.context_sources = WriterContextSourceQuery(self)
++        lesson_handler = WriterLessonCommandHandler(self.lessons)
++        if not read_only and recover:
++            lesson_handler.recover()
++        self.lesson_commands = WriterLessonCommandBoundary(lesson_handler, version_reader=lambda _: None,
++                                                store=FileCommandResultStore(self.root), request_validator=lesson_handler.validate)
+ 
+-    def submit(self, instruction: str, chapter_number: int, actor: str = "作者", *, target_words: int = 4500, tolerance_words: int = 300) -> AgentJob:
++    def lesson_query(self, chapter_number):
++        return self.lessons.query(chapter_number)
++
++    def conversation(self, chapter_number: int) -> dict:
++        session = self.conversations.conversation(chapter_number)
++        for job in session["jobs"]:
++            self._project_interrupted_job(job)
++        if chapter_number is None:
++            return {**session, **self.story.view()}
++        session["proposals"] = [self.proposals.public(self.proposals.read(job["proposal_id"])) for job in session["jobs"] if job.get("proposal_id")]
++        session["lesson_review"] = self.lesson_query(chapter_number)
++        for job in session["jobs"]:
++            job["context_available"] = job.pop("context_snapshot", None) is not None
++        return session
++
++    def _project_interrupted_job(self, job):
++        if job["job_id"] in self._interrupted_jobs:
++            saving = job["status"] == "saving"
++            job.update(observed_status=job["status"], status="failed", recovery_required=True, retryable=not saving,
++                       message="保存阶段中断，请先核对工作稿，不能自动重试。" if saving else "上次任务未完成；可显式重试接管此任务。",
++                       error="saving_reconciliation_required" if saving else "task_recovery_required")
++        return job
++
++    def job_view(self, job):
++        return self._project_interrupted_job(asdict(job))
++
++    def validate_submit(self, instruction, chapter_number, actor="作者", *, target_words=4500, tolerance_words=300,
++                        session_id=None, retry_of=None, mode="analyze", decision_id=None, parent_proposal_id=None, proposal_source=None, requested_expert=None):
++        """只读预检；HTTP 在写接管前调用，执行时仍在项目锁内复核。"""
++        if not isinstance(instruction, str) or not instruction.strip() or not isinstance(actor, str) or not actor.strip():
++            raise ValueError("instruction_required")
+         if type(target_words) is not int or type(tolerance_words) is not int or target_words <= 0 or tolerance_words < 0:
+             raise ValueError("word_target_invalid")
++        if not isinstance(mode, str) or mode not in {"analyze", "act"}:
++            raise ValueError("agent_mode_invalid")
++        if requested_expert is not None and requested_expert != "combat":
++            raise ValueError("requested_expert_invalid")
++        if requested_expert is not None and mode != "analyze":
++            raise ValueError("expert_requires_analysis")
++        if chapter_number is None and (mode != "analyze" or parent_proposal_id or decision_id):
++            raise ValueError("story_mode_invalid")
++        session = self.conversations.read(chapter_number)
++        if session_id is not None and session_id != session["session_id"]:
++            raise ValueError("session_scope_mismatch")
++        if any(item["status"] not in {"completed", "failed"} and item["job_id"] != retry_of for item in session["jobs"].values()):
++            raise ValueError("session_busy")
++        if chapter_number is not None and not retry_of:
++            freeze_confirmed_story(self.root, self.project_id)
++        if parent_proposal_id:
++            parent = self.proposals.read(parent_proposal_id)
++            if parent["chapter_number"] != chapter_number or parent["session_id"] != session["session_id"] or proposal_source not in {"candidate", "base"}:
++                raise ValueError("proposal_scope_mismatch")
++
++    def submit(self, instruction: str, chapter_number: int | None, actor: str = "作者", *, target_words: int = 4500, tolerance_words: int = 300, session_id: str | None = None, retry_of: str | None = None, mode: str = "analyze", decision_id: str | None = None, parent_proposal_id: str | None = None, proposal_source: str | None = None, job_id: str | None = None, requested_expert: str | None = None) -> AgentJob:
++        if self.read_only:
++            raise ValueError("query_runtime_readonly")
++        self.validate_submit(instruction, chapter_number, actor, target_words=target_words, tolerance_words=tolerance_words,
++                             session_id=session_id, retry_of=retry_of, mode=mode, decision_id=decision_id,
++                             parent_proposal_id=parent_proposal_id, proposal_source=proposal_source, requested_expert=requested_expert)
+         min_words = max(1, target_words - tolerance_words)
+         max_words = target_words + tolerance_words
+-        job_id = f"agent-{uuid4().hex}"
+-        mode = "analyze" if any(token in instruction for token in ("不要修改", "只分析", "检查一下", "有什么问题")) else "act"
++        job_id = job_id or f"agent-{uuid4().hex}"
++        # 文本内容不授予写入权限；Act 只能来自显式执行命令。
+         job = AgentJob(job_id, "queued", "任务已排队，等待 Agent 读取上下文。", chapter_number, None, datetime.now(timezone.utc).isoformat(), mode, None, target_words, tolerance_words, min_words, max_words)
+-        with self._lock:
++        job = replace(job, started_at=job.updated_at, status_updated_at=job.updated_at)
++        with project_authority_lock(self.root), self._lock:
++            self.validate_submit(instruction, chapter_number, actor, target_words=target_words, tolerance_words=tolerance_words,
++                                 session_id=session_id, retry_of=retry_of, mode=mode, decision_id=decision_id,
++                                 parent_proposal_id=parent_proposal_id, proposal_source=proposal_source, requested_expert=requested_expert)
++            frozen_story = (self._jobs[retry_of].story_context if retry_of else freeze_confirmed_story(self.root, self.project_id)) if chapter_number is not None else None
++            session = self.conversations.read(chapter_number)
++            job = replace(job, project_id=self.project_id, session_id=session["session_id"], instruction=instruction.strip(), actor=actor, retry_of=retry_of, decision_id=decision_id,
++                          parent_proposal_id=parent_proposal_id, proposal_source=proposal_source,
++                          scope="story" if chapter_number is None else "chapter", story_context=frozen_story, requested_expert=requested_expert)
++            if mode == "analyze":
++                from creative_os.chapter_agent_tools import freeze_combat_request
++                original = self._jobs[retry_of] if retry_of else None
++                job = replace(job, combat_context=freeze_combat_request(self.root, self.project_id, job, original=original),
++                              main_input=original.main_input if original else (),
++                              analysis_state=deepcopy(original.analysis_state) if original else None,
++                              experience_context=deepcopy(original.experience_context) if original else None)
++            if retry_of:
++                original = self._jobs[retry_of]
++                if original.retry_job_id:
++                    return self._jobs[original.retry_job_id]
++                original = replace(original, retry_job_id=job_id)
++                session["jobs"][retry_of] = asdict(original)
++                self._jobs[retry_of] = original
++            else:
++                session["messages"].append({"message_id": f"message-{uuid4().hex}", "task_id": job_id, "role": "user", "content": instruction.strip(), "created_at": job.updated_at})
++            session["jobs"][job_id] = asdict(job)
++            self.conversations.write(session)
+             self._jobs[job_id] = job
+-        self._pool.submit(self._run, job_id, instruction, chapter_number, actor)
++            # 队列登记与持久任务处于同一身份锁内，迁移不会漏看待启动或收尾Future。
++            future = self._pool.submit(self._run, job_id, instruction, chapter_number, actor)
++            if future is not None:
++                self._futures[job_id] = future
++        return job
++
++    def assert_migration_idle(self):
++        """只读自有任务与Future；不取消、不等待、不推断中断任务已安全结束。"""
++        with self._lock:
++            for job in self._jobs.values():
++                if not isinstance(job, AgentJob):
++                    raise ValueError("project_migration_state_unknown")
++                if job.status not in {"completed", "failed"}:
++                    raise ValueError("project_migration_active")
++            for future in self._futures.values():
++                if not isinstance(future, Future):
++                    raise ValueError("project_migration_state_unknown")
++                if not future.done():
++                    raise ValueError("project_migration_active")
++
++    def validate_retry(self, job_id, *, chapter_number, session_id):
++        job = self.get(job_id)
++        if job is None:
++            raise ValueError("job_not_found")
++        if job.chapter_number != chapter_number or job.session_id != session_id:
++            raise ValueError("session_scope_mismatch")
++        if job.retry_job_id:
++            return job
++        interrupted = job_id in self._interrupted_jobs and job.status != "saving"
++        if not interrupted and (job.status != "failed" or not job.retryable):
++            raise ValueError("job_not_retryable")
++        latest = next(reversed(self.conversations.read(chapter_number)["jobs"]))
++        if latest != job_id:
++            raise ValueError("job_retry_superseded")
++        self.validate_submit(job.instruction, chapter_number, job.actor, target_words=job.target_words, tolerance_words=job.tolerance_words,
++                             session_id=session_id, retry_of=job_id, mode=job.mode, decision_id=job.decision_id,
++                             parent_proposal_id=job.parent_proposal_id, proposal_source=job.proposal_source, requested_expert=job.requested_expert)
+         return job
+ 
++    def retry(self, job_id: str, *, chapter_number: int, session_id: str) -> AgentJob:
++        self.validate_retry(job_id, chapter_number=chapter_number, session_id=session_id)
++        if self.read_only:
++            raise ValueError("query_runtime_readonly")
++        with project_authority_lock(self.root):
++            job = self.validate_retry(job_id, chapter_number=chapter_number, session_id=session_id)
++            if job.retry_job_id:
++                return self.get(job.retry_job_id)
++            if job_id in self._interrupted_jobs:
++                reason = "作者显式重试，接管此中断任务。"
++                self._set(job_id, status="failed", message=reason, error=reason, retryable=True)
++                if job.proposal_id:
++                    self.proposals.fail_unfinished(job.proposal_id, reason)
++            return self.submit(job.instruction, chapter_number, job.actor, target_words=job.target_words,
++                               tolerance_words=job.tolerance_words, session_id=session_id, retry_of=job_id,
++                               mode=job.mode, decision_id=job.decision_id, parent_proposal_id=job.parent_proposal_id, proposal_source=job.proposal_source, requested_expert=job.requested_expert)
++
+     def get(self, job_id: str) -> AgentJob | None:
+         with self._lock:
+             return self._jobs.get(job_id)
+ 
+     def get_decision(self, decision_id: str) -> dict[str, object]:
++        if not decision_id.startswith("decision-") or any(char not in "abcdefghijklmnopqrstuvwxyz0123456789-" for char in decision_id):
++            raise ValueError("decision_id_invalid")
+         path = self.root / ".creative_os" / "agent" / "decisions" / f"{decision_id}.json"
+         if not path.exists():
+             raise FileNotFoundError(decision_id)
+         return json.loads(path.read_text(encoding="utf-8"))
+ 
++    def _write_decision(self, decision_id, decision):
++        with project_authority_lock(self.root):
++            path = self.root / ".creative_os" / "agent" / "decisions" / f"{decision_id}.json"
++            path.parent.mkdir(parents=True, exist_ok=True)
++            path.write_text(json.dumps(decision, ensure_ascii=False, indent=2), encoding="utf-8")
++
+     def submit_from_decision(self, decision_id: str, actor: str = "作者", feedback: str = "") -> AgentJob:
+         """作者确认后，才允许把只读决策转入执行任务。"""
+         try:
+             decision = self.get_decision(decision_id)
+         except FileNotFoundError as error:
+             raise ValueError("decision_not_found") from error
+         chapter = int(decision["target_chapter"])
+         instruction = f"按创作决策 {decision_id} 执行修改：{decision.get('analysis', '')}"
+         if feedback.strip():
+             instruction += f"\n作者补充要求：{feedback.strip()}"
+         return self.submit(
+             instruction,
+             chapter,
+             actor,
+             target_words=int(decision.get("target_words", 4500)),
+             tolerance_words=int(decision.get("tolerance_words", 300)),
++            session_id=decision.get("session_id"),
++            mode="act",
++            decision_id=decision_id,
+         )
+ 
+     def _set(self, job_id: str, **changes: object) -> None:
+-        with self._lock:
++        with project_authority_lock(self.root), self._lock:
+             current = self._jobs[job_id]
+-            self._jobs[job_id] = AgentJob(current.job_id, str(changes.get("status", current.status)), str(changes.get("message", current.message)), current.chapter_number, changes.get("draft_version", current.draft_version), datetime.now(timezone.utc).isoformat(), current.mode, changes.get("decision_id", current.decision_id), current.target_words, current.tolerance_words, current.min_words, current.max_words, changes.get("actual_words", current.actual_words), changes.get("within_word_range", current.within_word_range))
++            reply = changes.pop("reply", None)
++            now = datetime.now(timezone.utc).isoformat()
++            if any(key in changes and changes[key] != getattr(current, key) for key in ("status", "message", "error")):
++                changes["status_updated_at"] = now
++            job = replace(current, **changes, updated_at=now)
++            session = self.conversations.read(current.chapter_number)
++            session["jobs"][job_id] = asdict(job)
++            if reply is not None:
++                message_id = self.proposals.read(job.proposal_id)["message_id"] if job.proposal_id else f"message-{uuid4().hex}"
++                session["messages"].append({"message_id": message_id, "task_id": job_id, "role": "assistant", "content": str(reply), "created_at": job.updated_at, "proposal_id": job.proposal_id})
++            self.conversations.write(session)
++            self._jobs[job_id] = job
++            if job.status in {"completed", "failed"}:
++                self._interrupted_jobs.discard(job_id)
+ 
+     def _run(self, job_id: str, instruction: str, chapter_number: int, actor: str) -> None:
+         try:
+             job = self.get(job_id)
+             if job is None:
+                 return
++            if job.scope == "story":
++                from creative_os.story_architecture_agent import run_story_turn
++                run_story_turn(self, job)
++                return
++            if job.mode == "analyze" and job.main_input and job.analysis_state:
++                from creative_os.chapter_agent_tools import replay_chapter_analysis
++                replay_chapter_analysis(self, job)
++                return
+             self._set(job_id, status="reading_context", message="正在读取前文、项目状态和相邻章节。")
+             final_root = self.root / "production" / "final_chapters"
+-            latest = max((int(path.stem.split("_")[-1]) for path in final_root.glob("chapter_*.md")), default=chapter_number)
+-            target = max(chapter_number, latest + 1) if job.mode == "act" and ("继续" in instruction or "写" in instruction) and not instruction.startswith("按创作决策") else chapter_number
++            target = chapter_number
++            proposal = None
++            if job.mode == "act":
++                proposal = self.proposals.create(job, f"message-{uuid4().hex}")
++                self._set(job_id, proposal_id=proposal["proposal_id"])
+             previous = []
++            capture = ContextCapture()
+             for number in range(max(1, target - 3), target):
+                 path = final_root / f"chapter_{number:03d}.md"
+                 if path.exists():
+-                    previous.append(path.read_text(encoding="utf-8")[-6000:])
+-            context = CreativeContextBuilder(self.root).build(instruction, target)
+-            formal_word_count = len("".join(context.current_formal.split())) if context.current_formal else 0
++                    original = path.read_text(encoding="utf-8")
++                    excerpt = original[-6000:]
++                    # 每条前文占独立拼接段，即使正文相同也有各自的准确偏移。
++                    segment_start = sum(len(text) for text in previous) + 2 * len(previous)
++                    previous.append(excerpt)
++                    capture.add(f"前文章节 · 第{number}章", str(path.relative_to(self.root)).replace("\\", "/"), excerpt,
++                                original=original, start=max(0, len(original) - 6000), version="sha256", message_start=segment_start)
++            context = CreativeContextBuilder(self.root, project_id=self.project_id).build(instruction, target, task_id=job_id)
++            formal_word_count = count_writer_words(context.current_formal)
+             context_summary = {"recent_chapters": list(context.recent_chapters), "source_refs": list(context.source_refs), "has_current_draft": bool(context.current_draft), "formal_word_count": formal_word_count}
+-            self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。")
+-            client = OpenAICompatibleClient.from_env()
++            self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。", experience_context=context.experience_context)
++            client = self.client_factory() if job.mode == "act" else None
+             previous_text = "\n\n".join(previous)
+             if context.current_formal:
+-                previous_text += f"\n\n【当前目标章节第{target}章正式稿】\n{context.current_formal[-12000:]}"
++                previous_text += f"\n\n【当前目标章节第{target}章正式稿】\n{context.current_formal}"
++                capture.add("当前正式稿", f"production/final_chapters/chapter_{target:03d}.md",
++                            context.current_formal if proposal is None else None, version="sha256",
++                            message_start=len(previous_text) - len(context.current_formal),
++                            reason=None if proposal is None else "frozen_input_replaced_body")
+             if context.current_draft:
+-                previous_text += f"\n\n【当前目标章节工作稿】\n{context.current_draft[-12000:]}"
+-            word_contract = f"目标字数：{job.target_words} 字，允许误差：±{job.tolerance_words} 字，范围：{job.min_words}-{job.max_words} 字。当前正式稿精确字数：{formal_word_count} 字。优先保证剧情和人物质量，不要为凑字数重复内容。"
++                previous_text += f"\n\n【当前目标章节工作稿】\n{context.current_draft}"
++                capture.add("当前工作稿", f".creative_os/writer/drafts/chapter_{target:03d}.jsonl",
++                            context.current_draft if proposal is None else None, version=context.current_draft_version,
++                            message_start=len(previous_text) - len(context.current_draft),
++                            reason=None if proposal is None else "frozen_input_replaced_body")
++            if proposal is not None:
++                # 执行正文只使用冻结输入；继续修改明确指定候选或原稿。
++                previous_text = "\n\n".join(previous)
++                previous_text += f"\n\n【本次执行冻结输入，来源 {job.proposal_source or proposal['base']['source']}】\n{proposal['input']['content']}"
++                capture.add("本次执行冻结输入", proposal["input"]["ref"], proposal["input"]["content"],
++                            version=proposal["input"].get("version"), proposal_id=proposal["proposal_id"],
++                            message_start=len(previous_text) - len(proposal["input"]["content"]),
++                            input_source=job.proposal_source or proposal["base"]["source"])
++            input_content = proposal["input"]["content"] if proposal is not None else (context.current_draft or context.current_formal)
++            if job.story_context:
++                frozen = job.story_context
++                previous_text += f"\n\n【作者明确确认的故事设定 version={frozen['version']} hash={frozen['hash']}】\n" + frozen["text"]
++                capture.add("已确认故事设定", frozen["source_ref"], frozen["text"], version=frozen["version"],
++                            story_hash=frozen["hash"], message_start=len(previous_text) - len(frozen["text"]))
++            word_budget = WriterWordBudget(job.target_words, job.tolerance_words, count_writer_words(input_content))
++            word_contract = word_budget.prompt(formal_words=formal_word_count, mode=job.mode)
++            if context.experience_prompt:
++                previous_text += "\n\n【作者已批准的写作经验，仅为适用范围内的写作参考，不是人物、世界或情节事实】\n" + context.experience_prompt
++            experience_start = len(previous_text) - len(context.experience_prompt)
++            for item in context.experience_context.get("selected", []):
++                capture.add("作者已批准的写作经验（当次）", item["source_ref"], item["content_snapshot"],
++                            version=item["version"], experience=item, message_start=experience_start)
++                # 经验编译器按原选入次序用单个换行连接，不对整条消息搜索同文。
++                experience_start += len(item["content_snapshot"]) + 1
++            for item in context.experience_context.get("excluded", []):
++                capture.add("作者经验（未入模）", f"memory:{item['memory_id']}", reason=item["reason"], experience=item)
++            actual_refs = {item["source_ref"] for item in capture.entries}
++            for ref in context.source_refs:
++                if ref not in actual_refs:
++                    capture.add("项目投影引用" if ref.endswith("projection/bundle.json") else "上下文登记引用", ref,
++                                reason="reference_only_no_body")
++            user_prefix = f"用户意图：{instruction}\n{word_contract}\n项目上下文摘要：{context_summary}\n目标章节：第{target}章\n以下是最近章节正文片段：\n\n"
+             messages = [
+-                ModelMessage("system", "你是长篇小说 Writer Agent。只输出中文小说正文，不输出提纲、解释或系统术语。保持人物连续性和章节因果，不要机械分段。"),
+-                ModelMessage("user", f"用户意图：{instruction}\n{word_contract}\n项目上下文摘要：{context_summary}\n目标章节：第{target}章\n以下是最近章节正文片段：\n\n{previous_text}\n\n{'请只分析问题、依据和建议，不要输出正文，也不要修改任何工作稿。' if job.mode == 'analyze' else f'请基于这些上下文继续创作，输出完整章节正文，标题为《第{target}章》，正文长度控制在上述范围内。'}"),
++                ModelMessage("system", "你是长篇小说 Writer Agent。依据当前请求分析或创作。分析时解释问题、依据与建议；创作时只输出中文小说正文。保持人物连续性和章节因果。"),
++                ModelMessage("user", user_prefix + previous_text + f"\n\n{'请只分析问题、依据和建议，不要输出正文，也不要修改任何工作稿。' if job.mode == 'analyze' else f'请按上述整章预算整合创作，输出最终完整章节正文，标题为《第{target}章》。续写时将已有与新增内容整合成一章，改写时输出重组后的完整章节；总量不是新增量。'}"),
+             ]
+-            runtime_result = RuntimeRunner().execute(
+-                RuntimeRequest(
+-                    task_id=job_id,
+-                    context_id=context.decision.decision_id,
+-                    capability="novel-writing-agent",
+-                    domain="novel",
+-                    model="writer-agent",
+-                    messages=tuple(messages),
+-                    input_refs=tuple(("source_ref", ref) for ref in context.source_refs),
+-                    temperature=0.78,
+-                    max_tokens=12000,
+-                ),
+-                client,
+-            )
+-            content = runtime_result.output
++            history = self.conversation(chapter_number)["messages"]
++            # 当前用户指令已在末尾上下文中出现；失败重试复用原用户消息。
++            source_task = job.job_id
++            while self._jobs[source_task].retry_of:
++                source_task = self._jobs[source_task].retry_of
++            cutoff = next((index for index, item in enumerate(history) if item["task_id"] == source_task), len(history))
++            messages[1:1] = [ModelMessage(item["role"], item["content"]) for item in history[:cutoff]]
++            if job.story_context and sum(len(message.content) for message in messages) > 100000:
++                raise ValueError("required_story_context_budget_exceeded")
++            if job.mode == "analyze":
++                from creative_os.chapter_agent_tools import run_chapter_turn, freeze_analysis_state
++                for entry in capture.entries:
++                    if entry.get("_message_start") is not None:
++                        entry["_message_start"] += len(user_prefix)
++                self._set(job_id, analysis_state=freeze_analysis_state(job, context, formal_word_count, capture))
++                content = run_chapter_turn(self, job, messages, capture)
++            else:
++                content = RuntimeRunner().execute(
++                    RuntimeRequest(
++                        task_id=job_id,
++                        context_id=context.decision.decision_id,
++                        capability="novel-writing-agent",
++                        domain="novel",
++                        model="writer-agent",
++                        messages=tuple(messages),
++                        input_refs=tuple(("source_ref", ref) for ref in context.source_refs) + (("project_id", self.project_id), ("session_id", job.session_id), ("chapter_number", str(target)))
++                                   + ((("story_source_ref", job.story_context["source_ref"]), ("story_version", str(job.story_context["version"])), ("story_hash", job.story_context["hash"])) if job.story_context else ()),
++                        temperature=0.78,
++                        max_tokens=12000,
++                    ),
++                    CapturingModelAdapter(client, lambda actual: self._set(job_id, context_snapshot=capture.snapshot(job, actual, content_offset=len(user_prefix)))),
++                ).output
++            decision_id = job.decision_id or context.decision.decision_id
++            if job.mode == "analyze" or not job.decision_id:
++                decision = {"decision_id": decision_id, "intent": instruction, "target_chapter": target,
++                            "context_refs": list(context.source_refs), "analysis": str(content) if job.mode == "analyze" else instruction, "created_at": context.decision.created_at,
++                            "target_words": job.target_words, "tolerance_words": job.tolerance_words,
++                            "min_words": job.min_words, "max_words": job.max_words, "formal_word_count": formal_word_count,
++                            "project_id": self.project_id, "session_id": job.session_id, "task_id": job_id}
++                self._write_decision(decision_id, decision)
+             if job.mode == "analyze":
+-                decision_id = context.decision.decision_id
+-                decision_path = self.root / ".creative_os" / "agent" / "decisions" / f"{decision_id}.json"
+-                decision_path.parent.mkdir(parents=True, exist_ok=True)
+-                decision_path.write_text(json.dumps({"decision_id": decision_id, "intent": instruction, "target_chapter": target, "context_refs": list(context.source_refs), "analysis": str(content), "created_at": context.decision.created_at, "target_words": job.target_words, "tolerance_words": job.tolerance_words, "min_words": job.min_words, "max_words": job.max_words, "formal_word_count": formal_word_count}, ensure_ascii=False, indent=2), encoding="utf-8")
+-                self._set(job_id, status="completed", message="分析已完成，正文未修改。", decision_id=decision_id)
++                self._set(job_id, status="completed", message="分析已完成，正文未修改。", decision_id=decision_id, reply=content)
+                 return
++            with project_authority_lock(self.root):
++                proposal = self.proposals.read(proposal["proposal_id"])
++                proposal["decision_id"] = decision_id
++                self.proposals.write(proposal)
++                self._set(job_id, decision_id=decision_id)
+             text = str(content)
+-            actual_words = len("".join(text.split()))
+-            within_word_range = job.min_words <= actual_words <= job.max_words
+-            range_message = "字数在目标范围内" if within_word_range else f"字数超出目标范围（实际 {actual_words} 字，目标 {job.min_words}–{job.max_words} 字），已保留供作者判断"
+-            self._set(job_id, status="saving", message=f"正文已生成，{range_message}，正在写入 Working Draft。")
+-            current = self.store.current(target)
+-            expected_version = None if current is None else current[0].version
+-            version = self.store.save(target, text, actor=actor, expected_version=expected_version)
+-            self._set(job_id, status="completed", message=f"第{target}章已生成到 Working Draft，{range_message}。", draft_version=version.version, actual_words=actual_words, within_word_range=within_word_range)
++            word_assessment = word_budget.assess(text)
++            actual_words = word_assessment["actual_words"]
++            within_word_range = word_assessment["within_word_range"]
++            range_message = word_assessment["message"]
++            if word_assessment["adjustment_options"]:
++                range_message += "。" + "；".join(word_assessment["adjustment_options"])
++            self._set(job_id, status="saving_proposal", message=f"候选已生成，{range_message}，正在保存提案。")
++            self.proposals.complete(proposal["proposal_id"], text, word_assessment=word_assessment)
++            self._set(job_id, status="completed", message=f"第{target}章候选提案待审阅，{range_message}。当前正文未修改。", actual_words=actual_words, within_word_range=within_word_range, word_assessment=word_assessment, reply=text)
+         except Exception as error:
+-            self._set(job_id, status="failed", message=f"Agent 运行失败：{error}")
++            current = self.get(job_id)
++            if current.proposal_id:
++                self.proposals.fail_unfinished(current.proposal_id, str(error))
++            self._set(job_id, status="failed", message=f"Agent 运行失败：{error}", error=str(error), retryable=current.status != "saving")
++
++    def _execute_story_step(self, job, messages, capture, step):
++        """受控单步入口；工具循环位于领域模块，透明适配器只观察并原样委派。"""
++        client = self.client_factory()
++        output = RuntimeRunner().execute(
++            RuntimeRequest(task_id=f"{job.job_id}:step:{step}", context_id=job.session_id,
++                           capability="combat-expert" if str(step).startswith("combat:") else "story-architecture-agent" if job.scope == "story" else "chapter-analysis-agent", domain="novel", model="writer-agent",
++                           messages=tuple(messages), input_refs=(("project_id", self.project_id), ("scope", job.scope), ("session_id", job.session_id), ("step", str(step))),
++                           temperature=0.78, max_tokens=5000),
++            CapturingModelAdapter(client, lambda actual: self._capture_story_step(job, capture.snapshot(job, actual), step)),
++        ).output
++        current = self.get(job.job_id)
++        snapshots = (*current.step_snapshots[:-1], {**current.step_snapshots[-1], "output": output})
++        self._set(job.job_id, step_snapshots=snapshots)
++        return output
++
++    def _capture_story_step(self, job, snapshot, step):
++        current = self.get(job.job_id)
++        self._set(job.job_id, context_snapshot=snapshot, step_snapshots=(*current.step_snapshots, {"step": step, **snapshot}))
+FILE: creative_os/story_architecture_agent.py
+"""前期讨论的有界工具循环；复用同一任务队列与单步模型执行入口。"""
+
+import json
+from dataclasses import asdict
+
+from creative_os.llm_writer import ModelMessage
+from creative_os.writer_context_sources import ContextCapture
+from creative_os.chapter_agent_tools import consult_combat, PROTOCOL as EXPERT_PROTOCOL
+
+
+MAX_STEPS = 6
+MAX_INPUT_CHARS = 100000
+PROTOCOL = """你是小说前期架构讨论 Agent。根据作者 Idea 和对话自行选择最有价值的讨论顺序，提出问题、备选或修订，不按固定问卷推进。
+故事核心、世界、人物、冲突、整体方向是可扩展内容块；未知事项放入 open_questions，不编造已经获作者认可的事实。
+候选仅是建议；正式设定以 confirmed 为准。聊天中的“可以”不等于确认。你无权确认、发布或写章节正文。
+每次只输出一个 JSON 对象，不使用 Markdown 代码围栏。合法 action 与唯一字段如下：
+{"action":"read_candidate"}
+{"action":"read_confirmed"}
+{"action":"propose_revision","expected_revision":0,"blocks":[{"key":"自定稳定键","title":"内容标题","text":"完整内容"}],"open_questions":["未定问题"]}
+propose_revision 是完整新候选，不是局部 patch；保留仍适用内容。expected_revision 必须匹配当前候选。
+{"action":"consult_combat"}
+{"action":"finish","reply":"给作者的自然语言说明、问题或备选"}
+{"action":"finish_turn","reply":"给作者的自然语言说明、问题或备选"}
+可连续调用多个工具，每步一个 JSON；需要作者补充时 finish_turn。不得输出 confirm/publish 等其它动作。"""
+
+
+def decode_action(text):
+    try:
+        action = json.loads(text)
+    except (TypeError, ValueError) as error:
+        raise ValueError("story_model_json_invalid") from error
+    fields = {"read_candidate": {"action"}, "read_confirmed": {"action"},
+              "propose_revision": {"action", "expected_revision", "blocks", "open_questions"},
+              "finish_turn": {"action", "reply"}, "finish": {"action", "reply"}, "consult_combat": {"action"}}
+    if not isinstance(action, dict) or not isinstance(action.get("action"), str) or action["action"] not in fields or set(action) != fields[action["action"]]:
+        raise ValueError("story_tool_not_allowed")
+    if action["action"] in {"finish_turn", "finish"} and (not isinstance(action["reply"], str) or not action["reply"].strip()):
+        raise ValueError("story_reply_invalid")
+    return action
+
+
+def run_story_turn(runtime, job):
+    runtime._set(job.job_id, status="thinking", message="正在结合 Idea、讨论历史和当前设定思考。")
+    history = runtime.conversations.conversation(None)["messages"]
+    # 历史含本轮原文；失败重试不会另造作者消息。
+    if job.main_input:
+        frozen = [ModelMessage(item["role"], item["content"]) for item in job.main_input]
+        messages, state_message = frozen[:-1], frozen[-1]
+        state = state_message.content.removeprefix("本步领域状态（候选不是正式事实）：\n")
+    else:
+        messages = [ModelMessage("system", PROTOCOL + "\n" + EXPERT_PROTOCOL)] + [ModelMessage(item["role"], item["content"]) for item in history]
+        view = runtime.story.view()
+        state = json.dumps({"project_id": runtime.project_id, "session_id": job.session_id, "candidate": view["candidate"], "confirmed": view["confirmed"]}, ensure_ascii=False)
+        state_message = ModelMessage("user", "本步领域状态（候选不是正式事实）：\n" + state)
+        runtime._set(job.job_id, main_input=tuple(asdict(item) for item in [*messages, state_message]))
+    trace = []
+    frozen_state = json.loads(state)
+    if job.requested_expert == "combat":
+        value = consult_combat(runtime, job, main_step=0)
+        trace.append({"step": 0, "input": {"action": "consult_combat"}, "result": value, "selection": "explicit"})
+        messages.append(ModelMessage("user", "专家工具结果：" + json.dumps(value, ensure_ascii=False)))
+        runtime._set(job.job_id, tool_trace=tuple(trace))
+    for step in range(1, MAX_STEPS + 1):
+        step_messages = [*messages, state_message]
+        if sum(len(message.content) for message in step_messages) > MAX_INPUT_CHARS:
+            raise ValueError("story_input_budget_exceeded_continue_with_shorter_context")
+        capture = ContextCapture()
+        capture.add("本步故事候选与正式设定", f"story-state:{runtime.project_id}:{step}", state, version=step, message_start=len("本步领域状态（候选不是正式事实）：\n"))
+        raw = runtime._execute_story_step(job, step_messages, capture, step)
+        action = decode_action(raw)
+        name = action["action"]
+        if name in {"finish_turn", "finish"}:
+            trace.append({"step": step, "input": action, "result": "finished"})
+            runtime._set(job.job_id, status="completed", message="本轮讨论已完成，候选可编辑；正式设定须作者明确确认。", tool_trace=tuple(trace), reply=action["reply"])
+            return
+        if name == "consult_combat":
+            result = consult_combat(runtime, job, main_step=step)
+        elif name == "read_candidate":
+            result = frozen_state["candidate"]
+        elif name == "read_confirmed":
+            result = frozen_state["confirmed"]
+        else:
+            result = runtime.story.propose(job.session_id, action["blocks"], action["open_questions"],
+                                           expected_revision=action["expected_revision"], actor="agent",
+                                           operation_id=f"agent:{job.job_id}:step:{step}")
+            frozen_state["candidate"] = result
+            state = json.dumps(frozen_state, ensure_ascii=False)
+            state_message = ModelMessage("user", "本步领域状态（候选不是正式事实）：\n" + state)
+        trace.append({"step": step, "input": action, "result": result})
+        runtime._set(job.job_id, tool_trace=tuple(trace), message=f"已执行 {name}，继续判断下一步。")
+        messages.extend([ModelMessage("assistant", raw), ModelMessage("user", "工具结果：" + json.dumps(result, ensure_ascii=False))])
+    runtime._set(job.job_id, status="completed", message="本轮工具步数已用完，可继续讨论；已有候选已保留。", tool_trace=tuple(trace),
+                 reply="本轮已达到工具步数预算。已保留讨论记录和有效候选，请补充想法或发送“继续讨论”。")
+
+FILE: creative_os/agent_intent.py
+diff --git a/creative_os/agent_intent.py b/creative_os/agent_intent.py
+index eedb945..251f29c 100644
+--- a/creative_os/agent_intent.py
++++ b/creative_os/agent_intent.py
+@@ -7,25 +7,28 @@ from uuid import uuid4
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+ class AgentIntentRequest:
+     project_id: str
+     chapter_number: int
+     instruction: str
+     actor: str
++    requested_expert: str | None = None
+ 
+ 
+ @dataclass(frozen=True, slots=True)
+ class AgentIntentReceipt:
+     intent_id: str
+     status: str
+     message: str
+     instruction: str
+ 
+ 
+ def accept_agent_intent(request: AgentIntentRequest) -> AgentIntentReceipt:
++    if request.requested_expert is not None and request.requested_expert != "combat":
++        raise ValueError("requested_expert_invalid")
+     if not request.instruction.strip():
+         raise ValueError("instruction_required")
+     if request.chapter_number <= 0:
+         raise ValueError("chapter_number_invalid")
+     return AgentIntentReceipt(uuid4().hex, "accepted", "已受理，Agent 将自行选择必要上下文进行检查。", request.instruction.strip())
+ 
+FILE: creative_os/web_workspace.py
+diff --git a/creative_os/web_workspace.py b/creative_os/web_workspace.py
+index d62df83..f4ead44 100644
+--- a/creative_os/web_workspace.py
++++ b/creative_os/web_workspace.py
+@@ -1,29 +1,37 @@
+ from __future__ import annotations
+ 
+ import json
+ from pathlib import Path
+ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ from urllib.parse import parse_qs, urlsplit
+ import re
+ import difflib
++from dataclasses import asdict
+ 
+ from creative_os.web_command_dto import WebCommandValidationError, decode_web_command, encode_command_result
+ from creative_os.workspace_dto import encode_workspace_envelope
+ from creative_os.workspace_query import WorkspaceQueryAdapter
+ from creative_os.writer_draft_store import WriterDraftStore
+ from creative_os.writer_workspace_dto import WriterChapterEnvelope, WriterChapterDTO, WriterSourceDTO, WriterSourceRole, encode_writer_chapter
+ from creative_os.workspace_dto import Freshness
+ from creative_os.agent_intent import AgentIntentRequest, accept_agent_intent
+ from creative_os.agent_runtime import WriterAgentRuntime
++from creative_os.author_home_query import AuthorHomeQuery
++from creative_os.project_registry import select_project
++from creative_os.story_web import handle_story_get, handle_story_post
++from creative_os.bookshelf_web import handle_bookshelf_get, handle_bookshelf_post
++from creative_os.bookshelf_issues_web import handle_issues_get, handle_issues_post, guard_data_request
++from creative_os.workspace_command import CommandRejectedError, CommandResult, CommandStatus, CommandError
+ 
+ 
+ WEB_ROOT = Path(__file__).with_name("web")
+ MAX_COMMAND_BODY_BYTES = 16 * 1024
++MAX_STORY_COMMAND_BODY_BYTES = 200 * 1024
+ 
+ 
+ class WorkspaceWebAdapter:
+     """把统一查询 DTO 编码为只读 Web JSON，不读取权威来源。"""
+ 
+     def __init__(self, query: WorkspaceQueryAdapter, project_id: str) -> None:
+         if not project_id.strip():
+             raise ValueError("web_project_id_required")
+@@ -86,43 +94,60 @@ class WriterWebAdapter:
+             after = "" if selected is None else selected["content"]
+         else:
+             current = self.store.current(chapter_number)
+             after = current[1] if current is not None else before
+         diff = "".join(difflib.unified_diff(before.splitlines(True), after.splitlines(True), fromfile="原稿", tofile="新工作稿"))
+         return json.dumps({"chapter_number": chapter_number, "diff": diff}, ensure_ascii=False).encode("utf-8")
+ 
+     def read_context_summary(self) -> bytes:
+-        final_root = self.project_root / "production" / "final_chapters"
+-        formal_chapters = sorted(
+-            int(path.stem.split("_")[-1])
+-            for path in final_root.glob("chapter_*.md")
+-            if path.stem.split("_")[-1].isdigit()
+-        ) if final_root.exists() else []
+-        draft_count = len(tuple(self.store.root.glob("chapter_*.jsonl"))) if self.store.root.exists() else 0
+-        draft_chapters = sorted(int(path.stem.split("_")[-1]) for path in self.store.root.glob("chapter_*.jsonl")) if self.store.root.exists() else []
+-        payload = {"project_id": self.project_id, "formal_chapter_count": len(formal_chapters), "formal_chapters": formal_chapters, "working_draft_count": draft_count, "working_draft_chapters": draft_chapters}
++        summary = AuthorHomeQuery(self.project_root, self.project_id).read()
++        chapters = sorted(summary["chapters"], key=lambda item: item["chapter_number"])
++        payload = {"project_id": self.project_id, "title": summary["title"], "chapters": chapters,
++                   "formal_chapter_count": summary["counts"]["formal"], "formal_chapters": [item["chapter_number"] for item in chapters if item["has_formal"]],
++                   "working_draft_count": summary["counts"]["draft"], "working_draft_chapters": [item["chapter_number"] for item in chapters if item["has_draft"]],
++                   "candidate_count": summary["counts"]["candidate"], "notices": summary["notices"]}
+         return json.dumps(payload, ensure_ascii=False).encode("utf-8")
+ 
+ 
+ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
+     """单项目工作台 HTTP 边界，只开放显式声明的工作区命令。"""
+ 
+     workspace_adapter: WorkspaceWebAdapter
+     command_adapter: object | None = None
+     review_command_adapter: object | None = None
+     chapter_command_adapter: object | None = None
+     writer_command_adapter: object | None = None
+     writer_adapter: WriterWebAdapter | None = None
+     agent_runtime: WriterAgentRuntime | None = None
+     web_root: Path = WEB_ROOT
++    project_registry = None
++    routed_project_id = None
++    migration_service = None
++    migration_unavailable = False
++    default_project_id = None
++    default_project_root = None
+ 
+     def do_GET(self) -> None:  # noqa: N802
++        if handle_issues_get(self) or guard_data_request(self):
++            return
++        if handle_bookshelf_get(self):
++            return
++        if select_project(self) or handle_story_get(self):
++            return
+         request_url = urlsplit(self.path)
+         route = request_url.path
++        if route == "/api/author-home":
++            if self.writer_adapter is None:
++                self._send_text(503, "作者稿件摘要暂不可用")
++            else:
++                from creative_os.author_home_query import AuthorHomeQuery
++                query = AuthorHomeQuery(self.writer_adapter.project_root, self.writer_adapter.project_id)
++                self._send_json(200, query.read_json())
++            return
+         if route == "/api/workspace":
+             self._send_json(200, self.workspace_adapter.read_json())
+             return
+         match = re.fullmatch(r"/api/writer/chapters/(\d+)", route)
+         if match and self.writer_adapter is not None:
+             source = parse_qs(request_url.query).get("source", ["auto"])[0]
+             self._send_json(200, self.writer_adapter.read_chapter(int(match.group(1)), source=source))
+             return
+@@ -136,77 +161,160 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
+             self._send_json(200, self.writer_adapter.read_diff(int(match.group(1)), *(int(query[name][0]) if query.get(name) else None for name in ("from", "to"))))
+             return
+         if route == "/api/writer/context":
+             if self.writer_adapter is None:
+                 self._send_text(503, "Writer unavailable")
+             else:
+                 self._send_json(200, self.writer_adapter.read_context_summary())
+             return
++        match = re.fullmatch(r"/api/agent/conversations/([1-9]\d*)", route)
++        if match and self.agent_runtime is not None:
++            project_id = parse_qs(request_url.query).get("project_id", [None])[0]
++            if project_id != self.agent_runtime.project_id:
++                self._send_json(422, b'{"error":{"code":"project_scope_mismatch"}}')
++                return
++            session = self.agent_runtime.conversation(int(match.group(1)))
++            self._send_json(200, json.dumps(session, ensure_ascii=False).encode("utf-8"))
++            return
++        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)/context-sources", route)
++        if match and self.agent_runtime is not None:
++            try:
++                query = parse_qs(request_url.query, keep_blank_values=True)
++                required = {"project_id", "chapter_number", "session_id"}
++                if not required <= query.keys() or query.keys() - required - {"source_id"} or any(len(values) != 1 for values in query.values()):
++                    raise ValueError("context_query_invalid")
++                result = self.agent_runtime.context_sources.read(
++                    project_id=query["project_id"][0], chapter_number=int(query["chapter_number"][0]),
++                    session_id=query["session_id"][0], job_id=match.group(1),
++                    source_id=query.get("source_id", [None])[0])
++                self._send_json(200, json.dumps(result, ensure_ascii=False).encode("utf-8"))
++            except (ValueError, FileNotFoundError) as error:
++                self._agent_error(error)
++            return
+         match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)", route)
+         if match and self.agent_runtime is not None:
+             job = self.agent_runtime.get(match.group(1))
++            if self.routed_project_id and not self._matches_job_query(job, request_url.query):
++                self._agent_error(ValueError("session_scope_mismatch"))
++                return
+             if job is None:
+                 self._send_json(404, json.dumps({"error": {"message": "任务不存在。"}}, ensure_ascii=False).encode("utf-8"))
+             else:
+-                self._send_json(200, json.dumps({"job_id": job.job_id, "status": job.status, "message": job.message, "chapter_number": job.chapter_number, "draft_version": job.draft_version, "updated_at": job.updated_at, "mode": job.mode, "decision_id": job.decision_id, "target_words": job.target_words, "tolerance_words": job.tolerance_words, "min_words": job.min_words, "max_words": job.max_words, "actual_words": job.actual_words, "within_word_range": job.within_word_range}, ensure_ascii=False).encode("utf-8"))
++                public_job = self.agent_runtime.job_view(job)
++                public_job.pop("context_snapshot", None)
++                self._send_json(200, json.dumps(public_job, ensure_ascii=False).encode("utf-8"))
++            return
++        match = re.fullmatch(r"/api/agent/proposals/([a-z0-9-]+)", route)
++        if match and self.agent_runtime is not None:
++            try:
++                query = parse_qs(request_url.query)
++                proposal = self.agent_runtime.proposals.view(match.group(1))
++                if (query.get("project_id", [None])[0] != proposal["project_id"]
++                        or query.get("chapter_number", [None])[0] != str(proposal["chapter_number"])
++                        or query.get("session_id", [None])[0] != proposal["session_id"]):
++                    raise ValueError("proposal_scope_mismatch")
++                self._send_json(200, json.dumps(proposal, ensure_ascii=False).encode("utf-8"))
++            except (ValueError, FileNotFoundError) as error:
++                self._agent_error(error)
+             return
+         match = re.fullmatch(r"/api/agent/decisions/([a-z0-9-]+)", route)
+         if match and self.agent_runtime is not None:
+             try:
+-                self._send_json(200, json.dumps(self.agent_runtime.get_decision(match.group(1)), ensure_ascii=False).encode("utf-8"))
+-            except FileNotFoundError:
++                decision = self.agent_runtime.get_decision(match.group(1))
++                if self.routed_project_id:
++                    query = parse_qs(request_url.query)
++                    if query != {"project_id": [decision.get("project_id")], "chapter_number": [str(decision["target_chapter"])], "session_id": [decision.get("session_id")]}:
++                        raise ValueError("session_scope_mismatch")
++                self._send_json(200, json.dumps(decision, ensure_ascii=False).encode("utf-8"))
++            except (FileNotFoundError, ValueError):
+                 self._send_json(404, json.dumps({"error": {"message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"))
+             return
+         static_files = {
++            "/overview": ("author-home.html", "text/html; charset=utf-8"),
++            "/author-home.js": ("author-home.js", "text/javascript; charset=utf-8"),
++            "/author-home.css": ("author-home.css", "text/css; charset=utf-8"),
++            "/story": ("story.html", "text/html; charset=utf-8"),
++            "/story.js": ("story.js", "text/javascript; charset=utf-8"),
++            "/story.css": ("story.css", "text/css; charset=utf-8"),
++            "/project-scope.js": ("project-scope.js", "text/javascript; charset=utf-8"),
++            "/workspace-navigation.js": ("workspace-navigation.js", "text/javascript; charset=utf-8"),
+             "/": ("index.html", "text/html; charset=utf-8"),
+             "/app.js": ("app.js", "text/javascript; charset=utf-8"),
++            "/bookshelf-issues.js": ("bookshelf-issues.js", "text/javascript; charset=utf-8"),
+             "/styles.css": ("styles.css", "text/css; charset=utf-8"),
+             "/inspector": ("inspector.html", "text/html; charset=utf-8"),
+             "/inspector.js": ("inspector.js", "text/javascript; charset=utf-8"),
+             "/writer": ("writer.html", "text/html; charset=utf-8"),
+             "/writer.js": ("writer.js", "text/javascript; charset=utf-8"),
++            "/writer-agent.js": ("writer-agent.js", "text/javascript; charset=utf-8"),
++            "/writer-agent-progress.js": ("writer-agent-progress.js", "text/javascript; charset=utf-8"),
++            "/writer-lessons.js": ("writer-lessons.js", "text/javascript; charset=utf-8"),
++            "/writer-sources.js": ("writer-sources.js", "text/javascript; charset=utf-8"),
+             "/writer.css": ("writer.css", "text/css; charset=utf-8"),
+         }
+         file_info = static_files.get(route)
+         if file_info is None:
+             self._send_text(404, "Not found")
+             return
+         filename, content_type = file_info
+         try:
+             content = (self.web_root / filename).read_bytes()
+         except OSError:
+             self._send_text(500, "Web asset unavailable")
+             return
+         self.send_response(200)
+         self.send_header("Content-Type", content_type)
+         self.send_header("Content-Length", str(len(content)))
+         self.end_headers()
+-        self.wfile.write(content)
++        try:
++            self.wfile.write(content)
++        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
++            # 页面跳转会取消旧查询；迟到响应不再向已断开的连接写入。
++            return
+ 
+     def do_POST(self) -> None:  # noqa: N802
++        if handle_issues_post(self) or guard_data_request(self, writable=True):
++            return
++        if handle_bookshelf_post(self):
++            return
++        if select_project(self) or handle_story_post(self):
++            return
+         route = urlsplit(self.path).path
++        if route in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate"}:
++            self._handle_command(self.agent_runtime.story_commands if self.agent_runtime else None)
++            return
+         if route == "/api/commands/refresh-workspace":
+             self._handle_command(self.command_adapter)
+             return
+         if route == "/api/commands/accept-review-issue":
+             self._handle_command(self.review_command_adapter or self.command_adapter)
+             return
+         if route == "/api/commands/start-chapter-run":
+             self._handle_command(self.chapter_command_adapter)
+             return
+         if route in {"/api/commands/save-writer-draft", "/api/commands/restore-writer-version", "/api/commands/publish-writer-draft", "/api/commands/open-writer-chapter"}:
+             self._handle_command(self.writer_command_adapter)
+             return
++        if route in {"/api/commands/review-writer-proposal", "/api/commands/reconcile-writer-proposal"}:
++            self._handle_command(self.agent_runtime.proposal_commands if self.agent_runtime else None)
++            return
++        if route == "/api/commands/manage-writer-lesson":
++            self._handle_command(self.agent_runtime.lesson_commands if self.agent_runtime else None)
++            return
+         if route == "/api/agent/intents":
+             self._handle_agent_intent()
+             return
+         if route == "/api/agent/decisions/act":
+             self._handle_agent_decision_act()
+             return
++        match = re.fullmatch(r"/api/agent/jobs/([a-z0-9-]+)/retry", route)
++        if match:
++            self._handle_agent_retry(match.group(1))
++            return
+         if route == "/api/workspace":
+             self.send_response(405)
+             self.send_header("Allow", "GET")
+             self.send_header("Content-Length", "0")
+             self.end_headers()
+             return
+         self._send_text(404, "Not found")
+ 
+@@ -220,72 +328,159 @@ class WorkspaceRequestHandler(BaseHTTPRequestHandler):
+             return
+         try:
+             length = int(self.headers.get("Content-Length", "-1"))
+         except ValueError:
+             length = -1
+         if length < 0:
+             self._send_json(400, '{"error":{"code":"invalid_content_length","message":"请求体长度无效。"}}'.encode("utf-8"), close=True)
+             return
+-        if length > MAX_COMMAND_BODY_BYTES:
++        limit = MAX_STORY_COMMAND_BODY_BYTES if urlsplit(self.path).path in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate"} else MAX_COMMAND_BODY_BYTES
++        if length > limit:
+             self._send_json(413, '{"error":{"code":"payload_too_large","message":"命令请求体超过大小限制。"}}'.encode("utf-8"), close=True)
+             return
+         try:
+             raw = json.loads(self.rfile.read(length).decode("utf-8"))
+             request = decode_web_command(raw)
+         except (UnicodeDecodeError, json.JSONDecodeError):
+             self._send_json(400, '{"error":{"code":"invalid_json","message":"请求体不是有效 JSON。"}}'.encode("utf-8"), close=True)
+             return
+         except WebCommandValidationError as error:
+             body = json.dumps({"error": {"code": error.code, "message": error.message}}, ensure_ascii=False).encode("utf-8")
+             self._send_json(400, body, close=True)
+             return
++        if self.routed_project_id:
++            try:
++                command_adapter.validate_request(request)
++            except CommandRejectedError as error:
++                result = CommandResult(CommandStatus.REJECTED, request.command_id, request.request_id,
++                                       CommandError(error.code, error.message, error.retryable))
++                self._send_json(_command_http_status(result), json.dumps(encode_command_result(result), ensure_ascii=False).encode("utf-8"), close=True)
++                return
++            except (ValueError, TypeError, KeyError, AttributeError):
++                result = CommandResult(CommandStatus.REJECTED, request.command_id, request.request_id,
++                                       CommandError("validation_failed", "命令参数无效。", False))
++                self._send_json(422, json.dumps(encode_command_result(result), ensure_ascii=False).encode("utf-8"), close=True)
++                return
++            self._activate_project()
++            command_adapter = self._route_command_adapter()
+         result = command_adapter.execute(request)
+         status = _command_http_status(result)
+         self._send_json(status, json.dumps(encode_command_result(result), ensure_ascii=False, sort_keys=True).encode("utf-8"), close=True)
+ 
++    def _activate_project(self):
++        """仅在完整预检后装配可写对象；装配本身不恢复任何中断任务。"""
++        if self.routed_project_id:
++            entry = self.project_registry.get(self.routed_project_id, writable=True)
++            for key, value in entry.items():
++                setattr(self, key, value)
++        return self.agent_runtime
++
++    def _route_command_adapter(self):
++        route = urlsplit(self.path).path
++        if route in {"/api/commands/edit-story-candidate", "/api/commands/confirm-story-candidate"}:
++            return self.agent_runtime.story_commands
++        if route in {"/api/commands/review-writer-proposal", "/api/commands/reconcile-writer-proposal"}:
++            return self.agent_runtime.proposal_commands
++        if route == "/api/commands/manage-writer-lesson":
++            return self.agent_runtime.lesson_commands
++        if route == "/api/commands/refresh-workspace":
++            return self.command_adapter
++        if route == "/api/commands/accept-review-issue":
++            return self.review_command_adapter or self.command_adapter
++        if route == "/api/commands/start-chapter-run":
++            return self.chapter_command_adapter
++        return self.writer_command_adapter
++
++    def _read_agent_request(self) -> dict:
++        if self.agent_runtime is None:
++            raise ValueError("agent_runtime_unavailable")
++        length = int(self.headers.get("Content-Length", "-1"))
++        if self.headers.get_content_type() != "application/json" or not 0 < length <= MAX_COMMAND_BODY_BYTES:
++            raise ValueError("agent_request_invalid")
++        raw = json.loads(self.rfile.read(length).decode("utf-8"))
++        if not isinstance(raw, dict) or raw.get("project_id") != self.agent_runtime.project_id:
++            raise ValueError("project_scope_mismatch")
++        if type(raw.get("chapter_number")) is not int or raw["chapter_number"] <= 0:
++            raise ValueError("chapter_number_invalid")
++        if self.routed_project_id and raw.get("session_id") != self.agent_runtime.conversations.read(raw["chapter_number"])["session_id"]:
++            raise ValueError("session_scope_mismatch")
++        return raw
++
++    def _matches_job_query(self, job, query_text):
++        query = parse_qs(query_text, keep_blank_values=True)
++        if job is None:
++            return False
++        if job.scope == "story":
++            return query == {"project_id": [job.project_id], "scope": ["story"], "session_id": [job.session_id]}
++        return query == {"project_id": [job.project_id], "chapter_number": [str(job.chapter_number)], "session_id": [job.session_id]}
++
++    def _agent_error(self, error: Exception) -> None:
++        code = str(error) if isinstance(error, ValueError) else "agent_request_invalid"
++        status = 503 if code == "agent_runtime_unavailable" else 422
++        self._send_json(status, json.dumps({"error": {"code": code, "message": f"Agent 请求未受理：{code}"}}, ensure_ascii=False).encode("utf-8"), close=True)
++
+     def _handle_agent_intent(self) -> None:
+         try:
+-            length = int(self.headers.get("Content-Length", "-1"))
+-            raw = json.loads(self.rfile.read(length).decode("utf-8"))
+-            request = AgentIntentRequest(raw["project_id"], int(raw["chapter_number"]), raw["instruction"], raw.get("actor", "作者"))
++            raw = self._read_agent_request()
++            request = AgentIntentRequest(raw["project_id"], raw["chapter_number"], raw["instruction"], raw.get("actor", "作者"), raw.get("requested_expert"))
+             receipt = accept_agent_intent(request)
+             if self.agent_runtime is None:
+                 self._send_json(503, json.dumps({"error": {"code": "agent_runtime_unavailable", "message": "Agent Runtime 尚未启动。"}}, ensure_ascii=False).encode("utf-8"), close=True)
+                 return
+-            job = self.agent_runtime.submit(receipt.instruction, request.chapter_number, request.actor, target_words=int(raw.get("target_words", 4500)), tolerance_words=int(raw.get("tolerance_words", 300)))
+-            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, "job_id": job.job_id, "status": job.status, "message": job.message, "instruction": receipt.instruction}, ensure_ascii=False).encode("utf-8"), close=True)
+-        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+-            self._send_json(422, '{"error":{"code":"agent_intent_invalid","message":"Agent 检查请求无效。"}}'.encode("utf-8"), close=True)
++            options = {"target_words": raw.get("target_words", 4500), "tolerance_words": raw.get("tolerance_words", 300), "session_id": raw.get("session_id"), "mode": raw.get("mode", "analyze"), "requested_expert": request.requested_expert}
++            self.agent_runtime.validate_submit(receipt.instruction, request.chapter_number, request.actor, **options)
++            job = self._activate_project().submit(receipt.instruction, request.chapter_number, request.actor, **options)
++            self._send_json(202, json.dumps({"intent_id": receipt.intent_id, **{key: value for key, value in asdict(job).items() if key != "context_snapshot"}}, ensure_ascii=False).encode("utf-8"), close=True)
++        except (KeyError, TypeError, ValueError, AttributeError) as error:
++            self._agent_error(error)
+ 
+     def _handle_agent_decision_act(self) -> None:
+         try:
+-            length = int(self.headers.get("Content-Length", "-1"))
+-            raw = json.loads(self.rfile.read(length).decode("utf-8"))
+-            if self.agent_runtime is None:
+-                raise RuntimeError("agent_runtime_unavailable")
+-            job = self.agent_runtime.submit_from_decision(str(raw["decision_id"]), str(raw.get("actor", "作者")), str(raw.get("feedback", "")))
+-            self._send_json(202, json.dumps({"job_id": job.job_id, "status": job.status, "mode": job.mode}, ensure_ascii=False).encode("utf-8"), close=True)
+-        except ValueError as error:
+-            self._send_json(404, json.dumps({"error": {"code": str(error), "message": "创作决策不存在。"}}, ensure_ascii=False).encode("utf-8"), close=True)
+-        except (KeyError, TypeError, json.JSONDecodeError):
+-            self._send_json(422, '{"error":{"code":"decision_invalid","message":"创作决策请求无效。"}}'.encode("utf-8"), close=True)
++            raw = self._read_agent_request()
++            decision = self.agent_runtime.get_decision(str(raw["decision_id"]))
++            if decision["target_chapter"] != raw["chapter_number"] or decision.get("session_id") != raw.get("session_id"):
++                raise ValueError("session_scope_mismatch")
++            actor, feedback = raw.get("actor", "作者"), raw.get("feedback", "")
++            if not isinstance(feedback, str):
++                raise ValueError("feedback_invalid")
++            self.agent_runtime.validate_submit(decision.get("analysis") or decision.get("intent") or "执行已确认决策", raw["chapter_number"], actor,
++                                               target_words=int(decision.get("target_words", 4500)), tolerance_words=int(decision.get("tolerance_words", 300)), session_id=raw.get("session_id"), mode="act")
++            job = self._activate_project().submit_from_decision(str(raw["decision_id"]), actor, feedback)
++            self._send_json(202, json.dumps({key: value for key, value in asdict(job).items() if key != "context_snapshot"}, ensure_ascii=False).encode("utf-8"), close=True)
++        except (KeyError, TypeError, ValueError, FileNotFoundError) as error:
++            self._agent_error(error)
++
++    def _handle_agent_retry(self, job_id: str) -> None:
++        try:
++            raw = self._read_agent_request()
++            self.agent_runtime.validate_retry(job_id, chapter_number=raw["chapter_number"], session_id=raw["session_id"])
++            job = self._activate_project().retry(job_id, chapter_number=raw["chapter_number"], session_id=raw["session_id"])
++            self._send_json(202, json.dumps({key: value for key, value in asdict(job).items() if key != "context_snapshot"}, ensure_ascii=False).encode("utf-8"), close=True)
++        except (KeyError, TypeError, ValueError) as error:
++            self._agent_error(error)
+ 
+     def log_message(self, _format: str, *_args: object) -> None:
+         return
+ 
+     def _send_json(self, status: int, content: bytes, *, close: bool = False) -> None:
++        # 读到一半目录完成移动时，不能把旧根的空结果作为正常数据发送。
++        if getattr(self, "command", None) == "GET" and status < 400 and guard_data_request(self):
++            return
+         self.send_response(status)
+         self.send_header("Content-Type", "application/json; charset=utf-8")
+         self.send_header("Cache-Control", "no-store")
+         if close:
+             self.send_header("Connection", "close")
+         self.send_header("Content-Length", str(len(content)))
+         self.end_headers()
+-        self.wfile.write(content)
++        try:
++            self.wfile.write(content)
++        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
++            return
+ 
+     def _send_text(self, status: int, content: str) -> None:
+         encoded = content.encode("utf-8")
+         self.send_response(status)
+         self.send_header("Content-Type", "text/plain; charset=utf-8")
+         self.send_header("Content-Length", str(len(encoded)))
+         self.end_headers()
+         self.wfile.write(encoded)
+@@ -295,42 +490,61 @@ def create_server(
+     adapter: WorkspaceWebAdapter,
+     *,
+     command_adapter: object | None = None,
+     review_command_adapter: object | None = None,
+     chapter_command_adapter: object | None = None,
+     writer_command_adapter: object | None = None,
+     writer_adapter: WriterWebAdapter | None = None,
+     agent_runtime: WriterAgentRuntime | None = None,
++    project_registry=None,
+     host: str = "127.0.0.1",
+     port: int = 8765,
+     web_root: str | Path = WEB_ROOT,
+ ) -> ThreadingHTTPServer:
+     """创建绑定单个查询适配器的 HTTP 服务，不组装或读取底层来源。"""
+     if not isinstance(adapter, WorkspaceWebAdapter):
+         raise TypeError("workspace_web_adapter_required")
+     asset_root = Path(web_root)
+     bound_command_adapter = command_adapter
+     bound_review_command_adapter = review_command_adapter
+     bound_chapter_command_adapter = chapter_command_adapter
+     bound_writer_command_adapter = writer_command_adapter
+     bound_writer_adapter = writer_adapter
+     bound_agent_runtime = agent_runtime
++    if project_registry is not None and agent_runtime is not None:
++        project_registry.register(agent_runtime.project_id, {
++            "workspace_adapter": adapter, "command_adapter": command_adapter,
++            "review_command_adapter": review_command_adapter, "chapter_command_adapter": chapter_command_adapter,
++            "writer_command_adapter": writer_command_adapter, "writer_adapter": writer_adapter, "agent_runtime": agent_runtime,
++        })
+ 
+     class BoundWorkspaceRequestHandler(WorkspaceRequestHandler):
+         workspace_adapter = adapter
+         command_adapter = bound_command_adapter
+         review_command_adapter = bound_review_command_adapter
+         chapter_command_adapter = bound_chapter_command_adapter
+         writer_command_adapter = bound_writer_command_adapter
+         writer_adapter = bound_writer_adapter
+         agent_runtime = bound_agent_runtime
+         web_root = asset_root
+ 
+     server = ThreadingHTTPServer((host, port), BoundWorkspaceRequestHandler)
++    BoundWorkspaceRequestHandler.project_registry = project_registry
++    BoundWorkspaceRequestHandler.default_project_id = getattr(writer_adapter, "project_id", None) or getattr(agent_runtime, "project_id", None)
++    BoundWorkspaceRequestHandler.default_project_root = getattr(writer_adapter, "project_root", None) or getattr(agent_runtime, "root", None)
++    if project_registry is not None:
++        from creative_os.project_migration import ProjectMigrationService
++        try:
++            BoundWorkspaceRequestHandler.migration_service = ProjectMigrationService(
++                project_registry.root, project_registry.root.parent / ".backup/project-directory-migrations", project_registry,
++                default_project_id=BoundWorkspaceRequestHandler.default_project_id,
++                default_root=BoundWorkspaceRequestHandler.default_project_root)
++        except (OSError, ValueError, RuntimeError):
++            BoundWorkspaceRequestHandler.migration_unavailable = True
+     server.daemon_threads = True
+     return server
+ 
+ 
+ def _command_http_status(result: object) -> int:
+     status = getattr(getattr(result, "status", None), "value", None)
+     if status == "accepted":
+         return 202
+FILE: creative_os/story_web.py
+"""故事 HTTP 契约；Query 不落盘，显式编辑与确认经过 CommandBoundary。"""
+
+from dataclasses import asdict
+import json
+from urllib.parse import parse_qs, urlsplit
+
+from creative_os.story_architecture_store import StoryArchitectureStore
+from creative_os.agent_conversation_store import AgentConversationStore
+from creative_os.project_directory import read_project_metadata, validated_project
+
+
+def send(handler, status, value):
+    handler._send_json(status, json.dumps(value, ensure_ascii=False).encode("utf-8"), close=True)
+
+
+def read_body(handler, *, max_bytes=100000):
+    length = int(handler.headers.get("Content-Length", "-1"))
+    if handler.headers.get_content_type() != "application/json" or not 0 < length <= max_bytes:
+        raise ValueError("story_request_invalid")
+    value = json.loads(handler.rfile.read(length).decode("utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("story_request_invalid")
+    return value
+
+
+def handle_story_get(handler):
+    request = urlsplit(handler.path)
+    if request.path not in {"/api/story", "/api/story/session", "/api/story/sources"}:
+        return False
+    try:
+        runtime = handler.agent_runtime
+        query = parse_qs(request.query, keep_blank_values=True)
+        if request.path == "/api/story/sources":
+            fields = {"project_id", "scope", "session_id", "job_id", "step"}
+            if runtime is None or set(query) != fields or any(len(values) != 1 for values in query.values()):
+                raise ValueError("story_scope_mismatch")
+            if {key: query[key][0] for key in ("project_id", "scope", "session_id")} != {"project_id": runtime.project_id, "scope": "story", "session_id": runtime.story.session_id}:
+                raise ValueError("story_scope_mismatch")
+            job = runtime.get(query["job_id"][0])
+            if job is None or job.scope != "story" or job.session_id != query["session_id"][0]:
+                raise ValueError("story_scope_mismatch")
+            step = query["step"][0]
+            snapshot = next((item for item in job.step_snapshots if str(item["step"]) == step), None)
+            if snapshot is None:
+                raise ValueError("story_step_not_found")
+            send(handler, 200, snapshot)
+            return True
+        if request.path == "/api/story/session":
+            if runtime is None or query != {"project_id": [runtime.project_id], "scope": ["story"]}:
+                raise ValueError("story_scope_mismatch")
+            metadata = runtime.root / "project.json"
+            data = json.loads(metadata.read_text(encoding="utf-8")) if metadata.exists() else {}
+            send(handler, 200, {"project_id": runtime.project_id, "scope": "story", "session_id": runtime.story.session_id,
+                                "idea": data.get("idea", ""), "title": data.get("title") or data.get("name") or runtime.project_id})
+            return True
+        if runtime is None or set(query) != {"project_id", "scope", "session_id"} or any(len(values) != 1 for values in query.values()):
+            raise ValueError("story_scope_mismatch")
+        view = runtime.story.view()
+        if {key: values[0] for key, values in query.items()} != {key: view[key] for key in ("project_id", "scope", "session_id")}:
+            raise ValueError("story_scope_mismatch")
+        session = runtime.conversation(None)
+        # 完整 step 快照不在轮询中返回；按指定 job 读取，避免正文反复传输。
+        for job in session["jobs"]:
+            job.pop("context_snapshot", None)
+            job.pop("step_snapshots", None)
+        send(handler, 200, {**session, **view})
+    except (ValueError, OSError, TypeError) as error:
+        handler._agent_error(error)
+    return True
+
+
+def handle_story_post(handler):
+    route = urlsplit(handler.path).path
+    if route == "/api/projects/create":
+        try:
+            if handler.project_registry is None:
+                raise ValueError("project_creation_unavailable")
+            raw = read_body(handler)
+            if set(raw) != {"title", "idea", "operation_id"} or not isinstance(raw["operation_id"], str) or not raw["operation_id"].strip():
+                raise ValueError("project_creation_invalid")
+            root = handler.project_registry.creator.create(raw["title"], raw["idea"], operation_id=raw["operation_id"])
+            project_id = read_project_metadata(handler.project_registry.root, root)["id"]
+            if validated_project(handler.project_registry.root, project_id)[0] != root:
+                raise ValueError("project_scope_mismatch")
+            view = StoryArchitectureStore(root, project_id).view()
+            send(handler, 201, {"project_id": project_id, "scope": "story", "session_id": view["session_id"]})
+        except (ValueError, OSError, TypeError, KeyError) as error:
+            handler._agent_error(ValueError(str(error)))
+        return True
+    if route not in {"/api/story/intents", "/api/story/retry", "/api/story/start-first-chapter"}:
+        return False
+    try:
+        raw = read_body(handler)
+        runtime = handler.agent_runtime
+        fields = {"project_id", "scope", "session_id"}
+        extras = {"instruction"} if route.endswith("intents") else {"job_id"} if route.endswith("retry") else {"confirmed_version", "confirmed_hash", "target_words", "tolerance_words"}
+        allowed_fields = [fields | extras]
+        if route.endswith("intents"):
+            allowed_fields.append(fields | extras | {"requested_expert"})
+        if runtime is None or set(raw) not in allowed_fields:
+            raise ValueError("story_request_invalid")
+        if {key: raw[key] for key in fields} != {"project_id": runtime.project_id, "scope": "story", "session_id": runtime.story.session_id}:
+            raise ValueError("story_scope_mismatch")
+        if route.endswith("intents"):
+            runtime.validate_submit(raw["instruction"], None, session_id=raw["session_id"], requested_expert=raw.get("requested_expert"))
+            job = handler._activate_project().submit(raw["instruction"], None, session_id=raw["session_id"], requested_expert=raw.get("requested_expert"))
+        elif route.endswith("retry"):
+            runtime.validate_retry(raw["job_id"], chapter_number=None, session_id=raw["session_id"])
+            job = handler._activate_project().retry(raw["job_id"], chapter_number=None, session_id=raw["session_id"])
+        else:
+            confirmed = runtime.story.view()["confirmed"]
+            if confirmed is None:
+                raise ValueError("story_confirmation_required")
+            if type(raw["confirmed_version"]) is not int or (confirmed["version"], confirmed["hash"]) != (raw["confirmed_version"], raw["confirmed_hash"]):
+                raise ValueError("confirmed_conflict")
+            instruction = "依据作者已确认的故事设定创作第一章，建立人物、开篇场景与核心矛盾。"
+            runtime.validate_submit(instruction, 1, mode="act", target_words=raw["target_words"], tolerance_words=raw["tolerance_words"])
+            runtime = handler._activate_project()
+            from creative_os.domains.project_authority import project_authority_lock
+            with project_authority_lock(runtime.root):
+                confirmed = runtime.story.view()["confirmed"]
+                if confirmed is None:
+                    raise ValueError("story_confirmation_required")
+                if type(raw["confirmed_version"]) is not int or (confirmed["version"], confirmed["hash"]) != (raw["confirmed_version"], raw["confirmed_hash"]):
+                    raise ValueError("confirmed_conflict")
+                job = runtime.submit(instruction, 1, mode="act", target_words=raw["target_words"], tolerance_words=raw["tolerance_words"])
+        public = asdict(job)
+        for key in ("context_snapshot", "step_snapshots"):
+            public.pop(key, None)
+        send(handler, 202, public)
+    except (ValueError, OSError, TypeError, KeyError) as error:
+        handler._agent_error(error)
+    return True
+
+FILE: tests/test_combat_agent.py
+"""战斗委派只用临时书与 Fake；验证实际入模、只读权限及冻结重试。"""
+
+from concurrent.futures import CancelledError
+from copy import deepcopy
+from dataclasses import asdict
+import importlib
+import json
+
+import pytest
+
+from creative_os.agent_runtime import WriterAgentRuntime
+from creative_os.combat_context import build_combat_context, read_combat_source
+from creative_os.combat_model import CombatScope
+from test_agent_conversation import finish
+from test_combat_context import book, write, tree
+
+
+def expert_api():
+    try:
+        return importlib.import_module("creative_os.combat_agent").run_combat_expert
+    except ModuleNotFoundError:
+        pytest.fail("战斗专家工具循环尚未实现")
+
+
+def conclusion(verdict="noncombat", refs=(), reply="选择谈判冲突，保留技术代价。"):
+    return {"action": "finish", "verdict": verdict, "reply": reply, "alternatives": [],
+            "foreshadowing": [], "evidence_refs": list(refs), "unknowns": []}
+
+
+def request(root):
+    return build_combat_context(root, "book", CombatScope((2,), "研究本章冲突"),
+                                task_id="job-1", session_id="session-1", instruction="检查本章")
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_expert_selects_read_order_and_evidence_only_from_actual_reads(tmp_path, reverse):
+    root = book(tmp_path)
+    write(root, "production/final_chapters/chapter_001.md", "邻章谈判")
+    write(root, "production/final_chapters/chapter_002.md", "本章追逐")
+    frozen = request(root)
+    sources = [item for item in frozen.sources if item.get("text")]
+    if reverse:
+        sources.reverse()
+    actions = iter([*({"action": "read_source", "source_id": item["source_id"]} for item in sources),
+                    conclusion("setup", [item["source_id"] for item in sources], sources[0]["text"])])
+    inputs = []
+
+    def execute(messages, **kwargs):
+        inputs.append(deepcopy(messages))
+        return json.dumps(next(actions), ensure_ascii=False)
+
+    before = tree(root)
+    untouched = asdict(frozen)
+    result = expert_api()(frozen, execute_step=execute, read_source=read_combat_source)
+    assert result.reply == ("邻章谈判" if reverse else "本章追逐")
+    assert result.evidence_refs == tuple(item["source_id"] for item in sources)
+    assert result.project_id == "book" and result.job_id == "job-1"
+    assert result.result_id and asdict(frozen) == untouched and tree(root) == before
+    assert sources[0]["text"] not in inputs[0][-1].content
+    assert sources[0]["text"] in inputs[1][-1].content
+
+
+@pytest.mark.parametrize("verdict", ["noncombat", "insufficient"])
+def test_expert_legal_free_text_verdicts(tmp_path, verdict):
+    result = expert_api()(request(book(tmp_path)), execute_step=lambda *a, **k: json.dumps(conclusion(verdict)),
+                          read_source=read_combat_source)
+    assert result.verdict == verdict and result.reply == "选择谈判冲突，保留技术代价。"
+
+
+@pytest.mark.parametrize("action", [{"action": "confirm"}, {"action": "publish"},
+    {"action": "consult_combat"}, {"action": "read_source", "path": "../other"},
+    {"action": "read_source", "source_id": "../../project.json"},
+    {**conclusion(), "project_id": "other"}, conclusion(refs=["not-read"])])
+def test_expert_rejects_authority_path_recursion_and_unread_refs(tmp_path, action):
+    root = book(tmp_path)
+    before = tree(root)
+    with pytest.raises(ValueError):
+        expert_api()(request(root), execute_step=lambda *a, **k: json.dumps(action), read_source=read_combat_source)
+    assert tree(root) == before
+
+
+def test_expert_budget_returns_unknown_without_invented_conclusion(tmp_path):
+    frozen = request(book(tmp_path))
+    source_id = frozen.sources[0]["source_id"]
+    result = expert_api()(frozen, execute_step=lambda *a, **k: json.dumps({"action": "read_source", "source_id": source_id}),
+                          read_source=read_combat_source)
+    assert result.verdict == "insufficient" and result.unknowns
+    assert "预算" in result.reply and result.evidence_refs == ()
+
+
+class DelegationClient:
+    def __init__(self, *, autonomous=False, error=None):
+        self.autonomous, self.error, self.calls = autonomous, error, []
+
+    def complete(self, messages, **kwargs):
+        self.calls.append((deepcopy(messages), kwargs))
+        expert = "你是战斗编排专家" in messages[0].content
+        if expert:
+            if self.error:
+                raise self.error
+            return json.dumps(conclusion("insufficient"), ensure_ascii=False)
+        consulted = any("combat-result-" in item.content for item in messages)
+        return json.dumps({"action": "consult_combat"} if self.autonomous and not consulted
+                          else {"action": "finish", "reply": "讨论结果"}, ensure_ascii=False)
+
+
+@pytest.mark.parametrize("chapter", [None, 2])
+@pytest.mark.parametrize("selection", ["autonomous", "explicit", "none"])
+def test_main_autonomous_explicit_and_no_delegation_capture_every_step(tmp_path, chapter, selection):
+    root = book(tmp_path)
+    client = DelegationClient(autonomous=selection == "autonomous")
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        options = {"requested_expert": "combat"} if selection == "explicit" else {}
+        # 相同战斗字词，默认是否调用由模型决策，不走关键词分支。
+        job = finish(runtime, runtime.submit("战斗技术与冲突讨论", chapter, **options))
+        assert job.status == "completed", job.error
+        results = job.combat_results
+        assert len(results) == (0 if selection == "none" else 1)
+        assert job.requested_expert == ("combat" if selection == "explicit" else None)
+        assert len(job.step_snapshots) == len(client.calls)
+        for snapshot, (messages, kwargs) in zip(job.step_snapshots, client.calls):
+            actual = [item["content_snapshot"] for item in snapshot["sources"] if item["source_ref"].startswith("message:")]
+            assert actual == [item.content for item in messages]
+            assert snapshot["output"] and kwargs["max_tokens"] == 5000
+        assert runtime.story.view()["candidate"] is None and runtime.store.current(2) is None
+        if results:
+            assert any(item["input"]["action"] == "consult_combat" for item in job.tool_trace)
+            assert results[0]["job_id"] == job.job_id
+    finally:
+        runtime._pool.shutdown()
+
+
+@pytest.mark.parametrize("error", [RuntimeError("provider failure"), CancelledError("cancelled")])
+def test_failure_and_cancel_never_create_candidate_or_draft(tmp_path, error):
+    root = book(tmp_path)
+    client = DelegationClient(error=error)
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        job = finish(runtime, runtime.submit("请专家看", None, requested_expert="combat"))
+        assert job.status == "failed" and job.retryable
+        assert runtime.story.view()["candidate"] is None and runtime.story.view()["confirmed"] is None
+        assert not list(root.rglob("*.md"))
+    finally:
+        runtime._pool.shutdown()
+
+
+def test_retry_uses_original_sources_after_live_change_and_restart(tmp_path):
+    root = book(tmp_path)
+    write(root, "production/final_chapters/chapter_002.md", "冻结旧稿")
+    client = DelegationClient(error=RuntimeError("retry me"))
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    failed = finish(runtime, runtime.submit("专家研究", 2, requested_expert="combat"))
+    runtime._pool.shutdown()
+    assert failed.status == "failed"
+    write(root, "production/final_chapters/chapter_002.md", "最新哨兵")
+    write(root, ".creative_os/writer/drafts/chapter_002.jsonl", "后来损坏的草稿 JSON，不应在冻结重试中读取")
+    client = DelegationClient()
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        retried = finish(runtime, runtime.retry(failed.job_id, chapter_number=2, session_id=failed.session_id))
+        assert retried.status == "completed", retried.error
+        assert retried.combat_context == failed.combat_context
+        assert "冻结旧稿" in json.dumps(retried.combat_context, ensure_ascii=False)
+        assert "最新哨兵" not in "\n".join(item.content for messages, _ in client.calls for item in messages)
+    finally:
+        runtime._pool.shutdown()
+
+
+def test_duplicate_project_identity_rejected_before_any_model(tmp_path):
+    root = book(tmp_path)
+    other = tmp_path / "alias"
+    other.mkdir()
+    write(other, "project.json", json.dumps({"id": "book"}))
+    client = DelegationClient()
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        with pytest.raises(ValueError):
+            runtime.submit("专家研究", None, requested_expert="combat")
+        assert client.calls == []
+    finally:
+        runtime._pool.shutdown()
+
+
+def test_large_context_does_not_break_ordinary_analysis_but_delegation_fails(tmp_path):
+    root = book(tmp_path)
+    write(root, "production/final_chapters/chapter_002.md", "文" * 12001)
+    client = DelegationClient()
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        ordinary = finish(runtime, runtime.submit("普通分析", 2))
+        assert ordinary.status == "completed", ordinary.error
+        delegated = finish(runtime, runtime.submit("专家分析", 2, requested_expert="combat"))
+        assert delegated.status == "failed" and "required_combat_context_budget_exceeded" in delegated.error
+        assert not delegated.combat_results and runtime.store.current(2) is None
+    finally:
+        runtime._pool.shutdown()
+
+
+def test_repeat_delegation_is_rejected_without_writes(tmp_path):
+    class RepeatClient(DelegationClient):
+        def complete(self, messages, **kwargs):
+            if "你是战斗编排专家" in messages[0].content:
+                return super().complete(messages, **kwargs)
+            return '{"action":"consult_combat"}'
+
+    root = book(tmp_path)
+    runtime = WriterAgentRuntime(root, "book", client_factory=RepeatClient)
+    try:
+        job = finish(runtime, runtime.submit("研究", None))
+        assert job.status == "failed" and job.error == "combat_delegation_limit"
+        assert len(job.combat_results) == 1 and runtime.story.view()["candidate"] is None
+    finally:
+        runtime._pool.shutdown()
+
+
+@pytest.mark.parametrize("limit", ["source", "total", "reads", "input"])
+def test_expert_each_budget_is_enforced(tmp_path, monkeypatch, limit):
+    from dataclasses import replace
+    expert = expert_api()
+    module = importlib.import_module("creative_os.combat_agent")
+    root = book(tmp_path)
+    write(root, "production/final_chapters/chapter_002.md", "证据")
+    frozen = request(root)
+    source_id = next(item["source_id"] for item in frozen.sources if item.get("text"))
+    if limit == "input":
+        frozen = replace(frozen, instruction="长" * 100001)
+    else:
+        monkeypatch.setattr(module, {"source": "MAX_SOURCE_CHARS", "total": "MAX_TOTAL_CHARS", "reads": "MAX_READS"}[limit], 0)
+    calls = []
+
+    def execute(*args, **kwargs):
+        calls.append(1)
+        return json.dumps({"action": "read_source", "source_id": source_id})
+
+    result = expert(frozen, execute_step=execute, read_source=read_combat_source)
+    assert result.verdict == "insufficient" and result.unknowns
+    assert result.evidence_refs == ()
+    if limit == "input":
+        assert calls == []
+
+
+def test_actual_read_body_and_runtime_records_are_captured(tmp_path, monkeypatch):
+    from creative_os.runtime.runner import RuntimeRunner
+    root = book(tmp_path)
+    write(root, "production/final_chapters/chapter_002.md", "只在读取后进入专家的哨兵")
+    records = []
+
+    class ReadingClient(DelegationClient):
+        def complete(self, messages, **kwargs):
+            if "你是战斗编排专家" not in messages[0].content:
+                return super().complete(messages, **kwargs)
+            self.calls.append((deepcopy(messages), kwargs))
+            header = json.loads(messages[1].content)
+            source_id = next(item["source_id"] for item in header["sources"] if item.get("usage") == "included")
+            return json.dumps({"action": "read_source", "source_id": source_id} if len(messages) == 2
+                              else conclusion("setup", [source_id]), ensure_ascii=False)
+
+    client = ReadingClient()
+    monkeypatch.setattr("creative_os.agent_runtime.RuntimeRunner", lambda: RuntimeRunner(record_sink=records.append))
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        job = finish(runtime, runtime.submit("分析", 2, requested_expert="combat"))
+        assert job.status == "completed", job.error
+        assert len(records) == 3 and all(record.status == "succeeded" for record in records)
+        assert [record.capability for record in records] == ["combat-expert", "combat-expert", "chapter-analysis-agent"]
+        expert_calls = [messages for messages, _ in client.calls if "你是战斗编排专家" in messages[0].content]
+        assert "只在读取后进入专家的哨兵" not in str(expert_calls[0])
+        assert "只在读取后进入专家的哨兵" in expert_calls[1][-1].content
+        assert job.combat_results[0]["evidence_refs"]
+        source = next(item for item in job.step_snapshots[1]["sources"] if item.get("reason") == "read")
+        assert source["hash"] and source["evidence_ref"] == job.combat_results[0]["evidence_refs"][0]
+        assert source["usage"] == "recorded"
+    finally:
+        runtime._pool.shutdown()
+
+
+@pytest.mark.parametrize("chapter", [None, 2])
+def test_requested_expert_travels_actual_http_routes(tmp_path, chapter):
+    from http.client import HTTPConnection
+    from threading import Thread
+    from creative_os.project_registry import ProjectRegistry
+    from creative_os.web_workspace import create_server
+    from test_story_http import EmptyWorkspace
+
+    book(tmp_path)
+    client = DelegationClient()
+    registry = ProjectRegistry(tmp_path, client_factory=lambda: client)
+    server = create_server(EmptyWorkspace(None, "none"), project_registry=registry, port=0)
+    worker = Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        runtime = registry.get("book")["agent_runtime"]
+        scope = {"scope": "story"} if chapter is None else {"chapter_number": chapter}
+        payload = {"project_id": "book", "session_id": runtime.conversations.read(chapter)["session_id"],
+                   **scope, "instruction": "研究", "requested_expert": "combat"}
+        path = "/p/book/api/story/intents" if chapter is None else "/p/book/api/agent/intents"
+        connection = HTTPConnection(*server.server_address, timeout=5)
+        connection.request("POST", path, json.dumps(payload), {"Content-Type": "application/json"})
+        response = connection.getresponse()
+        value = json.loads(response.read())
+        connection.close()
+        assert response.status == 202, value
+        assert value["requested_expert"] == "combat"
+        runtime = registry.get("book")["agent_runtime"]
+        job = finish(runtime, runtime.get(value["job_id"]))
+        assert job.status == "completed" and len(job.combat_results) == 1, job.error
+        if chapter is None:
+            from urllib.parse import urlencode
+            query = {"project_id": "book", "scope": "story", "session_id": job.session_id,
+                     "job_id": job.job_id, "step": job.step_snapshots[0]["step"]}
+            connection = HTTPConnection(*server.server_address, timeout=5)
+            connection.request("GET", "/p/book/api/story/sources?" + urlencode(query))
+            response = connection.getresponse()
+            snapshot = json.loads(response.read())
+            connection.close()
+            assert response.status == 200 and snapshot["output"], snapshot
+    finally:
+        server.shutdown(); server.server_close(); worker.join(); registry.close()
+
+
+def test_story_retry_read_tools_do_not_replace_frozen_setting(tmp_path):
+    from test_story_agent import ScriptClient
+    root = book(tmp_path)
+    client = ScriptClient([{"action": "read_confirmed"}, "坏包"])
+    runtime = WriterAgentRuntime(root, "book", client_factory=lambda: client)
+    try:
+        store = runtime.story
+        first = store.propose(store.session_id, [{"key": "world", "title": "世界", "text": "冻结设定"}], [],
+                              expected_revision=0, actor="作者", operation_id="first")
+        store.confirm(store.session_id, 1, first["hash"], expected_confirmed_version=0, actor="作者", operation_id="confirm1")
+        failed = finish(runtime, runtime.submit("继续讨论", None))
+        assert failed.status == "failed"
+        second = store.propose(store.session_id, [{"key": "world", "title": "世界", "text": "最新设定哨兵"}], [],
+                               expected_revision=1, actor="作者", operation_id="second")
+        store.confirm(store.session_id, 2, second["hash"], expected_confirmed_version=1, actor="作者", operation_id="confirm2")
+        client = ScriptClient([{"action": "read_confirmed"}, {"action": "finish", "reply": "旧材料重试"}])
+        runtime.client_factory = lambda: client
+        retried = finish(runtime, runtime.retry(failed.job_id, chapter_number=None, session_id=failed.session_id))
+        assert retried.status == "completed", retried.error
+        actual = "\n".join(item.content for messages in client.calls for item in messages)
+        assert "冻结设定" in actual and "最新设定哨兵" not in actual
+        assert store.view()["confirmed"]["version"] == 2
+    finally:
+        runtime._pool.shutdown()
+
+FILE: tests/test_writer_production_exit_architecture.py
+diff --git a/tests/test_writer_production_exit_architecture.py b/tests/test_writer_production_exit_architecture.py
+index 7cfd632..32be5db 100644
+--- a/tests/test_writer_production_exit_architecture.py
++++ b/tests/test_writer_production_exit_architecture.py
+@@ -6,68 +6,84 @@ from pathlib import Path
+ from types import SimpleNamespace
+ 
+ import pytest
+ 
+ from creative_os.domains.writer_admission import AdmittedContractProjection, WriterAdmissionError, WriterAdmissionToken
+ from creative_os.llm_writer import promote_llm_writer_pilot_to_final, run_llm_writer_pilot
+ from creative_os.novel_continuation_runner import PreparedWriterRun, continue_one_chapter, promote_passing_draft
+ from creative_os.domains.novel_continuation import ContinuationTask
++from writer_architecture_checks import module_name, qualified_definitions, signature, validate_transparent_delegate
+ 
+ 
+-MANIFEST = Path("tests/assets/writer_production_exits_v1.json")
++MANIFEST = Path("tests/assets/writer_production_exits_v4.json")
+ PUBLIC = {
+     "creative_os.novel_continuation_runner.continue_one_chapter",
+     "creative_os.novel_continuation_runner.promote_passing_draft",
+     "creative_os.llm_writer.run_llm_writer_pilot",
+     "creative_os.llm_writer.promote_llm_writer_pilot_to_final",
+ }
+ 
+ 
+ def _definitions(path):
+     tree = ast.parse(path.read_text(encoding="utf-8"))
+     return tree, {node.name: node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
+ 
+ 
+-def _signature(node):
+-    owner = "RuntimeRunner." if node.name == "execute" else ""
+-    positional = [arg.arg for arg in node.args.args]
+-    keyword = [arg.arg for arg in node.args.kwonlyargs]
+-    return f"{owner}{node.name}({','.join(positional)}" + (",*," + ",".join(keyword) if keyword else "") + ")"
+-
+-
+ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
+     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+-    assert len(manifest) == 9
++    assert len(manifest) == 14
+     assert {item["symbol"] for item in manifest if item["kind"].startswith("public_")} == PUBLIC
+     for item in manifest:
+-        _, functions = _definitions(Path(item["file"]))
+-        node = functions[item["symbol"].rsplit(".", 1)[-1]]
+-        assert _signature(node) == item["signature"]
++        tree, _ = _definitions(Path(item["file"]))
++        qualified_name = item["symbol"].removeprefix(module_name(item["file"]) + ".")
++        node = qualified_definitions(tree)[qualified_name]
++        assert signature(qualified_name, node) == item["signature"]
+         body = ast.unparse(node)
+         if item["kind"] == "model_client_sink":
+             assert any(isinstance(call.func, ast.Attribute) and call.func.attr == "complete"
+                        for call in ast.walk(node) if isinstance(call, ast.Call))
+         if item["kind"] == "final_chapter_write_sink":
+             assert "final_chapters" in body and ("write_text" in body or "_write_text" in body)
+         if item["kind"] == "human_approved_import_sink":
+             assert "approval.json" in body and "shutil.copy2" in body
++        if item["kind"] == "transparent_delegate":
++            assert item["business_entry"] == "creative_os.runtime.runner.RuntimeRunner.execute"
++            assert item["allowed_constructors"] == ["creative_os.agent_runtime.WriterAgentRuntime._run", "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"]
++        if item["kind"] == "controlled_model_step":
++            assert item["scopes"] == ["story", "chapter", "combat"]
++            assert item["max_steps"] == {"story": 6, "chapter": 6, "combat": 4}
++            assert not any(isinstance(node, (ast.For, ast.While, ast.AsyncFor)) for node in ast.walk(node))
++        if item["kind"] == "bounded_tool_loop":
++            assert item["model_entry"] == "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
++            assert item["max_steps"] == (4 if item["symbol"].endswith("run_combat_expert") else 6)
++    assert [item["symbol"] for item in manifest if item["kind"] == "model_client_sink"] == ["creative_os.runtime.runner.RuntimeRunner.execute"]
+ 
+     model_sinks = []
++    production_sources = {}
+     for path in Path("creative_os").rglob("*.py"):
+         tree, _ = _definitions(path)
++        production_sources[path.as_posix()] = path.read_text(encoding="utf-8")
++        qualified_names = {id(node): name for name, node in qualified_definitions(tree).items()}
+         parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+         for call in (node for node in ast.walk(tree) if isinstance(node, ast.Call)):
+             if (isinstance(call.func, ast.Attribute) and call.func.attr == "complete"
+                     and any(name in ast.unparse(call.func.value).lower() for name in ("client", "adapter"))):
+                 owner = parents.get(call)
+                 while owner is not None and not isinstance(owner, ast.FunctionDef):
+                     owner = parents.get(owner)
+-                model_sinks.append((path.as_posix(), owner.name))
+-    assert model_sinks == [("creative_os/runtime/runner.py", "execute")]
++                model_sinks.append((path.as_posix(), qualified_names[id(owner)]))
++    declared = [(item["file"], item["symbol"].removeprefix(module_name(item["file"]) + "."))
++                for item in manifest if item["kind"] in {"model_client_sink", "transparent_delegate"}]
++    assert sorted(model_sinks) == sorted(declared)
++    validate_transparent_delegate(production_sources)
++    import writer_architecture_checks
++    checker = getattr(writer_architecture_checks, "validate_combat_loops", None)
++    assert checker is not None, "有限专家循环架构契约尚未实现"
++    checker(production_sources)
+ 
+     promotion_defs = set()
+     promotion_calls = set()
+     for path in Path("creative_os").rglob("*.py"):
+         tree, functions = _definitions(path)
+         for name in functions:
+             if name.startswith(("promote_", "publish_")):
+                 promotion_defs.add(f"{path.with_suffix('').as_posix().replace('/', '.')}.{name}")
+@@ -133,16 +149,32 @@ def test_versioned_manifest_has_exact_ast_signatures_and_all_scanned_sinks():
+             if called not in allowed_internal_callers:
+                 continue
+             owner = parents.get(call)
+             while owner is not None and not isinstance(owner, ast.FunctionDef):
+                 owner = parents.get(owner)
+             assert owner.name == allowed_internal_callers[called]
+ 
+ 
++@pytest.mark.parametrize("path,change", [
++    ("creative_os/combat_agent.py", "while True:\n pass"),
++    ("creative_os/chapter_agent_tools.py", "client.complete(messages)"),
++    ("creative_os/combat_agent.py", "RuntimeRunner().execute(request, client)"),
++    ("creative_os/combat_agent.py", "from creative_os.writer_context_sources import CapturingModelAdapter as Proxy\nProxy(client, callback).complete(messages)"),
++])
++def test_expert_boundaries_reject_unbounded_loops_and_new_model_exits(path, change):
++    import writer_architecture_checks
++    checker = getattr(writer_architecture_checks, "validate_combat_loops", None)
++    assert checker is not None, "有限专家循环架构契约尚未实现"
++    sources = {file.as_posix(): file.read_text(encoding="utf-8") for file in Path("creative_os").rglob("*.py")}
++    sources[path] += "\ndef bypass():\n" + "\n".join(" " + line for line in change.splitlines())
++    with pytest.raises(AssertionError):
++        checker(sources)
++
++
+ def test_public_exits_require_prepared_and_runner_has_no_active_loader_or_final_token():
+     runner, runner_functions = _definitions(Path("creative_os/novel_continuation_runner.py"))
+     _, writer_functions = _definitions(Path("creative_os/llm_writer.py"))
+     functions = {**runner_functions, **writer_functions}
+     for name in ("continue_one_chapter", "promote_passing_draft", "run_llm_writer_pilot", "promote_llm_writer_pilot_to_final"):
+         assert functions[name].args.args[0].arg == "prepared"
+     source = ast.unparse(runner)
+     assert "load_active_narrative_decision" not in source
+FILE: tests/writer_architecture_checks.py
+"""仅检查 Writer 透明委派契约；静态约束不等于 Python 运行时安全边界。"""
+
+import ast
+from copy import deepcopy
+from pathlib import PurePosixPath
+
+
+ADAPTER = "creative_os.writer_context_sources.CapturingModelAdapter"
+RUNNER = "creative_os.runtime.runner.RuntimeRunner"
+ADAPTER_FILE = "creative_os/writer_context_sources.py"
+CALLER_FILE = "creative_os/agent_runtime.py"
+CALLER = "WriterAgentRuntime._run"
+CONTROLLED_CALLER = "WriterAgentRuntime._execute_story_step"
+
+
+def validate_combat_loops(sources):
+    """领域循环仅调用注入单步；保留原透明适配器的更严格检查。"""
+    validate_transparent_delegate(sources)
+    for module, name, maximum in (("combat_agent", "run_combat_expert", 4),
+                                  ("chapter_agent_tools", "run_chapter_turn", 6),
+                                  ("story_architecture_agent", "run_story_turn", 6)):
+        tree = ast.parse(sources[f"creative_os/{module}.py"])
+        function = qualified_definitions(tree)[name]
+        constants = {node.targets[0].id: node.value.value for node in tree.body
+                     if isinstance(node, ast.Assign) and len(node.targets) == 1
+                     and isinstance(node.targets[0], ast.Name) and isinstance(node.value, ast.Constant)}
+        assert constants.get("MAX_STEPS") == maximum, "unexpected domain step budget"
+        assert not any(isinstance(node, (ast.While, ast.AsyncFor)) for node in ast.walk(tree)), "unbounded domain loop"
+        loops = [node for node in ast.walk(function) if isinstance(node, ast.For)
+                 and ast.unparse(node.iter) == "range(1, MAX_STEPS + 1)"]
+        assert len(loops) == 1, "missing bounded domain loop"
+        for call in (node for node in ast.walk(tree) if isinstance(node, ast.Call)):
+            called = ast.unparse(call.func)
+            assert not called.endswith((".complete", ".execute", ".client_factory", ".from_env")), "domain creates a model exit"
+            assert "RuntimeRunner" not in called and "CapturingModelAdapter" not in called, "domain owns runtime adapter"
+
+
+def qualified_definitions(tree):
+    """使用类和函数的词法路径，避免不同类的同名方法互相覆盖。"""
+    definitions = {}
+
+    def visit(node, prefix=()):
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            prefix = (*prefix, node.name)
+            key = ".".join(prefix)
+            assert key not in definitions, f"ambiguous AST definition: {key}"
+            definitions[key] = node
+        for child in ast.iter_child_nodes(node):
+            visit(child, prefix)
+
+    visit(tree)
+    return definitions
+
+
+def signature(name, node):
+    args = node.args
+    parts = [arg.arg for arg in args.posonlyargs]
+    if parts:
+        parts.append("/")
+    parts.extend(arg.arg for arg in args.args)
+    if args.vararg:
+        parts.append("*" + args.vararg.arg)
+    elif args.kwonlyargs:
+        parts.append("*")
+    parts.extend(arg.arg for arg in args.kwonlyargs)
+    if args.kwarg:
+        parts.append("**" + args.kwarg.arg)
+    return f"{name}({','.join(parts)})"
+
+
+def module_name(path):
+    parts = list(PurePosixPath(path).with_suffix("").parts)
+    return ".".join(parts[:-1] if parts[-1] == "__init__" else parts)
+
+
+def _imports(tree, module, is_package):
+    result = {}
+
+    def bind(name, symbol):
+        previous = result.get(name)
+        related = lambda value: value is not None and (value.endswith((".CapturingModelAdapter", ".RuntimeRunner")) or ADAPTER.startswith(value + ".") or RUNNER.startswith(value + "."))
+        assert previous in {None, symbol} or not (related(previous) or related(symbol)), "ambiguous protected import alias"
+        result[name] = symbol
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bind(alias.asname or alias.name.split(".")[0], alias.name if alias.asname else alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            base = node.module or ""
+            if node.level:
+                package = module.split(".") if is_package else module.split(".")[:-1]
+                base = ".".join(package[:len(package) - node.level + 1] + ([base] if base else []))
+            for alias in node.names:
+                assert not (alias.name == "*" and base in {"creative_os", "creative_os.writer_context_sources", "creative_os.agent_runtime"}), "delegate wildcard import"
+                bind(alias.asname or alias.name, f"{base}.{alias.name}")
+    return result
+
+
+def _without_docstring(node):
+    node = deepcopy(node)
+    for item in ast.walk(node):
+        if isinstance(item, (ast.ClassDef, ast.FunctionDef)) and item.body and isinstance(item.body[0], ast.Expr) and isinstance(item.body[0].value, ast.Constant) and isinstance(item.body[0].value.value, str):
+            item.body.pop(0)
+    return node
+
+
+def validate_transparent_delegate(sources):
+    trees = {path: ast.parse(source) for path, source in sources.items()}
+    actual_class = qualified_definitions(trees[ADAPTER_FILE])["CapturingModelAdapter"]
+    expected_class = ast.parse("""class CapturingModelAdapter:
+    def __init__(self, client, capture):
+        self.client, self.capture = client, capture
+    def complete(self, messages, **kwargs):
+        self.capture(messages)
+        return self.client.complete(messages, **kwargs)
+""").body[0]
+    # 整个透明类限定为原样保存依赖、先观察再一次委派；拒绝额外路径及改参。
+    assert ast.dump(_without_docstring(actual_class)) == ast.dump(expected_class), "delegate is not transparent"
+    imports = {path: _imports(tree, module_name(path), PurePosixPath(path).stem == "__init__") for path, tree in trees.items()}
+    exports = {f"{module_name(path)}.{name}": symbol for path, aliases in imports.items() for name, symbol in aliases.items()}
+
+    def canonical(symbol):
+        # 解析导入别名和已知模块再导出，不推断任意动态赋值。
+        seen = set()
+        while symbol not in seen:
+            seen.add(symbol)
+            parts = symbol.split(".")
+            for index in range(len(parts), 0, -1):
+                key = ".".join(parts[:index])
+                if key in exports:
+                    replacement = ".".join([exports[key], *parts[index:]])
+                    if replacement != symbol:
+                        symbol = replacement
+                        break
+            else:
+                return symbol
+        raise AssertionError("delegate import cycle")
+
+    delegate_modules = {ADAPTER.rsplit(".", 1)[0]}
+    delegate_modules.update(name.rsplit(".", 1)[0] for name, value in exports.items() if canonical(value) == ADAPTER)
+
+    def delegate_namespace(symbol):
+        return any(module == symbol or module.startswith(symbol + ".") for module in delegate_modules)
+
+    constructions = {CALLER: 0, CONTROLLED_CALLER: 0}
+    for path, tree in trees.items():
+        aliases = imports[path]
+        parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+        definitions = qualified_definitions(tree)
+        function_names = {id(node): name for name, node in definitions.items() if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+
+        def resolve(node):
+            if isinstance(node, ast.Name):
+                return canonical(aliases.get(node.id, node.id))
+            if isinstance(node, ast.Attribute):
+                return canonical(f"{resolve(node.value)}.{node.attr}")
+            return ""
+
+        def protected(symbol):
+            return symbol in {ADAPTER, RUNNER} or delegate_namespace(symbol) or RUNNER.startswith(symbol + ".")
+
+        # 类的直接导入或跨模块再导出，仅允许既有 Writer 模块消费。
+        for symbol in aliases.values():
+            if canonical(symbol) == ADAPTER:
+                assert path == CALLER_FILE, "delegate imported outside Writer"
+        for node in ast.walk(tree):
+            if isinstance(node, ast.arg) and node.arg in aliases:
+                assert not protected(canonical(aliases[node.arg])), "delegate/Runner import shadowed by argument"
+            if isinstance(node, ast.ExceptHandler) and node.name in aliases:
+                assert not protected(canonical(aliases[node.name])), "delegate/Runner import shadowed by exception"
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.name in aliases:
+                assert not protected(canonical(aliases[node.name])), "delegate/Runner import shadowed by definition"
+            if not isinstance(node, (ast.Name, ast.Attribute)):
+                continue
+            symbol = resolve(node)
+            if isinstance(node.ctx, (ast.Store, ast.Del)):
+                assert not protected(symbol), "delegate/Runner import reassigned"
+            if symbol.startswith(ADAPTER + "."):
+                raise AssertionError("delegate method reference escaped")
+            if symbol == ADAPTER:
+                constructor = parents.get(node)
+                assert isinstance(constructor, ast.Call) and constructor.func is node, "delegate class escaped"
+                assert path == CALLER_FILE, "delegate constructed outside Writer"
+                owner, cursor = None, constructor
+                while cursor in parents:
+                    cursor = parents[cursor]
+                    assert not isinstance(cursor, (ast.For, ast.AsyncFor, ast.While, ast.comprehension)), "delegate construction in loop"
+                    if isinstance(cursor, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        owner = function_names[id(cursor)]
+                        break
+                assert owner in constructions, "delegate constructed outside declared Writer entry"
+                outer = parents.get(constructor)
+                # 仅允许直接占据 execute 的 adapter 参数，禁止赋值、转交或直接 complete。
+                if isinstance(outer, ast.keyword):
+                    assert outer.arg == "adapter", "delegate in wrong keyword"
+                    outer = parents.get(outer)
+                    adapter_argument = True
+                else:
+                    adapter_argument = isinstance(outer, ast.Call) and len(outer.args) >= 2 and outer.args[1] is constructor
+                assert adapter_argument and isinstance(outer, ast.Call), "delegate not immediate adapter argument"
+                method = outer.func
+                assert isinstance(method, ast.Attribute) and method.attr == "execute", "delegate sent to other entry"
+                assert isinstance(method.value, ast.Call) and resolve(method.value.func) == RUNNER, "delegate not passed to RuntimeRunner"
+                constructions[owner] += 1
+            elif symbol and delegate_namespace(symbol):
+                parent = parents.get(node)
+                assert isinstance(parent, ast.Attribute) and parent.value is node, "delegate module escaped"
+    assert all(count == 1 for count in constructions.values()), "Writer must have exactly one delegate construction per declared entry"
+
+FILE: tests/assets/writer_production_exits_v4.json
+[
+  {
+    "file": "creative_os/novel_continuation_runner.py",
+    "symbol": "creative_os.novel_continuation_runner.continue_one_chapter",
+    "signature": "continue_one_chapter(prepared,*,client,dry_run,max_attempts,runtime_runner)",
+    "kind": "public_model_and_final_exit"
+  },
+  {
+    "file": "creative_os/novel_continuation_runner.py",
+    "symbol": "creative_os.novel_continuation_runner.promote_passing_draft",
+    "signature": "promote_passing_draft(prepared)",
+    "kind": "public_promotion_exit"
+  },
+  {
+    "file": "creative_os/llm_writer.py",
+    "symbol": "creative_os.llm_writer.run_llm_writer_pilot",
+    "signature": "run_llm_writer_pilot(prepared,client,max_attempts,use_local_repair,runtime_runner)",
+    "kind": "public_model_exit"
+  },
+  {
+    "file": "creative_os/llm_writer.py",
+    "symbol": "creative_os.llm_writer.promote_llm_writer_pilot_to_final",
+    "signature": "promote_llm_writer_pilot_to_final(prepared)",
+    "kind": "public_promotion_exit"
+  },
+  {
+    "file": "creative_os/runtime/runner.py",
+    "symbol": "creative_os.runtime.runner.RuntimeRunner.execute",
+    "signature": "RuntimeRunner.execute(self,request,adapter)",
+    "kind": "model_client_sink"
+  },
+  {
+    "file": "creative_os/writer_context_sources.py",
+    "symbol": "creative_os.writer_context_sources.CapturingModelAdapter.complete",
+    "signature": "CapturingModelAdapter.complete(self,messages,**kwargs)",
+    "kind": "transparent_delegate",
+    "business_entry": "creative_os.runtime.runner.RuntimeRunner.execute",
+    "allowed_constructors": [
+      "creative_os.agent_runtime.WriterAgentRuntime._run",
+      "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
+    ]
+  },
+  {
+    "file": "creative_os/novel_continuation_runner.py",
+    "symbol": "creative_os.novel_continuation_runner._continue_one_chapter_impl",
+    "signature": "_continue_one_chapter_impl(prepared,*,_guard,client,dry_run,max_attempts,runtime_runner)",
+    "kind": "final_chapter_write_sink"
+  },
+  {
+    "file": "creative_os/novel_continuation_runner.py",
+    "symbol": "creative_os.novel_continuation_runner._promote_passing_draft_impl",
+    "signature": "_promote_passing_draft_impl(prepared,*,_guard)",
+    "kind": "final_chapter_write_sink"
+  },
+  {
+    "file": "creative_os/llm_writer.py",
+    "symbol": "creative_os.llm_writer._promote_llm_writer_pilot_to_final_impl",
+    "signature": "_promote_llm_writer_pilot_to_final_impl(project_root,chapters,*,_guard)",
+    "kind": "final_chapter_write_sink"
+  },
+  {
+    "file": "creative_os/importing/materializer.py",
+    "symbol": "creative_os.importing.materializer.materialize_project",
+    "signature": "materialize_project(project_root)",
+    "kind": "human_approved_import_sink"
+  },
+  {
+    "file": "creative_os/agent_runtime.py",
+    "symbol": "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step",
+    "signature": "WriterAgentRuntime._execute_story_step(self,job,messages,capture,step)",
+    "kind": "controlled_model_step",
+    "max_steps": {
+      "story": 6,
+      "chapter": 6,
+      "combat": 4
+    },
+    "scopes": [
+      "story",
+      "chapter",
+      "combat"
+    ]
+  },
+  {
+    "file": "creative_os/combat_agent.py",
+    "symbol": "creative_os.combat_agent.run_combat_expert",
+    "signature": "run_combat_expert(request,*,execute_step,read_source)",
+    "kind": "bounded_tool_loop",
+    "max_steps": 4,
+    "model_entry": "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
+  },
+  {
+    "file": "creative_os/chapter_agent_tools.py",
+    "symbol": "creative_os.chapter_agent_tools.run_chapter_turn",
+    "signature": "run_chapter_turn(runtime,job,messages,capture)",
+    "kind": "bounded_tool_loop",
+    "max_steps": 6,
+    "model_entry": "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
+  },
+  {
+    "file": "creative_os/story_architecture_agent.py",
+    "symbol": "creative_os.story_architecture_agent.run_story_turn",
+    "signature": "run_story_turn(runtime,job)",
+    "kind": "bounded_tool_loop",
+    "max_steps": 6,
+    "model_entry": "creative_os.agent_runtime.WriterAgentRuntime._execute_story_step"
+  }
+]
+

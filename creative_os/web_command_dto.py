@@ -60,6 +60,37 @@ def decode_web_command(raw: object) -> CommandRequest:
             raise WebCommandValidationError("validation_failed", "章节运行命令不支持 expected_version。")
         if payload:
             raise WebCommandValidationError("validation_failed", "章节运行命令载荷必须为空对象。")
+    elif command_id in {"edit_story_candidate", "confirm_story_candidate", "adopt_combat_candidate"}:
+        if not isinstance(target, dict) or set(target) != {"project_id", "scope", "session_id"} or target.get("scope") != "story":
+            raise WebCommandValidationError("validation_failed", "故事目标必须包含项目、story 作用域和会话。")
+        for key in ("project_id", "scope", "session_id"):
+            _required_string(target[key], f"target.{key}")
+        if expected_version is not None:
+            raise WebCommandValidationError("validation_failed", "故事命令版本应在载荷中明确声明。")
+        if command_id == "adopt_combat_candidate" and set(payload) != {"result_id", "expected_revision"}:
+            raise WebCommandValidationError("validation_failed", "采用战斗建议必须携带结果 ID 与当前候选版本。")
+    elif command_id == "manage_writer_lesson":
+        if not isinstance(target, dict) or set(target) != {"project_id", "chapter_number", "session_id", "feedback_id"}:
+            raise WebCommandValidationError("validation_failed", "经验目标必须包含项目、章节、会话和反馈。")
+        _writer_target({key: target[key] for key in ("project_id", "chapter_number")})
+        for key in ("session_id", "feedback_id"):
+            _required_string(target[key], f"target.{key}")
+        if expected_version is not None:
+            raise WebCommandValidationError("validation_failed", "经验版本应在审阅载荷中声明。")
+    elif command_id in {"review_writer_proposal", "reconcile_writer_proposal"}:
+        if not isinstance(target, dict) or set(target) != {"project_id", "chapter_number", "session_id", "proposal_id"}:
+            raise WebCommandValidationError("validation_failed", "提案目标必须严格包含项目、章节、会话及提案。")
+        _writer_target({key: target[key] for key in ("project_id", "chapter_number")})
+        for key in ("session_id", "proposal_id"):
+            _required_string(target[key], f"target.{key}")
+        if expected_version is not None:
+            raise WebCommandValidationError("validation_failed", "提案审阅使用冻结版本，不接受顶层版本。")
+    elif command_id in {"migrate_project_directory", "reconcile_project_directory", "continue_project_directory"}:
+        from creative_os.project_migration_contract import validate_directory_command
+        try:
+            validate_directory_command(command_id, target, payload, expected_version)
+        except (ValueError, TypeError, AttributeError) as error:
+            raise WebCommandValidationError("validation_failed", "迁移命令必须绑定原操作、完整计划与明确确认。") from error
     elif command_id in {"save_writer_draft", "restore_writer_version", "publish_writer_draft", "open_writer_chapter"}:
         target = _writer_target(target)
         if command_id == "save_writer_draft":

@@ -106,35 +106,37 @@ def test_web_adapter_preserves_unavailable_and_partial_states_without_inventing_
     assert payload["sections"]["operations"]["status"] == "unavailable"
 
 
-def test_frontend_reads_only_workspace_api_and_has_all_read_only_views():
-    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
-    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+def test_frontend_reads_real_manuscripts_and_keeps_projection_secondary():
+    html = Path("creative_os/web/author-home.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/author-home.js").read_text(encoding="utf-8")
 
-    assert all(anchor in html for anchor in ("#overview", "#chapters", "#quality", "#runtime"))
-    assert 'fetch("/api/workspace"' in javascript
-    assert 'fetch("/api/commands/refresh-workspace"' in javascript
-    assert javascript.count('fetch("/api/') == 3
-    assert 'fetch("/api/commands/start-chapter-run"' in javascript
-    assert "/api/commands/" in javascript
+    assert all(anchor in html for anchor in ("#overview", "#chapters"))
+    assert 'readJson("/api/author-home")' in javascript
+    assert 'readJson("/api/workspace")' in javascript
+    assert "/api/commands/" not in javascript
+    assert 'href="/inspector"' in html
 
 
 def test_frontend_exposes_read_only_chapter_matrix_filter():
-    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
-    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+    html = Path("creative_os/web/author-home.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/author-home.js").read_text(encoding="utf-8")
     assert 'id="chapter-filter"' in html
     assert 'id="chapter-filter-count"' in html
-    assert 'chapterRows.filter' in javascript
+    assert '(home?.chapters || []).filter' in javascript
     assert 'addEventListener("input", renderChapterMatrix)' in javascript
-    assert 'id="chapter-command-status"' in html
-    assert 'startChapterRun' in javascript
+    assert 'id="open-chapter-form"' in html
+    assert 'window.location.assign(writerLink(number))' in javascript
 
 
-def test_frontend_exposes_runtime_diagnostics_and_recovery_read_model():
-    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
-    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
-    assert all(marker in html for marker in ("runtime-tasks", "runtime-errors", "runtime-recovery", "runtime-retries"))
-    assert all(marker in javascript for marker in ("operations.tasks", "operations.errors", "operations.recovery", "operations.retries"))
-    assert "retryable" in javascript
+def test_frontend_preserves_visible_attention_and_separate_diagnostics():
+    html = Path("creative_os/web/author-home.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/author-home.js").read_text(encoding="utf-8")
+    assert 'id="attention-items"' in html
+    assert 'id="attention-shortcut"' in html
+    assert 'id="footer-diagnostics"' in html
+    assert 'item.blocking' in javascript
+    assert 'item.chapter_number' in javascript
+    assert 'trace.entries' not in javascript
 
 
 def _command_request() -> dict[str, object]:
@@ -272,12 +274,12 @@ def test_arbitrary_post_route_is_not_a_generic_command_dispatcher():
         server.server_close()
 
 
-def test_frontend_exposes_only_refresh_workspace_command():
-    html = Path("creative_os/web/index.html").read_text(encoding="utf-8")
-    javascript = Path("creative_os/web/app.js").read_text(encoding="utf-8")
+def test_frontend_refresh_is_read_only_and_keeps_author_scope():
+    html = Path("creative_os/web/author-home.html").read_text(encoding="utf-8")
+    javascript = Path("creative_os/web/author-home.js").read_text(encoding="utf-8")
 
-    assert 'data-command="refresh-workspace"' in html
-    assert 'fetch("/api/commands/refresh-workspace"' in javascript
+    assert 'id="refresh-workspace"' in html
+    assert '/api/commands/' not in javascript
     assert 'loadWorkspace()' in javascript
     assert 'aria-live="polite"' in html
     assert "editor" not in html.lower()
@@ -301,7 +303,12 @@ def test_read_only_http_workspace_serves_json_and_ui_without_write_routes():
         connection.request("GET", "/")
         response = connection.getresponse()
         assert response.status == 200
-        assert b"Chapter Matrix" in response.read()
+        assert "我的作品" in response.read().decode("utf-8")
+
+        connection.request("GET", "/overview")
+        response = connection.getresponse()
+        assert response.status == 200
+        assert "我的章节" in response.read().decode("utf-8")
 
         connection.request("POST", "/api/workspace")
         assert connection.getresponse().status == 405

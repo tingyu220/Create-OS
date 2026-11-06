@@ -5,7 +5,7 @@ WEB_ROOT = Path("creative_os/web")
 
 
 def test_workspace_shell_exposes_semantic_sidebar_topbar_and_main_regions():
-    html = (WEB_ROOT / "index.html").read_text(encoding="utf-8")
+    html = (WEB_ROOT / "author-home.html").read_text(encoding="utf-8")
 
     assert 'id="workspace-shell"' in html
     assert 'id="workspace-sidebar"' in html
@@ -15,20 +15,22 @@ def test_workspace_shell_exposes_semantic_sidebar_topbar_and_main_regions():
 
 
 def test_workspace_navigation_is_rendered_from_domain_neutral_configuration():
-    html = (WEB_ROOT / "index.html").read_text(encoding="utf-8")
-    javascript = (WEB_ROOT / "app.js").read_text(encoding="utf-8")
+    html = (WEB_ROOT / "author-home.html").read_text(encoding="utf-8")
+    javascript = (WEB_ROOT / "author-home.js").read_text(encoding="utf-8")
 
     assert 'id="workspace-navigation"' in html
     assert "workspaceNavigation" in javascript
     assert "renderWorkspaceNavigation" in javascript
     assert 'label: "总览"' in javascript
     assert 'label: "章节"' in javascript
-    assert 'label: "质量"' in javascript
-    assert 'label: "运行"' in javascript
+    assert 'label: "写作工作台"' in javascript
+    assert 'label: "故事设定"' in javascript
+    assert 'href="/inspector"' in html
+    assert 'Runtime / Trace' not in html
 
 
 def test_workspace_shell_uses_fixed_viewport_and_independent_scroll_regions():
-    css = (WEB_ROOT / "styles.css").read_text(encoding="utf-8")
+    css = (WEB_ROOT / "author-home.css").read_text(encoding="utf-8")
 
     assert "100vh" in css
     assert "workspace-shell" in css
@@ -39,7 +41,7 @@ def test_workspace_shell_uses_fixed_viewport_and_independent_scroll_regions():
 
 
 def test_workspace_shell_defines_semantic_tokens_focus_reduced_motion_and_narrow_layout():
-    css = (WEB_ROOT / "styles.css").read_text(encoding="utf-8")
+    css = (WEB_ROOT / "author-home.css").read_text(encoding="utf-8")
 
     for token in (
         "--surface",
