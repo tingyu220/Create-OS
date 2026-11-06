@@ -133,6 +133,11 @@ class WriterAgentRuntime:
         session["lesson_review"] = self.lesson_query(chapter_number)
         for job in session["jobs"]:
             job["context_available"] = job.pop("context_snapshot", None) is not None
+            if job.get("preflight_plan_id"):
+                try:
+                    job["preflight"] = asdict(self.preflight.get(job["preflight_plan_id"]))
+                except (KeyError, OSError, ValueError):
+                    job["preflight"] = None
         return session
 
     def _project_interrupted_job(self, job):
@@ -144,7 +149,13 @@ class WriterAgentRuntime:
         return job
 
     def job_view(self, job):
-        return self._project_interrupted_job(asdict(job))
+        view = self._project_interrupted_job(asdict(job))
+        if view.get("preflight_plan_id"):
+            try:
+                view["preflight"] = asdict(self.preflight.get(view["preflight_plan_id"]))
+            except (KeyError, OSError, ValueError):
+                view["preflight"] = None
+        return view
 
     def validate_submit(self, instruction, chapter_number, actor="作者", *, target_words=4500, tolerance_words=300,
                         session_id=None, retry_of=None, mode="analyze", decision_id=None, parent_proposal_id=None, proposal_source=None, requested_expert=None, require_confirmed_combat=False):
