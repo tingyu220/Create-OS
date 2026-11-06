@@ -67,7 +67,8 @@ def analyze_chapter_preflight(*, chapter_number: int, instruction: str, previous
                               current_formal: str = "", current_draft: str = "",
                               source_refs: tuple[str, ...] = (), requested_expert: str | None = None,
                               require_confirmed_combat: bool = False,
-                              source_hashes: tuple[str, ...] = ()) -> dict:
+                              source_hashes: tuple[str, ...] = (),
+                              creative_state: dict | None = None) -> dict:
     """在正文生成前形成独立计划；证据不足时保留未知，不把关键词当作战斗证据。"""
     body = "\n".join(part for part in (previous_text, current_formal, current_draft) if part)
     scene_types = ["continuation"]
@@ -93,6 +94,10 @@ def analyze_chapter_preflight(*, chapter_number: int, instruction: str, previous
         plant_threads.append("若本章继续埋设线索，记录其后续回收位置。")
     if not resolve_threads:
         unknowns.append("未发现可安全确认的历史遗留事项，写作时不得擅自补写未证实设定。")
+    if creative_state:
+        resolve_threads.append("已读取项目冲突与知识基线；仅将其中明确标记为事实的内容作为证据。")
+    else:
+        unknowns.append("当前项目没有可读取的结构化冲突/知识基线。")
     if current_formal and current_draft:
         state_changes.append("比较正式稿与工作稿，明确本章新增状态变化后再写作。")
     else:

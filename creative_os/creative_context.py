@@ -35,6 +35,7 @@ class CreativeContext:
     experience_prompt: str = ""
     experience_context: dict = field(default_factory=dict)
     current_draft_version: int | None = None
+    creative_state: dict = field(default_factory=dict)
 
 
 class CreativeContextBuilder:
@@ -70,10 +71,21 @@ class CreativeContextBuilder:
         from creative_os.writer_experience_context import compile_writer_experience
         experience_prompt, experience_context = compile_writer_experience(self.root, self.project_id, target_chapter, task_id)
         refs += tuple(item["source_ref"] for item in experience_context["selected"])
+        creative_state: dict[str, object] = {}
+        for name in ("import/conflicts.json", "knowledge/imported_active.json", "import/active_baseline.json"):
+            path = self.root / ".creative_os" / name
+            if not path.exists():
+                continue
+            try:
+                value = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            creative_state[name] = value
+            refs += (f".creative_os/{name}",)
         decision = CreativeDecision(
             decision_id=f"decision-{uuid4().hex}", intent=intent.strip(), target_chapter=target_chapter,
             context_refs=refs, created_at=datetime.now(timezone.utc).isoformat(),
         )
         return CreativeContext(intent.strip(), target_chapter, draft, formal, recent, refs, decision,
                                experience_prompt=experience_prompt, experience_context=experience_context,
-                               current_draft_version=draft_version)
+                               current_draft_version=draft_version, creative_state=creative_state)

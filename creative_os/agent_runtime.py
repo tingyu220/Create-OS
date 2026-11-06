@@ -414,6 +414,7 @@ class WriterAgentRuntime:
                         if (self.root / ref).is_file() else hashlib.sha256(ref.encode("utf-8")).hexdigest()
                         for ref in context.source_refs
                     ),
+                    creative_state=context.creative_state,
                 )
                 self.preflight.update(
                     job.preflight_plan_id,
@@ -448,6 +449,9 @@ class WriterAgentRuntime:
                 previous_text += "\n\n【本章前置架构分析（写作前生成）】\n"
                 previous_text += "以下内容是基于当前证据的创作建议；只有已确认故事设定和明确采用的计划属于硬约束，推断与未知项不得当作事实擅自补全。\n"
                 previous_text += json.dumps(preflight, ensure_ascii=False)
+                if context.creative_state:
+                    previous_text += "\n【相关 Creative State（只读证据）】\n"
+                    previous_text += json.dumps(context.creative_state, ensure_ascii=False)[:12000]
             input_content = proposal["input"]["content"] if proposal is not None else (context.current_draft or context.current_formal)
             if job.story_context:
                 frozen = job.story_context
