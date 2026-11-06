@@ -14,7 +14,8 @@ from creative_os.writer_context_sources import ContextCapture
 
 MAX_STEPS = 6
 MAX_INPUT_CHARS = 100000
-PROTOCOL = """你可自主决定是否需要战斗编排专家，普通分析可直接结束，不要求每章委派。
+PROTOCOL = """章节写作模式必须先调用一次战斗编排专家，完成战斗、准备、非战斗或证据不足判断，再进入正文生成。
+分析模式仍可自主决定是否需要战斗编排专家，普通分析可直接结束。
 每次至多输出一个工具 JSON：{"action":"consult_combat"} 或 {"action":"finish","reply":"给作者的自然语言分析"}。
 每轮最多委派一次，不能递归。专家结果仅是建议，无权确认、发布或修改正文。保留普通自然语言分析输出的兼容性。"""
 
@@ -84,7 +85,8 @@ def run_chapter_turn(runtime, job, messages, capture):
             raise ValueError("required_story_context_budget_exceeded")
         runtime._set(job.job_id, main_input=tuple(asdict(item) for item in messages))
     trace = []
-    if job.requested_expert == "combat":
+    # 正文写作必须在写作前完成一次战斗场景编排；分析任务保留旧的可选入口。
+    if job.mode == "act" or job.requested_expert == "combat":
         value = consult_combat(runtime, job, main_step=0)
         trace.append({"step": 0, "input": {"action": "consult_combat"}, "result": value, "selection": "explicit"})
         messages.append(ModelMessage("user", "专家工具结果：" + json.dumps(value, ensure_ascii=False)))
