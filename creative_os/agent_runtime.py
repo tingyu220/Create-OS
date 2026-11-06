@@ -28,7 +28,7 @@ from creative_os.writer_word_budget import WriterWordBudget, count_writer_words
 from creative_os.story_architecture_store import StoryArchitectureStore
 from creative_os.story_architecture_command import story_commands
 from creative_os.story_context import freeze_confirmed_story, chapter_story_context
-from creative_os.chapter_preflight import ChapterPreflightStore
+from creative_os.chapter_preflight import ChapterPreflightStore, analyze_chapter_preflight
 
 
 @dataclass(frozen=True, slots=True)
@@ -388,22 +388,28 @@ class WriterAgentRuntime:
             context = CreativeContextBuilder(self.root, project_id=self.project_id).build(instruction, target, task_id=job_id)
             formal_word_count = count_writer_words(context.current_formal)
             if job.preflight_plan_id:
-                scene_types = ("continuation",)
-                if job.requested_expert == "combat" or job.require_confirmed_combat:
-                    scene_types = ("conflict", "action")
+                preflight = analyze_chapter_preflight(
+                    chapter_number=target,
+                    instruction=instruction,
+                    previous_text="\n\n".join(previous),
+                    current_formal=context.current_formal,
+                    current_draft=context.current_draft,
+                    source_refs=tuple(context.source_refs),
+                    requested_expert=job.requested_expert,
+                    require_confirmed_combat=job.require_confirmed_combat,
+                )
                 self.preflight.update(
                     job.preflight_plan_id,
                     status="ready",
-                    main_goal=instruction.strip(),
-                    scene_types=scene_types,
-                    conflicts=({"type": "combat", "required": True} ,) if "action" in scene_types else (),
-                    unknowns=("尚未由章节规划模型补充具体冲突双方、代价与状态变化。",),
-                    source_refs=tuple(context.source_refs),
+                    **preflight,
                 )
             context_summary = {"recent_chapters": list(context.recent_chapters), "source_refs": list(context.source_refs), "has_current_draft": bool(context.current_draft), "formal_word_count": formal_word_count}
             self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。", experience_context=context.experience_context)
             client = self.client_factory() if job.mode == "act" else None
             previous_text = "\n\n".join(previous)
+            if job.preflight_plan_id:
+                previous_text += "\n\n【本章前置架构分析（写作前生成，必须遵守；未知项不得擅自补全）】\n"
+                previous_text += json.dumps(preflight, ensure_ascii=False)
             if context.current_formal:
                 previous_text += f"\n\n【当前目标章节第{target}章正式稿】\n{context.current_formal}"
                 capture.add("当前正式稿", f"production/final_chapters/chapter_{target:03d}.md",
