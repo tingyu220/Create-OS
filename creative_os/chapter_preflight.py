@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import json
+import hashlib
 from pathlib import Path
 from uuid import uuid4
 
@@ -65,7 +66,8 @@ class ChapterPreflightStore:
 def analyze_chapter_preflight(*, chapter_number: int, instruction: str, previous_text: str,
                               current_formal: str = "", current_draft: str = "",
                               source_refs: tuple[str, ...] = (), requested_expert: str | None = None,
-                              require_confirmed_combat: bool = False) -> dict:
+                              require_confirmed_combat: bool = False,
+                              source_hashes: tuple[str, ...] = ()) -> dict:
     """在正文生成前形成独立计划；证据不足时保留未知，不把关键词当作战斗证据。"""
     body = "\n".join(part for part in (previous_text, current_formal, current_draft) if part)
     scene_types = ["continuation"]
@@ -95,6 +97,7 @@ def analyze_chapter_preflight(*, chapter_number: int, instruction: str, previous
         state_changes.append("比较正式稿与工作稿，明确本章新增状态变化后再写作。")
     else:
         state_changes.append("记录本章结束时人物、关系、目标和信息状态的变化。")
+    source_hashes = source_hashes or tuple(hashlib.sha256(ref.encode("utf-8")).hexdigest() for ref in source_refs)
     return {
         "main_goal": instruction.strip(),
         "scene_types": tuple(dict.fromkeys(scene_types)),
@@ -106,4 +109,5 @@ def analyze_chapter_preflight(*, chapter_number: int, instruction: str, previous
         "combat_plan": conflicts[0] if conflicts else None,
         "unknowns": tuple(unknowns),
         "source_refs": tuple(source_refs),
+        "source_hashes": source_hashes,
     }

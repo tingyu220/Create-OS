@@ -10,6 +10,7 @@ from uuid import uuid4
 from datetime import datetime, timezone
 from copy import deepcopy
 import json
+import hashlib
 
 from creative_os.llm_writer import OpenAICompatibleClient, ModelMessage
 from creative_os.writer_draft_store import WriterDraftStore
@@ -408,6 +409,11 @@ class WriterAgentRuntime:
                     source_refs=tuple(context.source_refs),
                     requested_expert=job.requested_expert,
                     require_confirmed_combat=job.require_confirmed_combat,
+                    source_hashes=tuple(
+                        hashlib.sha256((self.root / ref).read_bytes()).hexdigest()
+                        if (self.root / ref).is_file() else hashlib.sha256(ref.encode("utf-8")).hexdigest()
+                        for ref in context.source_refs
+                    ),
                 )
                 self.preflight.update(
                     job.preflight_plan_id,
@@ -439,7 +445,8 @@ class WriterAgentRuntime:
                             message_start=len(previous_text) - len(proposal["input"]["content"]),
                             input_source=job.proposal_source or proposal["base"]["source"])
             if job.preflight_plan_id:
-                previous_text += "\n\n【本章前置架构分析（写作前生成，必须遵守；未知项不得擅自补全）】\n"
+                previous_text += "\n\n【本章前置架构分析（写作前生成）】\n"
+                previous_text += "以下内容是基于当前证据的创作建议；只有已确认故事设定和明确采用的计划属于硬约束，推断与未知项不得当作事实擅自补全。\n"
                 previous_text += json.dumps(preflight, ensure_ascii=False)
             input_content = proposal["input"]["content"] if proposal is not None else (context.current_draft or context.current_formal)
             if job.story_context:
