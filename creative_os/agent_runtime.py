@@ -28,6 +28,7 @@ from creative_os.writer_word_budget import WriterWordBudget, count_writer_words
 from creative_os.story_architecture_store import StoryArchitectureStore
 from creative_os.story_architecture_command import story_commands
 from creative_os.story_context import freeze_confirmed_story, chapter_story_context
+from creative_os.chapter_preflight import ChapterPreflightStore
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +74,7 @@ class AgentJob:
     combat_results: tuple = ()
     main_input: tuple = ()
     analysis_state: dict | None = None
+    preflight_plan_id: str | None = None
 
 
 class WriterAgentRuntime:
@@ -82,6 +84,7 @@ class WriterAgentRuntime:
         self.client_factory = client_factory or (lambda: OpenAICompatibleClient.from_env())
         self.read_only = read_only
         self.story = StoryArchitectureStore(self.root, self.project_id)
+        self.preflight = ChapterPreflightStore(self.root)
         self.story_commands = story_commands(self.story)
         self.store = WriterDraftStore(project_root)
         self.conversations = AgentConversationStore(self.root, self.project_id)
@@ -93,6 +96,7 @@ class WriterAgentRuntime:
         self._interrupted_jobs = set()
         for raw in self.conversations.load_jobs():
             raw.setdefault("require_confirmed_combat", False)
+            raw.setdefault("preflight_plan_id", None)
             job = AgentJob(**raw)
             self._jobs[job.job_id] = job
             if job.status not in {"completed", "failed"} and (read_only or not recover):
@@ -209,6 +213,9 @@ class WriterAgentRuntime:
                           parent_proposal_id=parent_proposal_id, proposal_source=proposal_source,
                           scope="story" if chapter_number is None else "chapter", story_context=frozen_story, requested_expert=requested_expert,
                           require_confirmed_combat=require_confirmed_combat)
+            if mode == "act" and chapter_number is not None:
+                plan = self.preflight.create(self.project_id, chapter_number)
+                job = replace(job, preflight_plan_id=plan.plan_id)
             if mode == "analyze":
                 from creative_os.chapter_agent_tools import freeze_combat_request
                 original = self._jobs[retry_of] if retry_of else None
@@ -358,6 +365,8 @@ class WriterAgentRuntime:
                 replay_chapter_analysis(self, job)
                 return
             self._set(job_id, status="reading_context", message="正在读取前文、项目状态和相邻章节。")
+            if job.preflight_plan_id:
+                self.preflight.update(job.preflight_plan_id, status="running")
             final_root = self.root / "production" / "final_chapters"
             target = chapter_number
             proposal = None
@@ -378,6 +387,19 @@ class WriterAgentRuntime:
                                 original=original, start=max(0, len(original) - 6000), version="sha256", message_start=segment_start)
             context = CreativeContextBuilder(self.root, project_id=self.project_id).build(instruction, target, task_id=job_id)
             formal_word_count = count_writer_words(context.current_formal)
+            if job.preflight_plan_id:
+                scene_types = ("continuation",)
+                if job.requested_expert == "combat" or job.require_confirmed_combat:
+                    scene_types = ("conflict", "action")
+                self.preflight.update(
+                    job.preflight_plan_id,
+                    status="ready",
+                    main_goal=instruction.strip(),
+                    scene_types=scene_types,
+                    conflicts=({"type": "combat", "required": True} ,) if "action" in scene_types else (),
+                    unknowns=("尚未由章节规划模型补充具体冲突双方、代价与状态变化。",),
+                    source_refs=tuple(context.source_refs),
+                )
             context_summary = {"recent_chapters": list(context.recent_chapters), "source_refs": list(context.source_refs), "has_current_draft": bool(context.current_draft), "formal_word_count": formal_word_count}
             self._set(job_id, status="thinking", message="上下文已读取，Agent 正在形成写作方案。", experience_context=context.experience_context)
             client = self.client_factory() if job.mode == "act" else None
@@ -497,11 +519,18 @@ class WriterAgentRuntime:
                 range_message += "。" + "；".join(word_assessment["adjustment_options"])
             self._set(job_id, status="saving_proposal", message=f"候选已生成，{range_message}，正在保存提案。")
             self.proposals.complete(proposal["proposal_id"], text, word_assessment=word_assessment)
+            if job.preflight_plan_id:
+                self.preflight.update(job.preflight_plan_id, status="consumed")
             self._set(job_id, status="completed", message=f"第{target}章候选提案待审阅，{range_message}。当前正文未修改。", actual_words=actual_words, within_word_range=within_word_range, word_assessment=word_assessment, reply=text)
         except Exception as error:
             current = self.get(job_id)
             if current.proposal_id:
                 self.proposals.fail_unfinished(current.proposal_id, str(error))
+            if current.preflight_plan_id:
+                try:
+                    self.preflight.update(current.preflight_plan_id, status="failed", unknowns=(str(error),))
+                except (KeyError, OSError, ValueError):
+                    pass
             self._set(job_id, status="failed", message=f"Agent 运行失败：{error}", error=str(error), retryable=current.status != "saving")
 
     def _execute_story_step(self, job, messages, capture, step):
