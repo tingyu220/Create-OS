@@ -63,7 +63,8 @@ class WriterWebAdapter:
             source = WriterSourceDTO(WriterSourceRole.WORKING_DRAFT, "当前工作稿", True, version.source_key, content_hash=version.content_hash)
             chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, source, version, Freshness.FRESH, (version.source_key,))
             return json.dumps(encode_writer_chapter(WriterChapterEnvelope(chapter, Freshness.FRESH)), ensure_ascii=False).encode("utf-8")
-        if draft is not None and source == "auto" and not path.exists():
+        # auto 始终优先展示最新工作稿；正式稿仍通过 source=formal 明确查看。
+        if draft is not None and source == "auto":
             version, content = draft
             draft_source = WriterSourceDTO(WriterSourceRole.WORKING_DRAFT, "当前工作稿", True, version.source_key, content_hash=version.content_hash)
             chapter = WriterChapterDTO(self.project_id, chapter_number, f"第{chapter_number}章", content, draft_source, version, Freshness.FRESH, (version.source_key,))
