@@ -225,7 +225,7 @@ class WriterAgentRuntime:
                           parent_proposal_id=parent_proposal_id, proposal_source=proposal_source,
                           scope="story" if chapter_number is None else "chapter", story_context=frozen_story, requested_expert=requested_expert,
                           require_confirmed_combat=require_confirmed_combat)
-            if mode == "act" and chapter_number is not None:
+            if chapter_number is not None:
                 plan = self.preflight.create(self.project_id, chapter_number)
                 job = replace(job, preflight_plan_id=plan.plan_id)
             if mode == "analyze":
@@ -531,6 +531,8 @@ class WriterAgentRuntime:
                             "project_id": self.project_id, "session_id": job.session_id, "task_id": job_id}
                 self._write_decision(decision_id, decision)
             if job.mode == "analyze":
+                if job.preflight_plan_id:
+                    self.preflight.update(job.preflight_plan_id, status="analyzed")
                 self._set(job_id, status="completed", message="分析已完成，正文未修改。", decision_id=decision_id, reply=content)
                 return
             with project_authority_lock(self.root):
