@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
+import shutil
 from pathlib import Path
 
 from creative_os.domains.project_authority import project_authority_lock
@@ -101,7 +103,18 @@ class WriterDraftStore:
                 raise DraftConflictError("version_conflict")
             target = self.project_root / "production" / "final_chapters" / f"chapter_{chapter_number:03d}.md"
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(selected["content"], encoding="utf-8", newline="\n")
+            if target.exists():
+                backup_dir = self.project_root / ".backup" / "formal-chapters"
+                backup_dir.mkdir(parents=True, exist_ok=True)
+                stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+                shutil.copy2(target, backup_dir / f"chapter_{chapter_number:03d}.{stamp}.md")
+            temp = target.with_name(f".{target.name}.{version_number}.tmp")
+            try:
+                temp.write_text(selected["content"], encoding="utf-8", newline="\n")
+                os.replace(temp, target)
+            finally:
+                if temp.exists():
+                    temp.unlink()
             return self._decode(json.dumps(selected, ensure_ascii=False))
 
     @staticmethod
