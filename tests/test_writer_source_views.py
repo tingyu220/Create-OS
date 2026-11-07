@@ -28,7 +28,7 @@ def test_writer_auto_view_prefers_latest_draft_when_both_sources_exist(tmp_path)
 
     payload = json.loads(WriterWebAdapter(tmp_path, "p").read_chapter(1))
 
-    assert payload["chapter"]["content"] == "最新工作稿"
+    assert payload["chapter"]["content"] == "验收工作稿"
     formal = json.loads(WriterWebAdapter(tmp_path, "p").read_chapter(1, source="formal"))
     assert formal["chapter"]["content"] == "正式正文"
-    assert payload["chapter"]["source"]["role"] == "canonical"
+    assert payload["chapter"]["source"]["role"] == "working_draft"
