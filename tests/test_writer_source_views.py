@@ -20,7 +20,7 @@ def test_writer_can_read_formal_and_working_draft_separately(tmp_path):
     assert draft["chapter"]["source"]["role"] == "working_draft"
 
 
-def test_writer_auto_view_prefers_formal_chapter_when_both_sources_exist(tmp_path):
+def test_writer_auto_view_prefers_latest_draft_when_both_sources_exist(tmp_path):
     final = tmp_path / "production" / "final_chapters"
     final.mkdir(parents=True)
     (final / "chapter_001.md").write_text("正式正文", encoding="utf-8")
@@ -28,5 +28,7 @@ def test_writer_auto_view_prefers_formal_chapter_when_both_sources_exist(tmp_pat
 
     payload = json.loads(WriterWebAdapter(tmp_path, "p").read_chapter(1))
 
-    assert payload["chapter"]["content"] == "正式正文"
+    assert payload["chapter"]["content"] == "最新工作稿"
+    formal = json.loads(WriterWebAdapter(tmp_path, "p").read_chapter(1, source="formal"))
+    assert formal["chapter"]["content"] == "正式正文"
     assert payload["chapter"]["source"]["role"] == "canonical"
