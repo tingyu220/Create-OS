@@ -329,6 +329,8 @@ class WriterAgentRuntime:
             decision = self.get_decision(decision_id)
         except FileNotFoundError as error:
             raise ValueError("decision_not_found") from error
+        if decision.get("decision_status") not in {None, "ready_for_author_review", "execution_authorized"}:
+            raise ValueError("decision_not_executable")
         chapter = int(decision["target_chapter"])
         instruction = f"按创作决策 {decision_id} 执行修改：{decision.get('analysis', '')}"
         if feedback.strip():
@@ -528,7 +530,12 @@ class WriterAgentRuntime:
                             "context_refs": list(context.source_refs), "analysis": str(content) if job.mode == "analyze" else instruction, "created_at": context.decision.created_at,
                             "target_words": job.target_words, "tolerance_words": job.tolerance_words,
                             "min_words": job.min_words, "max_words": job.max_words, "formal_word_count": formal_word_count,
-                            "project_id": self.project_id, "session_id": job.session_id, "task_id": job_id}
+                            "project_id": self.project_id, "session_id": job.session_id, "task_id": job_id,
+                            "decision_status": "ready_for_author_review",
+                            "execution_authorized": False,
+                            "preflight_plan_id": job.preflight_plan_id}
+                if job.preflight_plan_id:
+                    decision["preflight"] = asdict(self.preflight.get(job.preflight_plan_id))
                 self._write_decision(decision_id, decision)
             if job.mode == "analyze":
                 if job.preflight_plan_id:
